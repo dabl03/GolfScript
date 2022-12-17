@@ -4,6 +4,7 @@
 #include <vector>
 #include "define.h"
 
+using namespace std;
 struct Vars{
 	std::string name;//Nombre de la variable
 	enum TYPE type;//El tipo.
@@ -12,8 +13,23 @@ struct Vars{
 };
 class Var{//Nobre del la definición y el tipo.
     public:
-	struct Vars var; 
+	struct Vars var;
+    void (*func)(vector<Var>,vector<Var>);//No se usará con todas las variables, solo con la función.
+    /**
+     * @todo /\ busca una alternativa que no consuma tanta memoria.
+     * @todo Tambien ver si este constructor puedo quitarle param t
+     * @brief Construct a new Var object
+     * 
+     * @param n Nombre de la variable
+     * @param t Tipo de variable.
+     * @param v Valor.
+     */
 	Var(std::string n,enum TYPE t,void* v);
+    /**
+     * @brief Construct a new Var object
+     * @param t Tipo de dato
+     * @param v el dato como tal.
+     */
 	Var(enum TYPE t,void*v);
     /**
      * @brief Aqui almacenamos la variable deacuerdo a su tipo de dato, y si ya está definida la liberamos para volverla a definir.
@@ -25,8 +41,10 @@ class Var{//Nobre del la definición y el tipo.
      * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
      *
      * @param stack pila.
+     * @param vars variables.
+     * @return string -- Retorna una cadena vacia si
      */
-    string interpret(vector<Var> &stack);
+    string interpret(vector<Var>& stack,vector<Var>& vars);
     /**
      * @brief Liberamos la memoria reserbada para almacenar una variable.
     */

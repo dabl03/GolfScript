@@ -16,11 +16,27 @@ class Var
 { // Nobre del la definición y el tipo.
 public:
     struct Vars var;
+    void (*func)(vector<Var>,vector<Var>);//No se usará con todas las variables, solo con la función.
+    /**
+     * @todo /\ busca una alternativa que no consuma tanta memoria.
+     * @todo Tambien ver si este constructor puedo quitarle param t
+     * @brief Construct a new Var object
+     * 
+     * @param n Nombre de la variable
+     * @param t Tipo de variable.
+     * @param v Valor.
+     */
     Var(string n, enum TYPE t, void *v)
     {
         var.name = n;
         setValue(t, v);
     }
+    /**
+     * @brief Construct a new Var object
+     * 
+     * @param t Tipo de dato
+     * @param v el dato como tal.
+     */
     Var(enum TYPE t, void *v)
     {
         var.type = t;
@@ -46,7 +62,7 @@ public:
             // var.value->name=(struct Vars*)v->name;
             break;
         case FUNCTION:
-            var.value = v;
+            func = (void (*)(vector<Var>,vector<Var>))v;
             break;
         case STRING:
         case CODES_BLOCKS: // Será un string que representará el bloque de instrucciones.
@@ -82,8 +98,10 @@ public:
      * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
      * 
      * @param stack pila.
+     * @param vars variables.
+     * @return string -- Retorna una cadena vacia si
      */
-    string interpret(vector<Var>& stack){
+    string interpret(vector<Var>& stack,vector<Var>& vars){
         switch (var.type)
         {
         case INT:
@@ -91,7 +109,8 @@ public:
             break;
         case FUNCTION: // Creo que en el lenguaje no existe, pero de todos modos lo voy a utilizar para los operadodes:)
             // No hay nada que liberar, pues solo estoy apuntando a una función no a una memoria dinamica.
-            var.value(stack);
+            //Recuerda todas las funciónes deben tener estos dos argumentos:
+            func(stack,vars);
             break;
         case STRING:
             stack.push_back(Var(STRING,(void*)&string((*(string*)var.value).c_str())));

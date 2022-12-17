@@ -1,5 +1,6 @@
 /.vscode/*
-/build/*
+/build/log/*
+/build/obj/*
 /logs.txt
 /logs_obj.txt
 /GolfScript_pirata.exe

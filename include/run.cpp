@@ -24,13 +24,36 @@
                     stack.pop_back();
                 else if(l[i]==':'){//Para asignar una nueva variable.
                     //Si la cadena esta vacia significa que no es variable.
-                    unsigned int end;
-                    int i_var=search_var(l,i+1,vars,&end);
-                    if (i_var!=-1){
-                        vars[i_var].setValue(stack.back().var.type,stack.back().var.value);
-                    }else{
-                        /*@todo: buscar hasta conseguir espacio o alguna cosa ya definidas que no sea numero o letras.*/
+                    string name_vars="";
+                    unsigned int i_2=++i;
+                    if (is_abc(l[++i])){//Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
+                        for (;!is_abc(l[i_2]) && !is_num(l[i_2]);i_2++){
+                            name_vars+=l[i_2];
+                        }
+                    }else if (is_num(l[i])){//Si es un numero.
+                        string num="";
+                        for(;is_num(l[i_2]);i_2++){
+                            name_vars+=l[i_2];
+                        }
+                    }else{//Espacio y otros simbolos.
+                        name_vars+=l[i];
                     }
+                    i=i_2;//Actualizamos la posición.
+                    unsigned int end=0;
+                    int i_var=search_var(name_vars.c_str(),0,vars,&end);
+                    if(i_var!=-1){
+                        Var* this_var=&vars[i_var];
+                        string codes_block=this_var->interpret(stack,vars);
+                        if (this_var->var.type==CODES_BLOCKS){
+                            //No lo paso de una vez porque no se.
+                            vector<string> c;
+                            c.push_back(codes_block);
+                            analizar(c,stack,vars);
+                        }
+                        continue;
+                    }
+                    //No estubo definida antes.
+                    vars.push_back(Var(name_vars,VAR,(void*)&stack.back()));
                 }else{
                     //Ahora vemos si existe la variable.
                     unsigned int end=0;
@@ -42,7 +65,7 @@
                             arg.push_back((*(string*)this_var->var.value).substr(1,arg.back().length()-1));
                             analizar(arg,stack,vars);
                         }else{
-                            this_var->interpret(stack);
+                            this_var->interpret(stack,vars);
                         }
                         i=end;
                     }
