@@ -9,7 +9,7 @@ DELETED_OBJS=DEL "$(APP)"
 SRC=./src
 BIN_O=./build/obj
 
-MAIN_SRC=./main.cpp
+MAIN_SRC=$(SRC)/main.cpp
 MAIN_O=$(BIN_O)/main.o
 
 STR=$(SRC)/str.cpp
