@@ -3,9 +3,9 @@
 #include <string>//La clase string la sacamos desde el 5 circulo del infierno.
 #include <vector>
 #include <regex>
-#include "./include/head/str.h"
-#include "./include/head/define.h"
-#include "./include/head/run.h"
+#include "./include/str.h"
+#include "./include/define.h"
+#include "./include/run.h"
 #define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 using namespace std;
 int interprete(vector<Var> stack,vector<Var> vars);

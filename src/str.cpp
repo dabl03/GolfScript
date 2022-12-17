@@ -1,6 +1,6 @@
 #ifndef STR_CPP
 #define STR_CPP 1
-#include "./head/define.h"
+#include "./include/define.h"
 
 /**
  * @brief Retornar el tamaño del la cadena.

@@ -2,9 +2,9 @@
 #define RUN_CPP 1
     #include <string>
     #include <vector>
-    #include "./head/define.h"
-    #include "./head/str.h"
-    #include "./head/stack.h"
+    #include "./include/define.h"
+    #include "./include/str.h"
+    #include "./include/stack.h"
     using namespace std;
     /**
      * @brief Función que analiza y ejecuta la instrucciones.

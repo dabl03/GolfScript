@@ -2,17 +2,9 @@
 #define STACK_CPP 1
 #include <vector>
 #include <string>
-#include "./head/str.h"
-
+#include "./include/str.h"
+#include "./include/stack.h"
 using namespace std;
-struct Vars
-{
-    string name;    // Nombre de la variable
-    enum TYPE type;      // El tipo.
-    unsigned int memory; // Cantidad de memoria usada. //Pronto será eliminado.
-    void *value;         // Valor. Nota usare malloc/ calloc y readllock.
-};
-// Nobre del la definición y el tipo.
 /**
  * @todo /\ busca una alternativa que no consuma tanta memoria.
  * @todo Tambien ver si este constructor puedo quitarle param t
@@ -54,7 +46,7 @@ void Var::setValue(enum TYPE t, void *v)
         break;
     case VAR:
         var.value = v; // Por ahora voy a ver si me funciona así.
-        // var.value=(void*)new struct Vars();//No será necesario, porque ya la variable v sera un puntero al head con la estructura Vars.
+        // var.value=(void*)new struct Vars();//No será necesario, porque ya la variable v sera un puntero al include con la estructura Vars.
         // var.value->name=(struct Vars*)v->name;
         break;
     case FUNCTION:
