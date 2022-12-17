@@ -6,7 +6,7 @@ APP=./GolfScript_pirata.exe
 
 DELETED_OBJS=DEL "$(APP)"
 
-SRC=./include
+SRC=./src
 BIN_O=./build/obj
 
 MAIN_SRC=./main.cpp
@@ -25,7 +25,7 @@ OBJ_S=$(RUN_O) $(STACK_O) $(STR_O)
 LOG_OBJ=./build/log/log_obj.txt
 LOG_APP=./build/log/log_app.txt
 
-FILE_H=$(SRC)/head/run.h $(SRC)/head/define.h $(SRC)/head/str.h $(SRC)/head/stack.h
+FILE_H=$(SRC)/include/run.h $(SRC)/include/define.h $(SRC)/include/str.h $(SRC)/include/stack.h
 
 ifeq ($(strip $(OS)),Linux)
 	APP=./GolfScript_pirata
