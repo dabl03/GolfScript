@@ -1,0 +1,26 @@
+In file included from include/run.cpp:7:
+include/./head/stack.h:35:6: error: variable or field 'intepretar' declared void
+   35 | void intepretar(vector<Var>& stack);
+      |      ^~~~~~~~~~
+include/./head/stack.h:35:17: error: 'vector' was not declared in this scope
+   35 | void intepretar(vector<Var>& stack);
+      |                 ^~~~~~
+include/./head/stack.h:35:17: note: suggested alternatives:
+In file included from C:/msys64/mingw64/include/c++/12.2.0/vector:64,
+                 from include/run.cpp:4:
+C:/msys64/mingw64/include/c++/12.2.0/bits/stl_vector.h:423:11: note:   'std::vector'
+  423 |     class vector : protected _Vector_base<_Tp, _Alloc>
+      |           ^~~~~~
+C:/msys64/mingw64/include/c++/12.2.0/vector:84:13: note:   'std::pmr::vector'
+   84 |       using vector = std::vector<_Tp, polymorphic_allocator<_Tp>>;
+      |             ^~~~~~
+include/./head/stack.h:35:27: error: expected primary-expression before '>' token
+   35 | void intepretar(vector<Var>& stack);
+      |                           ^
+include/./head/stack.h:35:30: error: 'stack' was not declared in this scope
+   35 | void intepretar(vector<Var>& stack);
+      |                              ^~~~~
+include/run.cpp: In function 'int analizar(const std::vector<std::__cxx11::basic_string<char> >&, std::vector<Var>&, std::vector<Var>)':
+include/run.cpp:46:33: error: 'class Var' has no member named 'intepretar'
+   46 |                             v_2.intepretar(stack);
+      |                                 ^~~~~~~~~~

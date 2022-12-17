@@ -3,7 +3,10 @@
 #include <string>//La clase string la sacamos desde el 5 circulo del infierno.
 #include <vector>
 #include <regex>
-#include "include/str.h"
+#include "./include/head/str.h"
+#include "./include/head/define.h"
+#include "./include/run.cpp"
+#define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 using namespace std;
 int interprete();
 void config_all(vector<string> opciones);
@@ -25,7 +28,8 @@ int main(int argc, char *argv[])
 			}
 			params.push_back(opcion.substr(1));
 		}
-        if (params.empty()){
+        cout<<"1";
+        if (!params.empty()){
             config_all(params);
         }
 		if (path_files.empty())
@@ -43,16 +47,25 @@ int main(int argc, char *argv[])
 			while (getline(file, linea))
 				lineas.push_back(linea);
 			file.close();
+			vector<struct sub_str> vars;
+			analizar(lineas,vars);
 		}
 	}
 	interprete();
 	return 0;
 }
 void config_all(vector<string> opciones){
-    for(auto str : opciones){
-        cout<<str;
+    for(string str : opciones){
+        /****
+         * @todo Hacer opciones de configuracion para configurarlas aqui.
+         * Me gustaria una que esamble y compile el archivo para que sea mas facil analizarlo.
+         * Otra -o
+         * --help
+         * --v o --version
+         * --license
+        */
     }
 }
 int interprete(){
-
+	return 0;
 }
