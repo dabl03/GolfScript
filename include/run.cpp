@@ -6,7 +6,15 @@
     #include "./head/str.h"
     #include "./head/stack.h"
     using namespace std;
-    int analizar(const vector<string>& lines,vector<Var>& stack,vector<Var> vars){
+    /**
+     * @brief Función que analiza y ejecuta la instrucciones.
+     * 
+     * @param lines Lineas de codigo que interpretar. 
+     * @param stack stack o pila en español.
+     * @param vars Variables declaradas.
+     * @return int error_codes.
+    */
+    int analyze_and_run(const vector<string>& lines,vector<Var>& stack,vector<Var> vars){
         /*Aqui debemos analizar char a char para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
         for (string line: lines){
             unsigned int end;
@@ -48,7 +56,7 @@
                             //No lo paso de una vez porque no se.
                             vector<string> c;
                             c.push_back(codes_block);
-                            analizar(c,stack,vars);
+                            analyze_and_run(c,stack,vars);
                         }
                         continue;
                     }
@@ -63,7 +71,7 @@
                         if (this_var->var.type==CODES_BLOCKS){
                             vector<string> arg;
                             arg.push_back((*(string*)this_var->var.value).substr(1,arg.back().length()-1));
-                            analizar(arg,stack,vars);
+                            analyze_and_run(arg,stack,vars);
                         }else{
                             this_var->interpret(stack,vars);
                         }
@@ -71,19 +79,6 @@
                     }
                     
                 }
-            }
-        }
-        return 0;
-    }
-    int run(vector<Var> definiciones){
-        for (Var defi:definiciones){
-            switch(defi.var.type){
-                case VAR:
-                case STRING:
-                case INT:
-                case FUNCTION:
-                default:
-                    return ERROR_DEFICCION_NO_VALIDA;
             }
         }
         return 0;

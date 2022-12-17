@@ -20,10 +20,12 @@ STR_O=$(BIN_O)/str.o
 STACK_O=$(BIN_O)/stack.o
 RUN_O=$(BIN_O)/run.o
 
-OBJ_S=$(STR_O) $(RUN_O) $(STACK_O)
+OBJ_S=$(RUN_O) $(STACK_O) $(STR_O)
 
 LOG_OBJ=./build/log/log_obj.txt
 LOG_APP=./build/log/log_app.txt
+
+FILE_H=$(SRC)/head/run.h $(SRC)/head/define.h $(SRC)/head/str.h $(SRC)/head/stack.h
 
 ifeq ($(strip $(OS)),Linux)
 	APP=./GolfScript_pirata
@@ -39,19 +41,19 @@ $(APP): $(OBJ_S) $(MAIN_O)
 	@echo compilando...
 	$(CXX) $(CXXFLAG) $(MAIN_O) $(OBJ_S) -o $(APP) 2> $(LOG_APP)
 
-$(MAIN_O): $(MAIN_SRC)
+$(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
 	$(CXX) -c $(CXXFLAG) $< -o $@ 2>$(LOG_OBJ)
 
-$(STR_O): $(STR)
+$(STR_O): $(STR) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
 	$(CXX) -c $(CXXFLAG) $< -o $@ 2>$(LOG_OBJ)
 
-$(STACK_O): $(STACK)
+$(STACK_O): $(STACK) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
 	$(CXX) -c $(CXXFLAG) $< -o $@ 2>$(LOG_OBJ)
 
-$(RUN_O): $(RUN)
+$(RUN_O): $(RUN) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
 	$(CXX) -c $(CXXFLAG) $< -o $@ 2>$(LOG_OBJ)
 

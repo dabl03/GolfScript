@@ -113,13 +113,17 @@ public:
             func(stack,vars);
             break;
         case STRING:
-            stack.push_back(Var(STRING,(void*)&string((*(string*)var.value).c_str())));
+            stack.push_back( 
+                Var(STRING,(void*)( *(string*)var.value).c_str())
+            );
             break;
         case CODES_BLOCKS: // Será un string que representará el bloque de instrucciones.
             return (*(string*)var.value).substr(1,(*(string*)var.value).length());//Retornamos el bloque para que lo interprete.
         case ARRAY:        // Solo será un array, necesito crear una función que lea el string y retorne la posición.
-            stack.push_back(Var(ARRAY,(void*)&string((*(string*)var.value).c_str())));
-        }
+            stack.push_back(
+                Var(ARRAY,(void*)(*(string*)var.value).c_str())
+            );
+        } 
         return "";
     }
     ~Var(){

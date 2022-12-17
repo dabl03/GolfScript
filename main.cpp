@@ -5,15 +5,16 @@
 #include <regex>
 #include "./include/head/str.h"
 #include "./include/head/define.h"
-#include "./include/run.cpp"
+#include "./include/head/run.h"
 #define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 using namespace std;
-int interprete();
+int interprete(vector<Var> stack,vector<Var> vars);
 void config_all(vector<string> opciones);
 int main(int argc, char *argv[])
 {
 	ios_base::sync_with_stdio(false);//Aumenta la velocidad de la entrada y salida estandar.
 	string linea;
+	vector<Var> stack,vars;
 	if (argc > 1)
 	{
 		vector<string> params, path_files;
@@ -28,13 +29,12 @@ int main(int argc, char *argv[])
 			}
 			params.push_back(opcion.substr(1));
 		}
-        cout<<"1";
         if (!params.empty()){
             config_all(params);
         }
 		if (path_files.empty())
 		{
-            return interprete();
+            return interprete(stack,vars);
         }else{
 			ifstream file(path_files[0].c_str());
             vector<string> lineas;
@@ -47,11 +47,11 @@ int main(int argc, char *argv[])
 			while (getline(file, linea))
 				lineas.push_back(linea);
 			file.close();
-			vector<struct sub_str> vars;
-			analizar(lineas,vars);
+			analyze_and_run(lineas,stack,vars);
 		}
+	}else{
+		return interprete(stack,vars);
 	}
-	interprete();
 	return 0;
 }
 void config_all(vector<string> opciones){
@@ -66,6 +66,48 @@ void config_all(vector<string> opciones){
         */
     }
 }
-int interprete(){
+int interprete(vector<Var> stack,vector<Var> vars){
+	int sub = 0;	//para cambiar de >> a .. cuando hay una condición.
+	char c_linea[BUFFER];
+	vector<string> lineas;
+	cout<<"Golfscript Interactive Mode"<<endl;
+	
+	while (true)
+	{
+		if (sub) // Esta anidando algo.
+		{
+			char* space=new char[sub];
+			for (unsigned int i=0;i<sub;i++)
+				space[i]=' ';
+			cout<<space;
+			delete[] space;
+		}
+		cout<<'>';
+		try
+		{
+			cin.getline(c_linea,BUFFER);
+			if (compare_sub_str(c_linea,'{')){//Vemos si hay anidamiento.
+				sub += 1;
+			}else if (compare_sub_str(c_linea,"}")){//Pongo END; || END porque no consique END; como una cadena parecida a END.
+				if(sub <= 0){//Espera no hubo nada que desanidar ;(
+					cout << "ERROR \nno hay anidamiento que quitar";
+					sub = 0;
+					continue;
+				}
+				sub -= 1;
+			}
+
+			lineas.push_back(string(c_linea));
+			if(sub == 0){//Podemos interpretar linea a linea.
+				analyze_and_run(lineas,stack,vars);
+				lineas.clear();
+			}
+		}
+		catch (const std::exception& e)
+		{
+			cerr << e.what() << c_linea << endl;
+			exit(EXIT_FAILURE);
+		}
+	}
 	return 0;
 }
