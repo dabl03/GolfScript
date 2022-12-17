@@ -2,6 +2,7 @@
 #define RUN_H 1
     #include <string>
     #include <vector>
+    #include <cstdlib>
     #include "./define.h"
     #include "./str.h"
     #include "./stack.h"

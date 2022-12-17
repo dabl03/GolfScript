@@ -49,16 +49,21 @@ class Var{//Nobre del la definición y el tipo.
      * @brief Liberamos la memoria reserbada para almacenar una variable.
     */
 	void delete_var();
-	~Var();
+    ~Var();
+    /**
+     * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
+     * @param stack pila a mostrar.
+     */
+    static string* printf_stack(vector<Var> &stack);
+    /**
+     * @brief Función que busca la variable dentro de una cadena.
+     *
+     * @param str_1 cadena a buscar.
+     * @param init_str_1 inicio de la primera cadena.
+     * @param vars //Vector para ver las variables.
+     * @param end Puntero a int, para saber el final de la cadena.
+     * @return int Indice de la variable en el vector.
+     */
+    static int search_var(const string& str_1, unsigned int init_str_1, const vector<Var> vars, unsigned int *end);
 };
-/**
- * @brief Función que busca la variable dentro de una cadena.
- * 
- * @param str_1 cadena a buscar.
- * @param init_str_1 inicio de la primera cadena.
- * @param vars //Vector para ver las variables.
- * @param end Puntero a int, para saber el final de la cadena.
- * @return int Indice de la variable en el vector.
- */
-int search_var(const char* str_1,unsigned int init_str_1,const vector<Var> vars,unsigned int* end);
 #endif

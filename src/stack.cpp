@@ -118,6 +118,25 @@ Var::~Var()
     delete_var();
 }
 /**
+ * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
+ * @param stack pila a mostrar.
+*/
+string* Var::printf_stack(vector<Var> &stack){
+    string* output=new string(" ");
+    for(Var v:stack){
+        switch(v.var.type){
+            case INT:
+                *output+=to_string(*(int*)v.var.value)+' ';
+                break;
+            case CODES_BLOCKS://Recuerda todo despues de esto es string.
+            case ARRAY:
+            case STRING:
+                *output+=*(string*)v.var.value+' ';
+        }
+    }
+    return output;
+}
+/**
  * @brief Función que busca la variable dentro de una cadena.
  *
  * @param str_1 cadena a buscar.
@@ -126,38 +145,30 @@ Var::~Var()
  * @param end Puntero a int, para saber el final de la cadena.
  * @return int Indice de la variable en el vector.
  */
-int search_var(const char *str_1, unsigned int init_str_1, const vector<Var> vars, unsigned int *end)
+int Var::search_var(const string& str_1, unsigned int init_str_1, const vector<Var> vars, unsigned int *end)
 {
     // Ahora vemos si existe la variable.
-    unsigned int i_str_2 = 0;
-    unsigned int i_temp;
+    unsigned int is_squal = 0;
+    unsigned int i=init_str_1;
+    unsigned int i_end=str_1.length();
     for (Var v_2 : vars)
     {
-        i_temp = init_str_1;
-        for (char c : v_2.var.name)
+        for (char c:*(string*)v_2.var.value)
         {
-            if (str_1[i_temp] == c && c != '\0') // No hay peligro que se desborde porque a pensas llegue a '\0' se reiniciará.
-            {
-                i_str_2++;
-                i_temp++;
-            }
-            else if (c == '\0')
-            { // Si es la variable que buscamos.
+            if (i==i_end || str_1[i++]!=c){//No es igual y pasamos a la siguiente.
+                i=init_str_1;
+                is_squal=0;
                 break;
             }
-            else
-            {                // No es la variable que buscamos.
-                i_str_2 = 0; // Debemos ponerlo en 0 para indicar que no es la variable despues.
-                break;
-            }
+            is_squal++;
         }
-        if (i_str_2)
-        {
-            *end = i_temp;
-            return i_temp;
+        if (is_squal){//Es igual y retornamos.
+            *end=init_str_1+i;
+            return *end;
         }
     }
-    *end = i_temp;
+    //No hay coincidencia, por lo que retorno -1.
+    *end = init_str_1+is_squal;
     return -1;
 }
 #endif

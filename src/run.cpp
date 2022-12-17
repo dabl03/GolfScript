@@ -1,6 +1,7 @@
 #ifndef RUN_CPP
 #define RUN_CPP 1
     #include <string>
+    #include <cstdlib>
     #include <vector>
     #include "./include/define.h"
     #include "./include/str.h"
@@ -19,10 +20,11 @@
         for (string line: lines){
             unsigned int end;
             const char* l=line.c_str();
-            for(unsigned int i=0;l[i]!='\0';i++){
+            unsigned int i_end=line.length();
+            for(unsigned int i=0;i<i_end;i++){
                 //Primero definimos nuestros signos constantes:
                 if (IF_INIT_STRING(l[i])){//Llegamos a " o '
-                    end=get_end_str(l,i,line.length());
+                    end=get_end_str(l,i,i_end);
                     stack.push_back( Var( STRING,new string(line.substr(i,end)) ) );//Ingresamos 
                     i=end;
                     continue;
@@ -35,12 +37,12 @@
                     string name_vars="";
                     unsigned int i_2=++i;
                     if (is_abc(l[++i])){//Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
-                        for (;!is_abc(l[i_2]) && !is_num(l[i_2]);i_2++){
+                        for (;i_2<i_end && !is_abc(l[i_2]) && !is_num(l[i_2]);i_2++){
                             name_vars+=l[i_2];
                         }
                     }else if (is_num(l[i])){//Si es un numero.
                         string num="";
-                        for(;is_num(l[i_2]);i_2++){
+                        for(;i_2<i_end && is_num(l[i_2]);i_2++){
                             name_vars+=l[i_2];
                         }
                     }else{//Espacio y otros simbolos.
@@ -48,7 +50,7 @@
                     }
                     i=i_2;//Actualizamos la posición.
                     unsigned int end=0;
-                    int i_var=search_var(name_vars.c_str(),0,vars,&end);
+                    int i_var=Var::search_var(name_vars,0,vars,&end);
                     if(i_var!=-1){
                         Var* this_var=&vars[i_var];
                         string codes_block=this_var->interpret(stack,vars);
@@ -65,7 +67,7 @@
                 }else{
                     //Ahora vemos si existe la variable.
                     unsigned int end=0;
-                    int i_var=search_var(l,i,vars,&end);
+                    int i_var=Var::search_var(line,i,vars,&end);
                     if(i_var!=-1){//Significa que se encontro la variable.
                         Var* this_var=&vars[i_var];
                         if (this_var->var.type==CODES_BLOCKS){
@@ -76,8 +78,17 @@
                             this_var->interpret(stack,vars);
                         }
                         i=end;
+                    }else if(is_num(l[i])){
+                        string number="";
+                        int* v;
+                        for(;i<i_end && is_num(l[i]);i++){
+                            number+=l[i];
+                        }
+                        v=new int(parseInt(number));
+                        stack.push_back(
+                            Var(INT,(void*)v )
+                        );
                     }
-                    
                 }
             }
         }

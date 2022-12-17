@@ -1,5 +1,6 @@
 #ifndef STR_H
 #define STR_H 1
+#include <string>
 #include "./define.h"
 
 /**
@@ -44,4 +45,12 @@ bool is_num(unsigned const char c);
  * @return unsigned int end.
  */
 unsigned int get_end_str(const char* str,unsigned const int init,unsigned int i_end=0);
+
+/**
+ * @brief Funcion que transforma de string a entero.
+ * 
+ * @param str String que representa los numeros
+ * @return int 
+ */
+int parseInt(const std::string& str);
 #endif

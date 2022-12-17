@@ -1,5 +1,6 @@
 #ifndef STR_CPP
 #define STR_CPP 1
+#include <string>
 #include "./include/define.h"
 
 /**
@@ -106,5 +107,22 @@ unsigned int get_end_str(const char* str,unsigned const int init,unsigned int i_
 		is_scape=(str[i]=='\\' && !is_scape);
 	}
 	return init;//No hay fin, por lo que retornamos el inicio.
+}
+/**
+ * @brief Funcion que transforma de string a entero.
+ * 
+ * @param str String que representa los numeros
+ * @return int 
+ */
+int parseInt(const std::string& str){
+    bool is_negative=(str[0]=='-');
+    int output=0;
+    unsigned int end=str.length();
+    for (int i=is_negative;i<end;i++){
+        if (is_num(str[i])){
+            output=(output*10)+CHAR_TO_NUM(str[i]);
+        }
+    }
+    return output;
 }
 #endif

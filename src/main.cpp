@@ -88,7 +88,7 @@ int interprete(vector<Var> stack,vector<Var> vars){
 			cin.getline(c_linea,BUFFER);
 			if (compare_sub_str(c_linea,'{')){//Vemos si hay anidamiento.
 				sub += 1;
-			}else if (compare_sub_str(c_linea,"}")){//Pongo END; || END porque no consique END; como una cadena parecida a END.
+			}else if (compare_sub_str(c_linea,"}")){//Fin del anidamiento.
 				if(sub <= 0){//Espera no hubo nada que desanidar ;(
 					cout << "ERROR \nno hay anidamiento que quitar";
 					sub = 0;
@@ -108,6 +108,9 @@ int interprete(vector<Var> stack,vector<Var> vars){
 			cerr << e.what() << c_linea << endl;
 			exit(EXIT_FAILURE);
 		}
+		string* output=Var::printf_stack(stack);
+		cout<<"[ "<<*output<<']'<<stack.empty()<<endl;
+		delete output;
 	}
 	return 0;
 }
