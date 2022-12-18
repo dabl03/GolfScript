@@ -11,9 +11,8 @@ struct Vars{
 	unsigned int memory;//Cantidad de memoria usada.//Pronto será eliminado.
 	void* value;//Valor. Nota usare malloc/ calloc y readllock.
 };
-class Var{//Nobre del la definición y el tipo.
+class Var: public Vars{//Nobre del la definición y el tipo.
     public:
-	struct Vars var;
     void (*func)(vector<Var>,vector<Var>);//No se usará con todas las variables, solo con la función.
     /**
      * @todo /\ busca una alternativa que no consuma tanta memoria.
@@ -54,7 +53,7 @@ class Var{//Nobre del la definición y el tipo.
      * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
      * @param stack pila a mostrar.
      */
-    static string* printf_stack(vector<Var> &stack);
+    static string printf_stack(vector<Var> &stack);
     /**
      * @brief Función que busca la variable dentro de una cadena.
      *

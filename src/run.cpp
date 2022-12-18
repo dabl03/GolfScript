@@ -25,7 +25,7 @@
                 //Primero definimos nuestros signos constantes:
                 if (IF_INIT_STRING(l[i])){//Llegamos a " o '
                     end=get_end_str(l,i,i_end);
-                    stack.push_back( Var( STRING,new string(line.substr(i,end)) ) );//Ingresamos 
+                    stack.emplace_back(STRING,new string( line.substr(i,end) ));//Ingresamos 
                     i=end;
                     continue;
                 }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
@@ -52,30 +52,30 @@
                     unsigned int end=0;
                     int i_var=Var::search_var(name_vars,0,vars,&end);
                     if(i_var!=-1){
-                        Var* this_var=&vars[i_var];
+                        Var* this_var=&vars.at(i_var);
                         string codes_block=this_var->interpret(stack,vars);
-                        if (this_var->var.type==CODES_BLOCKS){
+                        if (this_var->type==CODES_BLOCKS){
                             //No lo paso de una vez porque no se.
                             vector<string> c;
-                            c.push_back(codes_block);
+                            c.emplace_back(codes_block);
                             analyze_and_run(c,stack,vars);
                         }
                         continue;
                     }
                     //No estubo definida antes.
-                    vars.push_back(Var(name_vars,VAR,(void*)&stack.back()));
+                    vars.emplace_back(name_vars,VAR,(void*)&stack.back());
                 }else{
                     //Ahora vemos si existe la variable.
                     unsigned int end=0;
                     int i_var=Var::search_var(line,i,vars,&end);
                     if(i_var!=-1){//Significa que se encontro la variable.
-                        Var* this_var=&vars[i_var];
-                        if (this_var->var.type==CODES_BLOCKS){
+                        Var* v=&vars.at(i_var);
+                        if (v->type==CODES_BLOCKS){
                             vector<string> arg;
-                            arg.push_back((*(string*)this_var->var.value).substr(1,arg.back().length()-1));
+                            arg.emplace_back(*(string*)v->value).substr(1,arg.back().length()-1);
                             analyze_and_run(arg,stack,vars);
                         }else{
-                            this_var->interpret(stack,vars);
+                            v->interpret(stack,vars);
                         }
                         i=end;
                     }else if(is_num(l[i])){
@@ -85,9 +85,7 @@
                             number+=l[i];
                         }
                         v=new int(parseInt(number));
-                        stack.push_back(
-                            Var(INT,(void*)v )
-                        );
+                        stack.emplace_back(INT,(void*)v);
                     }
                 }
             }

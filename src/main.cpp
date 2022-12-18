@@ -24,10 +24,10 @@ int main(int argc, char *argv[])
 			string opcion = argv[i];
 			if (opcion.find('-') == string::npos)
 			{
-				path_files.push_back(opcion.c_str());
+				path_files.emplace_back(opcion.c_str());
 				continue;
 			}
-			params.push_back(opcion.substr(1));
+			params.emplace_back(opcion.substr(1));
 		}
         if (!params.empty()){
             config_all(params);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 			}
 
 			while (getline(file, linea))
-				lineas.push_back(linea);
+				lineas.emplace_back(linea);
 			file.close();
 			analyze_and_run(lineas,stack,vars);
 		}
@@ -77,8 +77,10 @@ int interprete(vector<Var> stack,vector<Var> vars){
 		if (sub) // Esta anidando algo.
 		{
 			char* space=new char[sub];
-			for (unsigned int i=0;i<sub;i++)
+			unsigned int i=0;
+			for (;i<sub;i++)
 				space[i]=' ';
+			space[i]='\0';
 			cout<<space;
 			delete[] space;
 		}
@@ -97,10 +99,12 @@ int interprete(vector<Var> stack,vector<Var> vars){
 				sub -= 1;
 			}
 
-			lineas.push_back(string(c_linea));
+			lineas.emplace_back(string(c_linea));
 			if(sub == 0){//Podemos interpretar linea a linea.
 				analyze_and_run(lineas,stack,vars);
 				lineas.clear();
+				string output=Var::printf_stack(stack);
+				cout<<"[ "<<output<<']'<<endl;
 			}
 		}
 		catch (const std::exception& e)
@@ -108,9 +112,6 @@ int interprete(vector<Var> stack,vector<Var> vars){
 			cerr << e.what() << c_linea << endl;
 			exit(EXIT_FAILURE);
 		}
-		string* output=Var::printf_stack(stack);
-		cout<<"[ "<<*output<<']'<<stack.empty()<<endl;
-		delete output;
 	}
 	return 0;
 }
