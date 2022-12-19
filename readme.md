@@ -23,14 +23,14 @@
 
 Meter algo en la pila:
 
-```
+```Bash
 > 1
 [ 1 ]
 > "hola"
 [ 1 "hola" ]
 ```
 Eliminar algo de la pila:
-```
+```Bash
 > 1 2 3 4 5 #Primero introcucimos algo para despues sacarlo.
 [ 1 2 3 4 5 ]
 > ;
@@ -42,7 +42,7 @@ Eliminar algo de la pila:
 Error se intenta sacar mas elemento del que hay en la pila.
 ```
 Operaciones aritmeticas simples:
-```
+```Bash
 > 2 2 3 4 4 6 4 3#Ingresamos los numeros que vamos a calcular.
 [ 2 2 3 4 4 6 4 3 ]
 > 1 +
@@ -57,7 +57,7 @@ Operaciones aritmeticas simples:
 [ 2 2 3 4 ]
 ```
 Creando variables:
-```
+```Bash
 > 1:var_1
 [ 1 ]
 > 1:var_2;#Notar que pusimos punto y coma para que el valor de la variable no se instrodusca en la pila
@@ -75,7 +75,7 @@ Creando variables:
 [ 2 "hola " "hola " "hola " "hola " ]
 ```
 Creando funciones:
-```
+```Bash
 > { 1 + 4 2 3 - -} : function #Asignamos la funcion a una variable.
 [ { 1 + 4 2 3 - -} ]
 > { 1 2 4 4 6 7 }: llenar_pila;
