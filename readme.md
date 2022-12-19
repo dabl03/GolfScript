@@ -12,7 +12,7 @@
     Para aprender GolfScript, comience con el tutorial y descargue la implementación. Una vez que se sienta cómodo con él, es posible que desee verificar exactamente cómo se analiza el código y ver todas las funciones integradas.
 </p>
 <p>
-    [Para mas información y tutoriales sobre GolfScript](http://www.golfscript.com/golfscript/)
+    <a href="http://www.golfscript.com/golfscript/">Para mas información y tutoriales sobre GolfScript</a>
 </p>
 
 ## Sintaxis:
