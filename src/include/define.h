@@ -10,8 +10,10 @@
     #define ERROR_INDEX_STR (-3)
     #define MEMORY_ERROR (-30)
     #define CHAR_TO_NUM(c) (c-'0')
-    #define BUFFER 1000
+    #define BUFFER 10000
     inline const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
-    enum TYPE{ INT,STRING,FUNCTION,VAR,CODES_BLOCKS,ARRAY};
+    inline const char* AUTHOR="Interprete: Daniel Briceño.\n Sintaxis: Darren Smith";
+    inline const char* LICENCE="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
+    enum TYPE{INT,STRING,FUNCTION,VAR,CODES_BLOCKS,ARRAY};
     inline std::string err_msg;
 #endif

@@ -8,7 +8,6 @@ using namespace std;
 struct Vars{
 	std::string name;//Nombre de la variable
 	enum TYPE type;//El tipo.
-	unsigned int memory;//Cantidad de memoria usada.//Pronto será eliminado.
 	void* value;//Valor. Nota usare malloc/ calloc y readllock.
 };
 class Var: public Vars{//Nobre del la definición y el tipo.
