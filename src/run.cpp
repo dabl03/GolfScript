@@ -3,6 +3,7 @@
     #include <string>
     #include <cstdlib>
     #include <vector>
+    #include <iostream>//No es necesario, solo necesito ver algo rapido.
     #include "./include/define.h"
     #include "./include/str.h"
     #include "./include/stack.h"
@@ -86,6 +87,7 @@
                         }
                         v=new int(parseInt(number));
                         stack.emplace_back(INT,(void*)v);
+                        cout<<"parseInt(number): "<<parseInt(number)<<", number: "<<number<<", v: "<<*v<<", stack:"<<*(int*)stack.back().value<<endl;
                     }
                 }
             }
