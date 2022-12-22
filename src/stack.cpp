@@ -1,5 +1,6 @@
 #ifndef STACK_CPP
 #define STACK_CPP 1
+#include <stdlib.h>
 #include <vector>
 #include <string>
 #include "./include/str.h"
@@ -70,10 +71,10 @@ void Var::delete_var()
     switch (type)
     {
     case INT:
-        delete (int *)value;
+        free(value);
         break;
     case VAR:
-    case FUNCTION: // Creo que en el lenguaje no existe, pero de todos modos lo voy a utilizar para los operadodes:)
+    case FUNCTION: // Creo que en el lenguaje golfscript no existe, pero de todos modos lo voy a utilizar para los operadodes:)
         // No hay nada que liberar, pues solo estoy apuntando a una función no a una memoria dinamica.
         break;
     case STRING:
