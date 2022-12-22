@@ -1,68 +1,89 @@
 #ifndef STACK_H
 #define STACK_H 1
-#include <string>
-#include <vector>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "define.h"
-
-using namespace std;
-struct Vars{
-	std::string name;//Nombre de la variable
+struct Var{
+	char* name;//Nombre de la variable
 	enum TYPE type;//El tipo.
 	void* value;//Valor. Nota usare malloc/ calloc y readllock.
 };
-class Var: public Vars{//Nobre del la definición y el tipo.
-    public:
-    void* value=NULL;
-    void (*func)(vector<Var>,vector<Var>);//No se usará con todas las variables, solo con la función.
-    /**
-     * @todo /\ busca una alternativa que no consuma tanta memoria.
-     * @todo Tambien ver si este constructor puedo quitarle param t
-     * @brief Construct a new Var object
-     * 
-     * @param n Nombre de la variable
-     * @param t Tipo de variable.
-     * @param v Valor.
-     */
-	Var(std::string n,enum TYPE t,void* v);
-    /**
-     * @brief Construct a new Var object
-     * @param t Tipo de dato
-     * @param v el dato como tal.
-     */
-	Var(enum TYPE t,void*v);
-    /**
-     * @brief Aqui almacenamos la variable deacuerdo a su tipo de dato, y si ya está definida la liberamos para volverla a definir.
-     * @param t El tipo que es la variable.
-     * @param v valor de la variable.
-    **/
-	void setValue(enum TYPE t, void* v);
-    /**
-     * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
-     *
-     * @param stack pila.
-     * @param vars variables.
-     * @return string -- Retorna una cadena vacia si
-     */
-    string interpret(vector<Var>& stack,vector<Var>& vars);
-    /**
-     * @brief Liberamos la memoria reserbada para almacenar una variable.
-    */
-	void delete_var();
-    ~Var();
-    /**
-     * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
-     * @param stack pila a mostrar.
-     */
-    static string printf_stack(vector<Var> &stack);
-    /**
-     * @brief Función que busca la variable dentro de una cadena.
-     *
-     * @param str_1 cadena a buscar.
-     * @param init_str_1 inicio de la primera cadena.
-     * @param vars //Vector para ver las variables.
-     * @param end Puntero a int, para saber el final de la cadena.
-     * @return int Indice de la variable en el vector.
-     */
-    static int search_var(const string& str_1, unsigned int init_str_1, const vector<Var> vars, unsigned int *end);
+struct type_value{
+    enum TYPE type;
+    void* value;
 };
+/**
+ * @brief Para crear array dinamicos de cualquier tipo.
+ * 
+ * @param max Maximo que puedes almacenar en el Array, cuando se supera se reselva mas memoria.
+ * @param i El ultimo elemento almacenado.
+ * @param value el Valor almacenado en el array.
+ */
+struct Array{
+    unsigned int max;//Para asignar mas memoria de lo que se necesita asegurando velocidad.
+    unsigned int i;//Contenido actual.
+    struct type_value* value;//Por cada valor necesitamos algo que nos diga que es.
+};
+/**
+ * @brief Ingresa un elemento en el array.
+ * 
+ * @param arr Array
+ * @param type Tipo del elemento, determinado por el enum TYPE
+ * @param value Cualquier clase de objeto que este definido en enum TYPE.
+ * @return unsigned short 
+*/
+unsigned short add_array(struct Array* arr,enum TYPE type, void* value);
+/**
+ * @brief Elimina la ultima posición del array y retorna una estructura si la cantidad total es menor al tamaño maximo que puede obtener entonces se reduce el tamaño que puede obtener.
+ * 
+ * @param arr array.
+ * @return struct type_value* Retornado el elemento sacado del array. Nota: No liberamos la memoria del elemento retornado.
+ */
+struct type_value* pop_array(struct Array* arr);
+/**
+ * @brief Libera toda la memoria ocupada por este array y la structura Var que tenga.
+ * 
+ * @param arr 
+ * @return unsigned short 
+ */
+unsigned short delete_array(struct Array* arr);
+
+/**
+ * @brief Aqui almacenamos la variable deacuerdo a su tipo de dato, y si ya está definida la liberamos para volverla a definir.
+ * @param v Variable actual.
+ * @param t El tipo que es la variable.
+ * @param v valor de la variable.
+ **/
+void setValue(struct Var* v,enum TYPE t, void *value);
+/**
+ * @brief Liberamos la memoria reserbada para almacenar una variable.
+ * @param v Variable a eliminar.
+ */
+void delete_var(struct Var* v);
+/**
+ * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
+ *
+ * @param stack pila.
+ * @param vars variables.
+ * @return string -- Retorna una cadena vacia si
+*/
+char* interpret(struct Array* stack,struct Array* var,struct Var* v);
+/**
+ * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
+ * @param stack pila a mostrar.
+ * @return char* output Recuerda liberar memoria. 
+*/
+char* printf_stack(struct Array* stack);
+/**
+ * @brief Función que busca la variable dentro de una cadena.
+ *
+ * @param name Nombre a buscar.
+ * @param init_str_1 Donde se inicia en la cadena nombre.
+ * @param var //Vector para ver las variables.
+ * @param end Puntero a int, para saber el final de la cadena.
+ * @return int Para saber si se encontró o no. si lo encontró se retorna el indice, sino -1
+ */
+int search_var_init_end(const char* name, unsigned const int init_str_1, struct Array* var, unsigned int *end);
+#define search_var(name,var,end) search_var_init_end(name,0,var,end)
 #endif

@@ -1,11 +1,11 @@
 #ifndef RUN_H
 #define RUN_H 1
-    #include <string>
-    #include <vector>
-    #include <cstdlib>
-    #include "./define.h"
-    #include "./str.h"
-    #include "./stack.h"
+    #include <string.h>
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include "define.h"
+    #include "str.h"
+    #include "stack.h"
     /**
      * @brief Función que analiza y ejecuta la instrucciones.
      * 
@@ -14,5 +14,5 @@
      * @param vars Variables declaradas.
      * @return int error_codes.
     */
-    int analyze_and_run(const vector<std::string>& lines,vector<Var>& stack,vector<Var> vars);
+    int run(struct Array* lines,struct Array* stack,struct Array* vars);
 #endif
