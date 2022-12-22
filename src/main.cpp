@@ -76,7 +76,7 @@ int interprete(vector<Var> stack,vector<Var> vars){
 	{
 		if (sub) // Esta anidando algo.
 		{
-			char* space=new char[sub+1];
+			char* space=new char[sub];
 			unsigned int i=0;
 			for (;i<sub;i++)
 				space[i]=' ';
@@ -88,18 +88,18 @@ int interprete(vector<Var> stack,vector<Var> vars){
 		try
 		{
 			cin.getline(c_linea,BUFFER);
-			for(char* c=c_linea;*c!='\0';c++){
-				if (*c=='{')//Vemos si hay anidamiento.
-					sub += 1;
-				else if(*c=='}'){ //Fin del anidamiento.
-					if (sub==0){ //Espera no hubo nada que desanidar ;(
-						cout<<"ERROR: No hay suficiente anidamiento."<<endl;
-						break;
-					}
-					sub-=1;
+			if (compare_sub_str(c_linea,'{')){//Vemos si hay anidamiento.
+				sub += 1;
+			}else if (compare_sub_str(c_linea,"}")){//Fin del anidamiento.
+				if(sub <= 0){//Espera no hubo nada que desanidar ;(
+					cout << "ERROR \nno hay anidamiento que quitar";
+					sub = 0;
+					continue;
 				}
+				sub -= 1;
 			}
-			lineas.emplace_back(c_linea);
+
+			lineas.emplace_back(string(c_linea));
 			if(sub == 0){//Podemos interpretar linea a linea.
 				analyze_and_run(lineas,stack,vars);
 				lineas.clear();
