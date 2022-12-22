@@ -55,7 +55,6 @@
                     end=(end)?end:strlen(l);
                     struct String str={end-i,0,(char*)malloc(sizeof(char)*((end-i)+1))};
                     str_add_str_init_end(&str,l,i,end);
-                    puts(str.str);
                     add_array(stack,STRING,str.str);//Ingresamos 
                     i=end;
                     continue;
@@ -68,11 +67,15 @@
                     }
                 }else if(l[i]==':'){//Para asignar una nueva variable.
                     //Si la cadena esta vacia significa que no es variable.
+                    /**
+                     * @todo Arreglar el error de lecturas de variables.
+                     * 
+                     */
                     struct String name={2,0,(char*)malloc(sizeof(char)*2)};
                     unsigned int i_2=++i;
                     if (is_abc(l[i])){//Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
                         for (;i_2<i_end && !is_abc(l[i_2]) && !is_num(l[i_2]);i_2++);
-                        str_add_str_init_end(&name,l,i,i_2);
+                        str_add_str_init_end(&name,l,i,i_2-1);
                     }else if (is_num(l[i])){//Si es un numero.
                         for(;i_2<i_end && is_num(l[i_2]);i_2++);
                         str_add_str_init_end(&name,l,i,i_2);

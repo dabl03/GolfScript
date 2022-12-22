@@ -4,7 +4,7 @@
     #define ABC_MINUSCULA(c) (c>='a' && c<='z')
     #define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
     #define ERROR_DEFICCION_NO_VALIDA -30
-    #define ABC(c) (c=='_') || (ABC_MAYUSCULA(c) || ABC_MINUSCULA(c))
+    #define ABC(c) ((c=='_') || (ABC_MAYUSCULA(c) || ABC_MINUSCULA(c)))
     #define IF_INIT_STRING(c) (c=='"' || c=='\'')
     #define IF_INIT_COMENT(c) (c=='#')
     #define ERROR_INDEX_STR (-3)
