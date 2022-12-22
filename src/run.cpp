@@ -4,8 +4,6 @@
     #include <cstdlib>
     #include <vector>
     #include <iostream>//No es necesario, solo necesito ver algo rapido.
-    //C
-    #include <stdlib.h>
     #include "./include/define.h"
     #include "./include/str.h"
     #include "./include/stack.h"
@@ -19,8 +17,6 @@
      * @return int error_codes.
     */
     int analyze_and_run(const vector<string>& lines,vector<Var>& stack,vector<Var> vars){
-        string codes_blocks="";
-        unsigned int sub_codes_blocks=0;
         /*Aqui debemos analizar char a char para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
         for (string line: lines){
             unsigned int end;
@@ -28,25 +24,7 @@
             unsigned int i_end=line.length();
             for(unsigned int i=0;i<i_end;i++){
                 //Primero definimos nuestros signos constantes:
-                if(sub_codes_blocks || l[i]=='{'){
-                    if(l[i]=='{'){
-                        sub_codes_blocks+=1;
-                    }else if (l[i]=='}'){
-                        sub_codes_blocks-=1;
-                        if (!sub_codes_blocks)
-                            stack.emplace_back(codes_blocks+'}');
-                            codes_blocks="";
-                        continue;
-                    }else if(IF_INIT_STRING(l[i])){
-                        end=get_end_str(l,i,i_end);
-                        codes_blocks+=line.substr(i,end);
-                        i=end;
-                        continue;
-                    }else if(IF_INIT_COMENT(l[i])){
-                        continue;
-                    }
-                    codes_blocks+=l[i];
-                }else if (IF_INIT_STRING(l[i])){//Llegamos a " o '
+                if (IF_INIT_STRING(l[i])){//Llegamos a " o '
                     end=get_end_str(l,i,i_end);
                     stack.emplace_back(STRING,new string( line.substr(i,end) ));//Ingresamos 
                     i=end;
@@ -103,19 +81,17 @@
                         i=end;
                     }else if(is_num(l[i])){
                         string number="";
-                        int* v=(int*)malloc(sizeof(int));
+                        int* v;
                         for(;i<i_end && is_num(l[i]);i++){
                             number+=l[i];
                         }
-                        *v=parseInt(number);
+                        v=new int(parseInt(number));
                         stack.emplace_back(INT,(void*)v);
-                        cout<<" string number: "<<number<<"int parseInt(number): "<<parseInt(number)<<"\n &v: "<<v<<"\n *v: "<<*v<<"\n stack.value:"<<*(int*)stack.back().value<<endl;
+                        cout<<"parseInt(number): "<<parseInt(number)<<", number: "<<number<<", v: "<<*v<<", stack:"<<*(int*)stack.back().value<<endl;
                     }
                 }
             }
         }
-        if (sub_codes_blocks)
-            stack.emplace_back(codes_blocks);
         return 0;
     }
 #endif

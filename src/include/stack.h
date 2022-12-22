@@ -12,7 +12,6 @@ struct Vars{
 };
 class Var: public Vars{//Nobre del la definición y el tipo.
     public:
-    void* value=NULL;
     void (*func)(vector<Var>,vector<Var>);//No se usará con todas las variables, solo con la función.
     /**
      * @todo /\ busca una alternativa que no consuma tanta memoria.
