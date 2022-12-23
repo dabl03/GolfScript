@@ -87,7 +87,7 @@ int interprete(struct Array* stack,struct Array* vars){
 		if (sub) // Esta anidando algo.
 		{
 			char *space = (char *)malloc(sizeof(char) * (sub + 1));
-			unsigned int i = 0;
+			i = 0;
 			for (; i < sub; i++)
 				space[i] = ' ';
 			space[i] = '\0';
@@ -95,26 +95,58 @@ int interprete(struct Array* stack,struct Array* vars){
 			free(space);
 		}
 		putchar('>');
-		char* c=&c_linea[0];
-		i=0;
-		while((*c=getchar())!='\n' && i!=BUFFER && *c!='\0'){
-			if (*c == '{') // Vemos si hay anidamiento.
+		for(i=0;i<BUFFER;i++){
+			char c=getchar();
+			if (c=='\n' || c=='\0'){//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
+				c_linea[i++]=c;
+				c_linea[i]='\0';
+				break;
+			}
+			c_linea[i]=c;
+			if (IF_INIT_STRING(c)){//Si es el comienzo de una cadena entonces pedimos hasta que el usuario ya no quiera mas string.
+				/**
+				 * @todo Colocar un resaltado a esto.
+				 * 
+				 */
+				unsigned short is_scape=0;
+				char type=c;
+				i++;
+				for(;i<BUFFER;i++){
+					c=getchar();
+					c_linea[i]=c;
+					if (c==type){
+						if (!is_scape)
+							break;//Ya salimos de la subcadenas.
+					}else if(c=='\n'){//Transformamos los saltos de lineas en su analogo \\n
+						c_linea[i++]='\\';
+						c_linea[i]='n';//Vamos por el siguiente caracter:)
+						printf("... ");//Enseñamos que todavia esta en una cadena.
+						continue;
+					}else if(c=='\0'){
+						i=BUFFER;
+						break;
+					}
+					is_scape=(c=='\\' && !is_scape);
+				}
+				continue;
+			}else if(IF_INIT_COMENT(c)){//Innoramos todo despues del comentario.
+				while ((c=getchar())!='\n' && c!='\0');
+				break;
+			}else if (c == '{') // Vemos si hay anidamiento.
 				sub += 1;
-			else if (*c == '}')
+			else if (c == '}')
 			{ // Fin del anidamiento.
 				if (sub == 0)
 				{ // Espera no hubo nada que desanidar ;(
 					printf("Advertencia no hay suficiente anidamiento.");
-					*c='\0';
+					c='\0';
 					break;
 				}
 				sub -= 1;
 			}
-			c++;
-			i++;
 		}
-		*(c+sizeof(char))='\0';
-		char* l=(char*)malloc(sizeof(char)*(strlen(c_linea)+1));
+		c_linea[i]='\0';
+		char* l=(char*)malloc(sizeof(char)*(i+1));
 		strcpy(l,c_linea);
 		add_array(&lineas,STRING,l);
 		if (sub == 0)

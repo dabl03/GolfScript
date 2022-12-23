@@ -17,6 +17,8 @@
     #endif
     enum TYPE{
         INT,
+        LONGINT,
+        BIGINT,
         STRING,
         PCHAR,
         CHAR,

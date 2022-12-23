@@ -1,6 +1,7 @@
 #ifndef STR_H
 #define STR_H 1
 #include <string.h>
+#include <gmp.h>
 #include "./define.h"
 struct String{
     unsigned int max;
@@ -51,6 +52,13 @@ unsigned int get_end_str(const char* str,unsigned const int init,unsigned int i_
  * @return int 
  */
 int parseInt(const char* str);
+/**
+ * @brief Mismo que parseInt pero para enteros long int.
+ * 
+ * @param str Numeros.
+ * @return long int 
+ */
+long int parseLongInt(const char* str);
 /**
  * @brief Función que concatena dos cadena usando la estructura de String.
  * 

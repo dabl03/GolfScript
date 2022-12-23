@@ -2,6 +2,7 @@
 #define STR_CPP 1
 #include <string.h>
 #include <stdlib.h>
+#include <gmp.h>
 #include "./include/define.h"
 #include "./include/str.h"
 
@@ -115,6 +116,29 @@ int parseInt(const char* str){
     }
     return output;
 }
+/**
+ * @brief Mismo que parseInt pero para enteros long int.
+ * 
+ * @param str Numeros.
+ * @return long int 
+ */
+long int parseLongInt(const char* str){
+    unsigned short is_negative=(str[0]=='-');
+    long int output=0;
+    for (int i=is_negative;str[i]!='\0';i++){
+        if (is_num(str[i])){
+            output=(output*10)+CHAR_TO_NUM(str[i]);
+        }
+    }
+    return output;
+}
+/*struct type_value* get_int(const char* str){
+	unsigned int len=strlen(str);
+	if (len>=10){
+		
+	}
+	return NULL;
+}*/
 /**
  * @brief Función que concatena dos cadena usando la estructura de String.
  * 

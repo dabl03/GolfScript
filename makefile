@@ -19,19 +19,17 @@ MAIN_O=$(BIN_O)/main.o
 STR=$(SRC)/str.c
 STACK=$(SRC)/stack.c
 RUN=$(SRC)/run.c
-BIGINT=$(SRC)/BigInt.c
 
 STR_O=$(BIN_O)/str.o
 STACK_O=$(BIN_O)/stack.o
 RUN_O=$(BIN_O)/run.o
-BIGINT_O=$(BIN_O_INCLUDE)/BigInt.o
 
-OBJ_S=$(RUN_O) $(STACK_O) $(STR_O) $(BIGINT_O)
+OBJ_S=$(RUN_O) $(STACK_O) $(STR_O)
 LOG=./build/log
 LOG_OBJ=./build/log/log_obj.txt
 LOG_APP=./build/log/log_app.txt
 
-FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h $(INCLUDE)/BigInt.h
+FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h
 define delete_obj
 	cd $(BIN_O) && del "*.o"
 	del "$(APP)"
@@ -69,9 +67,6 @@ $(RUN_O): $(RUN) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
 	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/run.log
 
-$(BIGINT_O):$(BIGINT) $(INCLUDE)/BigInt.h
-	@echo "Compilando la biblioteca BigInt"
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/log_bigint.log
 clear:
 	$(call delete_obj)
 
