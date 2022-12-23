@@ -6,7 +6,7 @@
 #include "include\define.h"
 #define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
-const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.\nBigInt:    Daniel Clark";
+const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
 const char* LICENCE="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
 char* err_msg;
 int interprete(struct Array* stack,struct Array* vars);
