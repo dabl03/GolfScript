@@ -1,13 +1,12 @@
-#ifndef RUN_CPP
-#define RUN_CPP 1
-    #include <string>
-    #include <cstdlib>
-    #include <vector>
-    #include <iostream>//No es necesario, solo necesito ver algo rapido.
-    #include "./include/define.h"
-    #include "./include/str.h"
-    #include "./include/stack.h"
-    using namespace std;
+#ifndef RUN_C
+#define RUN_C 1
+    #include <string.h>
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include "include\define.h"
+    #include "include/str.h"
+    #include "include/stack.h"
+    #include "include/run.h"
     /**
      * @brief Función que analiza y ejecuta la instrucciones.
      * 
@@ -16,82 +15,129 @@
      * @param vars Variables declaradas.
      * @return int error_codes.
     */
-    int analyze_and_run(const vector<string>& lines,vector<Var>& stack,vector<Var> vars){
+   /****
+    * @todo Tambien falta colocar la biblioteca gmp.
+    */
+    int run(struct Array* lines,struct Array* stack,struct Array* vars){
+        struct String codes_blocks={2,0,NULL};
+        unsigned int init_codes_blocks=0;
+        unsigned int sub_codes_blocks=0;
         /*Aqui debemos analizar char a char para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
-        for (string line: lines){
+        for (unsigned int i_line=0;i_line<lines->i;i_line++){
             unsigned int end;
-            const char* l=line.c_str();
-            unsigned int i_end=line.length();
+            if(lines->value[i_line].type!=STRING){
+                return -1;
+            }
+            const char* l=(char*)lines->value[i_line].value;
+            unsigned int i_end=strlen(l);
             for(unsigned int i=0;i<i_end;i++){
                 //Primero definimos nuestros signos constantes:
-                if (IF_INIT_STRING(l[i])){//Llegamos a " o '
+                if(sub_codes_blocks || l[i]=='{'){
+                    if(l[i]=='{'){
+                        sub_codes_blocks+=1;
+                        init_codes_blocks=(init_codes_blocks)?init_codes_blocks:i;
+                    }else if (l[i]=='}'){
+                        sub_codes_blocks-=1;
+                        if (!sub_codes_blocks){
+                            str_add_str_init_end(&codes_blocks,l,init_codes_blocks,i);
+                            add_array(stack,CODES_BLOCKS,(void*)codes_blocks.str);
+                            continue;
+                        }
+                    }else if(IF_INIT_STRING(l[i])){
+                        end=get_end_str(l,i,i_end);
+                        i=(end)?end:i;
+                        continue;
+                    }else if(IF_INIT_COMENT(l[i])){
+                        continue;
+                    }
+                }else if (IF_INIT_STRING(l[i])){//Llegamos a " o '
                     end=get_end_str(l,i,i_end);
-                    stack.emplace_back(STRING,new string( line.substr(i,end) ));//Ingresamos 
-                    i=end;
+                    end=(end)?end+1:strlen(l);
+                    struct String str={end-i,0,(char*)malloc(sizeof(char)*((end-i)+1))};
+                    str_add_str_init_end(&str,l,i,end);
+                    add_array(stack,STRING,str.str);//Ingresamos 
+                    i=end-1;//Necesitamos retroceder un caracter.
                     continue;
                 }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
-                    continue;
-                }else if (l[i]==';')
-                    stack.pop_back();
-                else if(l[i]==':'){//Para asignar una nueva variable.
-                    //Si la cadena esta vacia significa que no es variable.
-                    string name_vars="";
-                    unsigned int i_2=++i;
-                    if (is_abc(l[++i])){//Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
-                        for (;i_2<i_end && !is_abc(l[i_2]) && !is_num(l[i_2]);i_2++){
-                            name_vars+=l[i_2];
-                        }
-                    }else if (is_num(l[i])){//Si es un numero.
-                        string num="";
-                        for(;i_2<i_end && is_num(l[i_2]);i_2++){
-                            name_vars+=l[i_2];
-                        }
-                    }else{//Espacio y otros simbolos.
-                        name_vars+=l[i];
+                    break;
+                }else if (l[i]==';'){
+                    if (stack->i){
+                        struct type_value* tv=pop_array(stack);
+                        free(tv->value);
                     }
-                    i=i_2;//Actualizamos la posición.
-                    unsigned int end=0;
-                    int i_var=Var::search_var(name_vars,0,vars,&end);
+                }else if(l[i]==':'){//Para asignar una nueva variable.
+                    //Si la cadena esta vacia significa que no es variable.
+                    if (!stack->i){
+                        printf("ERROR: La pila esta vacia.%c",ENDL);
+                        break;
+                    }
+                    unsigned int end=0;i++;
+                    char* name=get_name_var(l,&i,i_end);
+                    int i_var=search_var(name,vars);
                     if(i_var!=-1){
-                        Var* this_var=&vars.at(i_var);
-                        string codes_block=this_var->interpret(stack,vars);
-                        if (this_var->type==CODES_BLOCKS){
-                            //No lo paso de una vez porque no se.
-                            vector<string> c;
-                            c.emplace_back(codes_block);
-                            analyze_and_run(c,stack,vars);
-                        }
+                        struct Var* this_var=(struct Var*)vars->value[i_var].value;
+                        setValue_tv(this_var,NULL,&stack->value[stack->i-1]);
+                        free(name);
                         continue;
                     }
                     //No estubo definida antes.
-                    vars.emplace_back(name_vars,VAR,(void*)&stack.back());
+                    struct Var* this_var=(struct Var*)malloc(sizeof(struct Var));
+                    struct type_value* stack_var=&stack->value[stack->i-1];
+                    this_var->value=NULL;
+                    setValue_tv(this_var,name,stack_var);
+                    add_array(vars,VAR,(void*)this_var);
                 }else{
                     //Ahora vemos si existe la variable.
-                    unsigned int end=0;
-                    int i_var=Var::search_var(line,i,vars,&end);
+                    char* name=get_name_var(l,&i,0);
+                    int i_var=search_var(name,vars);
                     if(i_var!=-1){//Significa que se encontro la variable.
-                        Var* v=&vars.at(i_var);
+                        struct Var* v=vars->value[i_var].value;
                         if (v->type==CODES_BLOCKS){
-                            vector<string> arg;
-                            arg.emplace_back(*(string*)v->value).substr(1,arg.back().length()-1);
-                            analyze_and_run(arg,stack,vars);
+                            //No lo paso de una vez porque no se.
+                            struct Array arr={0,0,NULL};
+                            add_array(&arr,STRING,v->value);
+                            run(&arr,stack,vars);
+                            free(arr.value);
                         }else{
-                            v->interpret(stack,vars);
+                            interpret(stack,vars,v);
                         }
-                        i=end;
-                    }else if(is_num(l[i])){
-                        string number="";
-                        int* v;
-                        for(;i<i_end && is_num(l[i]);i++){
-                            number+=l[i];
-                        }
-                        v=new int(parseInt(number));
-                        stack.emplace_back(INT,(void*)v);
-                        cout<<"parseInt(number): "<<parseInt(number)<<", number: "<<number<<", v: "<<*v<<", stack:"<<*(int*)stack.back().value<<endl;
+                    }else if(is_num(name[0])){
+                        int* v=(int*)malloc(sizeof(int));
+                        *v=parseInt(name);
+                        add_array(stack,INT,(void*)v);
                     }
+                    free(name);
                 }
             }
         }
+        if (codes_blocks.str!=NULL){
+            add_array(stack,CODES_BLOCKS,codes_blocks.str);
+        }
         return 0;
+    }
+    /**
+     * @brief Obtiene el nombre de la variable o un numero y retorna la cadena, ojo hay que liberarla.
+     * 
+     * @param search Cadena a buscar.
+     * @param i indice actual a buscar.
+     * @param end Fin de la cadena.
+     * @return char* malloc/calloc/readlloc
+     */
+    char* get_name_var(const char* search,int* i,unsigned int end){
+        struct String name = {3, 0, (char *)malloc(sizeof(char) * 3)};
+        unsigned int i_2 = *i;
+        end=(end)?end:strlen(search);
+        if (is_abc(search[*i])){ // Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
+            for (; i_2 < end && (is_abc(search[i_2]) || is_num(search[i_2])); i_2++);
+            str_add_str_init_end(&name, search, *i, i_2--);//Necesitamos disminuir para que el bucle vaja para el siguiente caracter.
+        }else if (is_num(search[*i])){ // Si es un numero.
+            for (; i_2 < end && is_num(search[i_2]); i_2++);
+            str_add_str_init_end(&name, search, *i, i_2--);
+        }else{ // Espacio y otros simbolos.
+            name.str[0] = search[*i];
+            name.str[1] = '\0';
+        }
+        *i=i_2;
+        return name.str;
     }
 #endif

@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(${PROJECT_NAME}
-    src/main.cpp
-    src/run.cpp
-    src/stack.cpp
-    src/str.cpp
+    src/main.c
+    src/run.c
+    src/stack.c
+    src/str.c
     src/include/head/define.h
     src/include/head/run.h
     src/include/head/stack.h
