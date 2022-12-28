@@ -50,12 +50,14 @@ struct type_value* pop_array(struct Array* arr);
 unsigned short delete_array(struct Array* arr);
 
 /**
- * @brief Aqui almacenamos la variable deacuerdo a su tipo de dato, y si ya está definida la liberamos para volverla a definir.
- * @param v Variable actual.
- * @param t El tipo que es la variable.
- * @param v valor de la variable.
- **/
-void setValue(struct Var* v,enum TYPE t, void *value);
+ * @brief Aqui configuramos la variable y si ya estubo definida(tv->value!=NULL)
+ * la liberamos para redefinir el valor de la variable.
+ * 
+ * @param v Variable a configurar.
+ * @param name Nombre de la variable.
+ * @param tv El tipo y el valor de la variable.
+ */
+void setValue_tv(struct Var* v,char* name,struct type_value* tv);
 /**
  * @brief Liberamos la memoria reserbada para almacenar una variable.
  * @param v Variable a eliminar.
@@ -75,15 +77,15 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v);
  * @return char* output Recuerda liberar memoria. 
 */
 char* printf_stack(struct Array* stack);
+
 /**
  * @brief Función que busca la variable dentro de una cadena.
  *
  * @param name Nombre a buscar.
  * @param init_str_1 Donde se inicia en la cadena nombre.
  * @param var //Vector para ver las variables.
- * @param end Puntero a int, para saber el final de la cadena.
  * @return int Para saber si se encontró o no. si lo encontró se retorna el indice, sino -1
  */
-int search_var_init_end(const char* name, unsigned const int init_str_1, struct Array* var, unsigned int *end);
-#define search_var(name,var,end) search_var_init_end(name,0,var,end)
+int search_var_init(const char* name, unsigned const int init_str_1, struct Array* var);
+#define search_var(name,var) search_var_init(name,0,var)
 #endif

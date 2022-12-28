@@ -1,10 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gmp.h>
 #include "include/str.h"
 #include "include/run.h"
 #include "include\define.h"
 #define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
+/**
+ * @todo Usar la biblioteca gmp para los enteros grandes.
+ * Tengo la documentación descargada en ingles.
+ * 
+ */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
 const char* LICENCE="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
@@ -94,7 +100,7 @@ int interprete(struct Array* stack,struct Array* vars){
 			printf(space);
 			free(space);
 		}
-		putchar('>');
+		printf("> ");
 		for(i=0;i<BUFFER;i++){
 			char c=getchar();
 			if (c=='\n' || c=='\0'){//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
@@ -148,6 +154,7 @@ int interprete(struct Array* stack,struct Array* vars){
 		c_linea[i]='\0';
 		char* l=(char*)malloc(sizeof(char)*(i+1));
 		strcpy(l,c_linea);
+		puts(l);
 		add_array(&lineas,STRING,l);
 		if (sub == 0)
 		{ // Podemos interpretar linea a linea.

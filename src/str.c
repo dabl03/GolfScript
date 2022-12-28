@@ -155,7 +155,7 @@ void str_add_str_init_end(struct String* str_d,const char* str_copy,unsigned int
     }
     unsigned int i=init;
 	char* c=&str_copy[i];
-    for (;i<=end && *c!='\0';i++){
+    for (;i<end && *c!='\0';i++){
         str_d->str[str_d->count++]=*c;
 		c++;
     }

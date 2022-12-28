@@ -15,8 +15,10 @@
 */
 unsigned short add_array(struct Array* arr,enum TYPE type, void* value){
     if (arr->i==arr->max){//Si se necesita aumentar el espacio.
-        arr->value=(struct type_value*)realloc((void*)arr->value,sizeof(struct type_value)*10);
-        arr->max+=10;
+        arr->value=(struct type_value*)realloc(
+            (void*)arr->value,
+            sizeof(struct type_value)*(arr->max+=10)
+        );
         if (arr->max==NULL)
             return 1;//No hay mas RAN.
     }
@@ -66,36 +68,37 @@ unsigned short delete_array(struct Array* arr){
     return 0;
 }
 /**
- * @brief Aqui almacenamos la variable deacuerdo a su tipo de dato, y si ya está definida la liberamos para volverla a definir.
- * @param v Variable actual.
- * @param t El tipo que es la variable.
- * @param v valor de la variable.
- **/
-void setValue(struct Var* v,enum TYPE t, void *value){
+ * @brief Aqui configuramos y si ya estubo definida(tv->value!=NULL)
+ * la liberamos para redefinir el valor de la variable.
+ * 
+ * @param v Variable a configurar.
+ * @param name Nombre de la variable.
+ * @param tv El tipo y el valor de la variable.
+ */
+void setValue_tv(struct Var* v,char* name,struct type_value* tv){
     if (v->value != NULL)
         delete_var(v);
-    switch(t){
+    switch(tv->type){
         case INT:
             v->value=malloc(sizeof(int));
-            *(int*)v->value=*(int*)value;
+            *(int*)v->value=*(int*)tv->value;
             break;
         case ARRAY:
         case STRING:
         case CODES_BLOCKS:
-            char* str=(char*)malloc(sizeof(char)*(strlen((char*)value)+1));
-            strcpy(str,(char*)value);
-            v->value=value;
+            char* str=(char*)malloc(sizeof(char)*(strlen((char*)tv->value)+1));
+            strcpy(str,(char*)tv->value);
+            v->value=str;
     }
-    v->type = t;
+    v->type = tv->type;
+    v->name=(name)?name:v->name;
 }
 /**
  * @brief Liberamos la memoria reserbada para almacenar una variable.
  * @param v Variable a eliminar.
  */
 void delete_var(struct Var* v){
-    if (v->value == NULL)
-        return;
-    if (v->type!=FUNCTION){
+    if (v->type!=FUNCTION && v->value!=NULL){
         free(v->value);
     }
     v->value=NULL;
@@ -161,32 +164,15 @@ char* printf_stack(struct Array* stack){
  * @param name Nombre a buscar.
  * @param init_str_1 Donde se inicia en la cadena nombre.
  * @param var //Vector para ver las variables.
- * @param end Puntero a int, para saber el final de la cadena.
  * @return int Para saber si se encontró o no. si lo encontró se retorna el indice, sino -1
  */
-int search_var_init_end(const char* name, unsigned const int init_str_1, struct Array* var, unsigned int *end)
-{
-    // Ahora vemos si existe la variable.
-    unsigned int is_squal = 0;
+int search_var_init(const char* name, unsigned const int init_str_1, struct Array* var){
     for (unsigned int i=0;i<var->i;i++){
-        struct Var* v_2=(struct Var*)var->value[i].value;
-        char* n=&name[init_str_1];
-        for (char* c=&v_2->name[0];*c!='\0';c++)
-        {
-            if (*n=='\0' || *n!=*c){//No es igual y pasamos a la siguiente.
-                is_squal=0;
-                i=init_str_1;
-                break;
-            }
-            n++;
-            is_squal++;
-            *end++;
-        }
-        if (is_squal)//Es igual y retornamos.
+        struct Var* v_2=(struct Var*)var->value[i].value;//Variable actual.
+        if (!strcmp(&name[init_str_1],v_2->name))//Es igual y retornamos.
             return i;
     }
     //No hay coincidencia, por lo que retorno -1.
-    *end = init_str_1+1;
     return -1;
 }
 #endif
