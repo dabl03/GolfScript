@@ -9,6 +9,9 @@
 /**
  * @todo Usar la biblioteca gmp para los enteros grandes.
  * Tengo la documentación descargada en ingles.
+ * Resolver el problema con los bloques de codigos. Nota: El problema no esta en la función del archivo main.c
+ * Agregar una forma de acceder a los elementos del array.
+ * Estudiar el archivo example.gs
  * 
  */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
