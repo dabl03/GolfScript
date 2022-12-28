@@ -1,5 +1,5 @@
-#ifndef RUN_CPP
-#define RUN_CPP 1
+#ifndef RUN_C
+#define RUN_C 1
     #include <string.h>
     #include <stdlib.h>
     #include <stdio.h>

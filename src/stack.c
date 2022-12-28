@@ -1,5 +1,5 @@
-#ifndef STACK_CPP
-#define STACK_CPP 1
+#ifndef STACK_C
+#define STACK_C 1
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

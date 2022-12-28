@@ -1,5 +1,5 @@
-#ifndef STR_CPP
-#define STR_CPP 1
+#ifndef STR_C
+#define STR_C 1
 #include <string.h>
 #include <stdlib.h>
 #include <gmp.h>
