@@ -4,15 +4,20 @@
 #include <gmp.h>
 #include "include/str.h"
 #include "include/run.h"
-#include "include\define.h"
+#include "include/define.h"
 #define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 /**
  * @todo Usar la biblioteca gmp para los enteros grandes.
  * Tengo la documentación descargada en ingles.
- * Resolver el problema con los bloques de codigos. Nota: El problema no esta en la función del archivo main.c
+ * 
+ * Quitarle los saltos de lineas a los bloques de codigo,
+ * como los saltos de lineas son unas variables hay que buscar
+ * la manera de quitarlos cuando se muestre y enseñarlos cuando no.
+ * 
  * Agregar una forma de acceder a los elementos del array.
  * Estudiar el archivo example.gs
  * 
+ * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
  */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
@@ -147,7 +152,7 @@ int interprete(struct Array* stack,struct Array* vars){
 			{ // Fin del anidamiento.
 				if (sub == 0)
 				{ // Espera no hubo nada que desanidar ;(
-					printf("Advertencia no hay suficiente anidamiento.");
+					printf("Advertencia: no hay suficiente anidamiento.");
 					c='\0';
 					break;
 				}
@@ -157,7 +162,6 @@ int interprete(struct Array* stack,struct Array* vars){
 		c_linea[i]='\0';
 		char* l=(char*)malloc(sizeof(char)*(i+1));
 		strcpy(l,c_linea);
-		puts(l);
 		add_array(&lineas,STRING,l);
 		if (sub == 0)
 		{ // Podemos interpretar linea a linea.

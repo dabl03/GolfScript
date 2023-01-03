@@ -15,6 +15,7 @@
         //Desde el makefile se definirá si es linux.
         #define ENDL "\n"
     #endif
+    #define IF_ENDL(c) (c=='\n')
     enum TYPE{
         INT,
         LONGINT,

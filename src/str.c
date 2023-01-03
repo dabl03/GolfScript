@@ -161,9 +161,18 @@ void str_add_str_init_end(struct String* str_d,const char* str_copy,unsigned int
     }
     str_d->str[str_d->count]='\0';
 }
-void str_add_char(struct String* str_d,char c){
+/**
+ * @brief Agrega un char al final de la cadena.
+ * 
+ * @param str_d 
+ * @param c 
+ */
+void str_add_char(struct String* str_d,const char c){
 	if (str_d->count+1>=str_d->max){
-		str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=1));
+		str_d->str=(char*)realloc(
+			str_d->str,
+			sizeof(char)*(str_d->max+=( (str_d->max)?1:2) )
+		);
 	}
 	str_d->str[str_d->count++]=c;
 	str_d->str[str_d->count]='\0';
@@ -178,5 +187,47 @@ void init_str(struct String* str,unsigned int buffer){
 	str->str=(char*)malloc(sizeof(char)*buffer);
 	str->count=0;
 	str->max=buffer;
+}
+char scape_char(const char* c,unsigned int init){
+	switch (c[init])
+	{
+	case 'n':
+		return '\n';
+	case 'b':
+		return '\b';
+	case 't':
+		return '\t';
+	case 'v':
+		return '\v';
+	case '\\':
+		return '\\';
+	case 'f':
+		return '\f';
+	case '\'':
+		return '\'';
+	case '"':
+		return '"';
+	case '0':
+		return '\0';
+	default:
+		return -1;
+	}
+	return 0;
+}
+void scape_str(char* out,const char* io){
+	unsigned int len=strlen(io);
+	if(!len)
+		return;
+	for (unsigned int i=0;i<len;i++){
+		char c=io[i];
+		if (c=='\\'){
+			c=scape_char(io,++i);
+			if (c==-1){
+				continue;
+			}
+		}
+		*out=c;
+		out++;
+	}
 }
 #endif

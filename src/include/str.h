@@ -70,6 +70,13 @@ long int parseLongInt(const char* str);
 void str_add_str_init_end(struct String* str_d,const char* str_copy,unsigned int init,unsigned int end);
 #define str_add_str(x,y) str_add_str_init_end(x,y,0,0)
 /**
+ * @brief Agrega un char al final de la cadena.
+ * 
+ * @param str_d 
+ * @param c 
+ */
+void str_add_char(struct String* str_d,const char c);
+/**
  * @brief Solo iniciamos la estructura String.
  * 
  * @param str 
