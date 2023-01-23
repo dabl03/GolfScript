@@ -88,4 +88,13 @@ char* printf_stack(struct Array* stack);
  */
 int search_var_init(const char* name, unsigned const int init_str_1, struct Array* var);
 #define search_var(name,var) search_var_init(name,0,var)
+/**
+ * @brief Creamos dinamicamente una variable(Nota: debes liberar name y la variable actual).
+ * 
+ * @param vars el array donde se guardará la variable.
+ * @param name Nombre se creará una copia dinamica por lo que debes liberarla despues.
+ * @param t 
+ * @param value Se inserta el valor sin crear copia.
+ */
+void add_var(struct Array* vars,char* name,enum TYPE t,void* value);
 #endif

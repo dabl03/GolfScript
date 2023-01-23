@@ -4,7 +4,7 @@
 #include <gmp.h>
 #include "include/str.h"
 #include "include/run.h"
-#include "include/define.h"
+#include "include\define.h"
 #define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 /**
  * @todo Usar la biblioteca gmp para los enteros grandes.

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "./include/str.h"
 #include "./include/stack.h"
+#include "./include/define.h"
 /**
  * @brief Ingresa un elemento en el array.
  * 
@@ -19,7 +20,7 @@ unsigned short add_array(struct Array* arr,enum TYPE type, void* value){
             (void*)arr->value,
             sizeof(struct type_value)*(arr->max+=10)
         );
-        if (arr->max==NULL)
+        if (arr->value==NULL)
             return 1;//No hay mas RAN.
     }
     arr->value[arr->i].type=type;
@@ -55,6 +56,9 @@ unsigned short delete_array(struct Array* arr){
             free(v->name);
             if(v->type!=FUNCTION)//Como es una funcion no necesita liberar memoria.
                 free(v->value);
+            else if (v->type==LONGINT || v->type==LONGFLOAT){
+                mpz_clear(*(mpz_ptr*)v->value);
+            }
             free(arr->value[i].value);
         }else if(arr->value[i].type!=FUNCTION){//Creo que no es necesario.
             free(arr->value[i].value);
@@ -83,6 +87,10 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
             v->value=malloc(sizeof(int));
             *(int*)v->value=*(int*)tv->value;
             break;
+        case LONGINT:
+            v->value=malloc(sizeof(mpz_t));
+            mpz_set(*(mpz_ptr*)v->value,*(mpz_ptr*)tv->value);
+            break;
         case ARRAY:
         case STRING:
         case CODES_BLOCKS:
@@ -99,6 +107,11 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
  */
 void delete_var(struct Var* v){
     if (v->type!=FUNCTION && v->value!=NULL){
+        if (v->type==LONGINT)
+            mpz_clear(*(mpz_t*)v->value);
+        else if(v->type==LONGFLOAT){
+
+        }
         free(v->value);
     }
     v->value=NULL;
@@ -117,11 +130,11 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
         value=malloc(sizeof(int));
         *(int*)value=*(int*)v->value;
         break;
-    /*case FUNCTION: // Creo que en el lenguaje no existe, pero de todos modos lo voy a utilizar para los operadodes:)
+    case FUNCTION: // Creo que en el lenguaje no existe, pero de todos modos lo voy a utilizar para los operadodes:)
         // No hay nada que liberar, pues solo estoy apuntando a una función no a una memoria dinamica.
         // Recuerda todas las funciónes deben tener estos dos argumentos:
-        ((v->value)(struct Array* stack,struct Array* vars))(stack,var);
-        break;*/
+        ((unsigned short (*)(struct Array* stack,struct Array* vars,char* extend))v->value)(stack,var,"");
+        return NULL;
     case CODES_BLOCKS://Interpretamos el bloque de código.
         return (char*)v->value;
     case STRING:
@@ -174,5 +187,21 @@ int search_var_init(const char* name, unsigned const int init_str_1, struct Arra
     }
     //No hay coincidencia, por lo que retorno -1.
     return -1;
+}
+/**
+ * @brief Creamos dinamicamente una variable(Nota: debes liberar name y la variable actual).
+ * 
+ * @param vars el array donde se guardará la variable.
+ * @param name Nombre se creará una copia dinamica por lo que debes liberarla despues.
+ * @param t 
+ * @param value Se inserta el valor sin crear copia dinamica.
+ */
+void add_var(struct Array* vars,char* name,enum TYPE t,void* value){
+    struct Var* this=(struct Var*)malloc(sizeof(struct Var));
+    this->name=(char*)malloc(sizeof(char)*(strlen(name)+1));
+    strcpy(this->name,name);
+    this->type=t;
+    this->value=value;
+    add_array(vars,VAR,this);
 }
 #endif

@@ -23,5 +23,5 @@
      * @param end Fin de la cadena.
      * @return char* malloc/calloc/readlloc
      */
-    char* get_name_var(const char* search,int* i,unsigned int end);
+    char* get_name_var(const char* search,unsigned int* i,unsigned int end);
 #endif

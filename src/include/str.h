@@ -9,13 +9,6 @@ struct String{
     char* str;
 };
 /**
- * @brief Funcion que busca la subcadena dentro de otra cadena, si str_1 < str_2 entonces str_1 es la sub-cadena. Si son iguales entonces solo compara las cadenas.
- * @param str_1 char* -- Cadena 1.
- * @param str_2 char* -- Cadena 2.
- * @return bool
-*/
-unsigned short compare_sub_str(char* str_1,char* str_2);
-/**
  * @brief Función que busca un char dentro de una cadena.
  * 
  * @param str  Cadena de donde buscar.
@@ -61,7 +54,7 @@ int parseInt(const char* str);
 long int parseLongInt(const char* str);
 /**
  * @brief Función que concatena dos cadena usando la estructura de String.
- * 
+ *  
  * @param str_d Estructura con la cadena destino.
  * @param str_copy Cadena a copiar.
  * @param init Inicio de la cadena a copiar.

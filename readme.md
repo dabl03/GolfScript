@@ -85,4 +85,5 @@ Creando funciones:
 > function
 [ { 1 + 4 2 3 - -} 1 2 4 4 6 8 3 ]
 ```
-<!--4comino 1 sal-->
+## Problemas:
+- Sale un problema al asignar un valor a un objeto y despues a llamar a la función add al momento en que la pila esta vacia o tiene un elemento. En gdb indica que el problema se encuentra en search_var_init

@@ -10,8 +10,10 @@ add_executable(${PROJECT_NAME}
     src/run.c
     src/stack.c
     src/str.c
-    src/include/head/define.h
-    src/include/head/run.h
-    src/include/head/stack.h
-    src/include/head/str.h
+    src/global_vars.c
+    src/include/define.h
+    src/include/run.h
+    src/include/stack.h
+    src/include/str.h
+    src/include/global_vars.h
 )

@@ -16,10 +16,13 @@
         #define ENDL "\n"
     #endif
     #define IF_ENDL(c) (c=='\n')
+    extern int CLIMIT_INT;
+    extern int CLIMIT_FLOAT;
     enum TYPE{
         INT,
         LONGINT,
-        BIGINT,
+        FLOAT,
+        LONGFLOAT,
         STRING,
         PCHAR,
         CHAR,

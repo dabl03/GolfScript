@@ -3,6 +3,7 @@
 CXX=g++
 GCC=gcc
 CXXFLAG:=-std=c++20 -Wall
+LINGC=-lgmp
 CFLAG:=-Wall
 IF_DEBUG=1
 APP=./GolfScript_pirata.exe
@@ -19,20 +20,27 @@ MAIN_O=$(BIN_O)/main.o
 STR=$(SRC)/str.c
 STACK=$(SRC)/stack.c
 RUN=$(SRC)/run.c
+GLOBAL_VARS=$(SRC)/global_vars.c
 
 STR_O=$(BIN_O)/str.o
 STACK_O=$(BIN_O)/stack.o
 RUN_O=$(BIN_O)/run.o
+GLOBAL_VARS_O=$(BIN_O)/global_vars.o
 
-OBJ_S=$(RUN_O) $(STACK_O) $(STR_O)
+OBJ_S=$(RUN_O) $(STACK_O) $(STR_O) $(GLOBAL_VARS_O)
 LOG=./build/log
 LOG_OBJ=./build/log/log_obj.txt
 LOG_APP=./build/log/log_app.txt
 
-FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h
+FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h $(INCLUDE)/global_vars.h
 define delete_obj
 	cd $(BIN_O) && del "*.o"
 	del "$(APP)"
+endef
+define append_log
+//Leer los archivos logs y agregarlo en un archivo log final.
+//Borrar este archivo cuando se compile la app y crearlo cuando se compile.
+//Leerlo cuando se llame mingw32-make logs.
 endef
 ifeq ($(strip $(OS)),Linux)
 	APP=./GolfScript_pirata
@@ -48,24 +56,28 @@ ifeq ($(IF_DEBUG),1)
 endif
 
 $(APP): $(OBJ_S) $(MAIN_O)
-	@echo compilando...
-	$(GCC) $(CFLAG) $(MAIN_O) $(OBJ_S) -o $(APP) 2> $(LOG_APP)
+	@echo compilando APP...
+	$(GCC) $(CFLAG) $(MAIN_O) $(OBJ_S) -o $(APP) $(LINGC) 2> $(LOG_APP)
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
 	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/main.log
 
 $(STR_O): $(STR) $(FILE_H)
-	@echo "Compilando el archivo objeto de main."
+	@echo "Compilando el archivo objeto de $(STR)."
 	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/str.log
 
 $(STACK_O): $(STACK) $(FILE_H)
-	@echo "Compilando el archivo objeto de main."
+	@echo "Compilando el archivo objeto de $(STACK)."
 	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/stack.log
 
 $(RUN_O): $(RUN) $(FILE_H)
-	@echo "Compilando el archivo objeto de main."
+	@echo "Compilando el archivo objeto de $(RUN)."
 	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/run.log
+
+$(GLOBAL_VARS_O): $(GLOBAL_VARS) $(FILE_H)
+	@echo "Compilando el archivo objeto de $(GLOBAL_VARS)."
+	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/global_vars.log
 
 clear:
 	$(call delete_obj)
@@ -75,3 +87,6 @@ gdb:
 
 run:
 	$(APP)
+
+log:
+	$(call log)

@@ -3,10 +3,13 @@
     #include <string.h>
     #include <stdlib.h>
     #include <stdio.h>
+    #include <limits.h>
+    #include <gmp.h>
     #include "include/define.h"
     #include "include/str.h"
     #include "include/stack.h"
     #include "include/run.h"
+    extern int CLIMIT_INT;
     /**
      * @brief Función que analiza y ejecuta la instrucciones.
      * 
@@ -76,12 +79,12 @@
                 }else if(l[i]==':'){//Para asignar una nueva variable.
                     //Si la cadena esta vacia significa que no es variable.
                     if (!stack->i){
-                        printf("ERROR: La pila esta vacia.%c",ENDL);
+                        printf("ERROR: La pila esta vacia.%s",ENDL);
                         break;
                     }
                     if(IF_ENDL(l[i+1]))//Por velocidad. Innoramos los saltos de lineas como el interprete original.
                         continue;
-                    unsigned int end=0;i++;
+                    i++;
                     char* name=get_name_var(l,&i,i_end);
                     int i_var=search_var(name,vars);
                     if(i_var!=-1){
@@ -119,9 +122,16 @@
                             interpret(stack,vars,v);
                         }
                     }else if(is_num(name[0])){
-                        int* v=(int*)malloc(sizeof(int));
-                        *v=parseInt(name);
-                        add_array(stack,INT,(void*)v);
+                        unsigned int len=strlen(name)-1;
+                        if (len<=CLIMIT_INT){
+                            int* v=(int*)malloc(sizeof(int));
+                            *v=parseInt(name);
+                            add_array(stack,INT,(void*)v);
+                        }else{
+                            mpz_t* n=(mpz_t*)malloc(sizeof(mpz_t));
+                            mpz_init_set_str(*n,name,0);
+                            add_array(stack,LONGINT,n);
+                        }
                     }
                     free(name);
                 }
@@ -141,7 +151,7 @@
      * @param end Fin de la cadena.
      * @return char* malloc/calloc/readlloc
      */
-    char* get_name_var(const char* search,int* i,unsigned int end){
+    char* get_name_var(const char* search,unsigned int* i,unsigned int end){
         struct String name = {3, 0, (char *)malloc(sizeof(char) * 3)};
         unsigned int i_2 = *i;
         end=(end)?end:strlen(search);
