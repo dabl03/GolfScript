@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+#include <limits.h>
 #include <gmp.h>
 #include "include/str.h"
 #include "include/run.h"
 #include "include\define.h"
-#define ARCHIVO_CON_VARIABLES_DEL_PREDECTERMINADAS "./include/vars.gs"
 /**
  * @todo Usar la biblioteca gmp para los enteros grandes.
  * Tengo la documentación descargada en ingles.
@@ -23,11 +24,25 @@ const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
 const char* LICENCE="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
 char* err_msg;
+int CLIMIT_INT=0;
+int CLIMIT_FLOAT=0;
+int quit=0;
 int interprete(struct Array* stack,struct Array* vars);
 void config_all(struct Array* opciones);
+void init_globals(){
+	char numbers[100];
+	sprintf(numbers,"%d",INT_MAX);
+	CLIMIT_INT=strlen(numbers)-2;
+	sprintf(numbers,"%d",DBL_MAX);
+	CLIMIT_FLOAT=strlen(numbers);
+	quit=0;
+	err_msg=0;
+}
 int main(int argc, char *argv[]){
 	struct Array stack={0,0,NULL},
 	vars={0,0,NULL};
+	init_globals();
+	init_vars_global_gl(&vars);
 	if (argc > 1)
 	{
 		struct Array params={0,0,NULL}, path_files={0,0,NULL};
@@ -71,6 +86,9 @@ int main(int argc, char *argv[]){
 			delete_array(&path_files);
 			free(str.str);
 			run(&lineas,&stack,&vars);
+			delete_array(&lineas);
+			delete_array(&stack);
+			delete_array(&vars);
 		}
 	}else{
 		return interprete(&stack,&vars);
@@ -96,7 +114,7 @@ int interprete(struct Array* stack,struct Array* vars){
 	unsigned int i=0;
 	printf("Golfscript Interactive Mode%s",ENDL);
 	
-	while (1)
+	while (!quit)
 	{
 		if (sub) // Esta anidando algo.
 		{

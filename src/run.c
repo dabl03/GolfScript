@@ -9,7 +9,6 @@
     #include "include/str.h"
     #include "include/stack.h"
     #include "include/run.h"
-    extern int CLIMIT_INT;
     /**
      * @brief Función que analiza y ejecuta la instrucciones.
      * 
@@ -25,7 +24,7 @@
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
         unsigned int sub_codes_blocks=0;
         /*Aqui debemos analizar char a char para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
-        for (unsigned int i_line=0;i_line<lines->i;i_line++){
+        for (unsigned int i_line=0;i_line<lines->i && !quit;i_line++){
             unsigned int end;
             if(lines->value[i_line].type!=STRING){
                 return -1;

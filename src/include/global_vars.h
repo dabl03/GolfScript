@@ -31,6 +31,10 @@ unsigned short puts_operator(struct Array* stack,...);
  * @return unsigned short 
  */
 unsigned short add_operator(struct Array* stack,...);
+/***
+ * Terminamos la app.
+*/
+unsigned short end_app(void);
 /**
  * @brief Funcion para reiniciar las variables globales. Nota: No aqui liberamos la memoria.
  * 

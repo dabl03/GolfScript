@@ -73,7 +73,7 @@ unsigned short puts_operator(struct Array* stack,...){
 unsigned short add_operator(struct Array* stack,...){
     if (stack->i<2){
         puts("Error: No hay suficientes elementos para hacer la suma");
-        return -1;
+        return 1;
     }
     struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
     struct type_value* num_1=&stack->value[stack->i-1];
@@ -110,7 +110,16 @@ unsigned short add_operator(struct Array* stack,...){
     default:
         printf("ERROR: Fallo en la app TYPE: %d, VALUE: %p",num_1->type,num_1->value);
     }
-    free(num_1->value);
+    free(num_2->value);
+    return 0;
+}
+/**
+ * @brief Terminaoms la app.
+ * 
+ * @return unsigned short 
+ */
+unsigned short end_app(void){
+    quit=1;
     return 0;
 }
 /**
@@ -138,6 +147,7 @@ void init_vars_global_gl(struct Array* vars){
     add_var(vars,"print",FUNCTION,(void*)prinft_1_);
     add_var(vars,"puts",FUNCTION,(void*)puts_operator);
     add_var(vars,"+",FUNCTION,(void*)add_operator);
+    add_var(vars,"quit",FUNCTION,(void*)end_app);
 
 }
 #endif

@@ -16,8 +16,9 @@
         #define ENDL "\n"
     #endif
     #define IF_ENDL(c) (c=='\n')
-    extern int CLIMIT_INT;
-    extern int CLIMIT_FLOAT;
+    extern int CLIMIT_INT;//Para ver el limite del entero.
+    extern int CLIMIT_FLOAT;//Para ver el limite del flotante.
+    extern int quit;//Para saber si terminó la app.
     enum TYPE{
         INT,
         LONGINT,
