@@ -23,7 +23,7 @@
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
         unsigned int sub_codes_blocks=0;
-        /*Aqui debemos analizar char a char para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
+        /*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
         for (unsigned int i_line=0;i_line<lines->i && !quit;i_line++){
             unsigned int end;
             if(lines->value[i_line].type!=STRING){
@@ -86,7 +86,7 @@
                     i++;
                     char* name=get_name_var(l,&i,i_end);
                     int i_var=search_var(name,vars);
-                    if(i_var!=-1){
+                    if(i_var!=-1){//Consiguio, se reemplaza.
                         struct Var* this_var=(struct Var*)vars->value[i_var].value;
                         setValue_tv(this_var,NULL,&stack->value[stack->i-1]);
                         free(name);

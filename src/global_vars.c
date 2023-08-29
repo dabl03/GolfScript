@@ -16,8 +16,11 @@
  * @return unsigned short 
  */
 unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
+	struct type_value* tv;
+	unsigned int len;//Para y out para array
+	char* out;
     if (stack->i){
-        struct type_value* tv=pop_array(stack);
+		tv=pop_array(stack);
         switch (tv->type)
         {
         case INT:
@@ -29,14 +32,14 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
         case FLOAT:
             printf("%lf%s",*(double*)tv->value,extend);
             break;
-        case LONGFLOAT:break;/**@Nota: para gmp double.*/
+        //case LONGFLOAT:break;/**@Nota: para gmp double.*///Esta en comentario porque quiero que el compilador me diga donde esta.
         case CODES_BLOCKS:
             printf("%s%s",(char*)tv->value,extend);
             break;
         case STRING:
         case ARRAY:
-            unsigned int len=strlen((char*)tv->value);
-            char* out=(char*)malloc(sizeof(char)*len+1);
+            len=strlen((char*)tv->value);
+            out=(char*)malloc(sizeof(char)*len+1);
             strncpy(out,&((char*)tv->value)[1],len-2);
             printf("%s%s",out,extend);
             free(out);
@@ -77,8 +80,7 @@ unsigned short add_operator(struct Array* stack,...){
     }
     struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
     struct type_value* num_1=&stack->value[stack->i-1];
-    switch (num_2->type)
-    {
+    switch (num_2->type){
     case INT:
         switch(num_1->type){
             case INT:
@@ -92,14 +94,7 @@ unsigned short add_operator(struct Array* stack,...){
                 break;
             case LONGFLOAT:
                 break;//_____________________________________________Pronto se hara uso_____________________________________________
-            default://Para arrays.
-
-
-        }
-        if (num_2->type==INT){
-            *(int*)num_2->value+=*(int*)num_1->value;
-        }else{
-
+            //default://Para arrays.
         }
         break;
     case CODES_BLOCKS:

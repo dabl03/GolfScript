@@ -194,4 +194,35 @@ void scape_str(char* out,const char* io){
 		out++;
 	}
 }
+const char* get_name_type(enum TYPE t){
+	switch(t){
+		case INT:
+			return "int";
+        case LONGINT:
+			return "long int";
+		case FLOAT:
+			return "float"
+		case LONGFLOAT:
+			return "long float";
+		case STRING:
+			return "string";
+		case PCHAR:
+			return "no se pchar";
+		case CHAR:
+			return "char";
+		case VALUE_TYPE:
+			return "VALUE_TYPE";
+        /*Usado por el interprete:*/
+        case FUNCTION:
+			return "native function";
+		case VAR:
+			return "var";
+		case CODES_BLOCKS:
+			return "codes blocks";
+		case ARRAY:
+			return "array";
+		default:
+			return NULL;
+	}
+}
 #endif

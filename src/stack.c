@@ -80,6 +80,7 @@ unsigned short delete_array(struct Array* arr){
  * @param tv El tipo y el valor de la variable.
  */
 void setValue_tv(struct Var* v,char* name,struct type_value* tv){
+	char* str=NULL;
     if (v->value != NULL)
         delete_var(v);
     switch(tv->type){
@@ -89,12 +90,13 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
             break;
         case LONGINT:
             v->value=malloc(sizeof(mpz_t));
-            mpz_set(*(mpz_ptr*)v->value,*(mpz_ptr*)tv->value);
+			mpz_init(*(mpz_t*)v->value);//Importante.
+            mpz_set(*(mpz_t*)v->value,*(mpz_t*)tv->value);
             break;
         case ARRAY:
         case STRING:
         case CODES_BLOCKS:
-            char* str=(char*)malloc(sizeof(char)*(strlen((char*)tv->value)+1));
+            str=(char*)malloc(sizeof(char)*(strlen((char*)tv->value)+1));
             strcpy(str,(char*)tv->value);
             v->value=str;
     }
@@ -141,6 +143,12 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
     case ARRAY:
         value=malloc(sizeof(char)*(strlen((char*)v->value)+1));
         strcpy((char*)value,(char*)v->value);
+		break;
+	case LONGINT://Copiamos el entero largo a otro.
+		value=malloc(sizeof(mpz_t));
+		mpz_init(*(mpz_t*)value);//Importante.
+		mpz_set(*(mpz_t*)value, *(mpz_t*)v->value);
+		break;
     }
     add_array(stack,v->type,value);
     return NULL;
@@ -152,6 +160,7 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
 */
 char* printf_stack(struct Array* stack){
     char* output=(char*)malloc(sizeof(char)*2);
+	char* a_out=NULL;//Cuando necesitemos una cadena secundarias.
     output[0]='\0';
     unsigned int len=1;
     for(unsigned int i=0;i<stack->i;i++){
@@ -164,9 +173,16 @@ char* printf_stack(struct Array* stack){
             case CODES_BLOCKS://Recuerda todo despues de esto es string.
             case ARRAY:
             case STRING:
-                len+=strlen((char*)stack->value[i].value)+2;
+                len+=strlen((char*)stack->value[i].value)+1;
                 output=(char*)realloc(output,sizeof(char)*len);
                 sprintf(output,"%s%s ",output,(char*)stack->value[i].value);
+				break;
+			case LONGINT:
+				a_out=mpz_get_str(NULL,0,*(mpz_t*)stack->value[i].value);
+				output=(char*)realloc(output,len+=strlen(a_out)+1);
+				sprintf(output,"%s%s ",output,a_out);
+				free(a_out);
+				break;
         }
     }
     return output;
