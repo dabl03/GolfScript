@@ -43,8 +43,7 @@ int main(int argc, char *argv[]){
 	vars={0,0,NULL};
 	init_globals();
 	init_vars_global_gl(&vars);
-	if (argc > 1)
-	{
+	if (argc > 1){//Vemos que parametros se paso.
 		struct Array params={0,0,NULL}, path_files={0,0,NULL};
 
 		for (int i = 1; i < argc; i++)
@@ -90,7 +89,7 @@ int main(int argc, char *argv[]){
 			delete_array(&stack);
 			delete_array(&vars);
 		}
-	}else{
+	}else{//Interpretamos.
 		return interprete(&stack,&vars);
 	}
 	return 0;
@@ -116,8 +115,7 @@ int interprete(struct Array* stack,struct Array* vars){
 	
 	while (!quit)
 	{
-		if (sub) // Esta anidando algo.
-		{
+		if (sub){// Esta anidando algo.
 			char *space = (char *)malloc(sizeof(char) * (sub + 1));
 			i = 0;
 			for (; i < sub; i++)
@@ -175,6 +173,8 @@ int interprete(struct Array* stack,struct Array* vars){
 					break;
 				}
 				sub -= 1;
+			}else if(c==']'){
+				sub += 1;
 			}
 		}
 		c_linea[i]='\0';

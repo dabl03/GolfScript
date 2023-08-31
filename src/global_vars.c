@@ -5,6 +5,27 @@
 #include "./include/str.h"
 #include "./include/stack.h"
 #include "./include/global_vars.h"
+/*******{TODO}:{
+	Operadores que faltan: 
+	- .	cualquier	Duplicar en pila
+	- \	cualquiera, cualquier	Intercambiar los dos elementos principales
+	- @	Mueve el stack[-3] elemento de la pila como si lo estuviera appeneando. a_stack_3=stack[-3] Ahora stack[-3]=stack[-2] y stack[-2]=stack[-1] y stack[-1]=a_stack_3;
+	- !	cualquier	Negación: empuja 1 si el argumento es 0 o cadena vacía / matriz / bloque, 0 en caso contrario.
+	- ` combierte a adena, o escapa la cadena. (Ejemplo: 1 `  es lo mismo que "1", [1 2 3 4] ` "[1 2 3 4]", "hola" ` "\"hola\"").
+	- ~
+	-- Int	En sentido no bit a bit no
+	-- cadena o bloque	Evaluar
+	-- arreglo	Volcar los elementos en la pila
+	- ,
+	-- INT   Genera una lista desde 0 hasta el int pasado(pila)
+	-- Lista   Devuelve la longitud de la lista
+	-- lista, bloque	Filtro: selecciona los elementos que devuelven true cuando se les aplica el bloque.
+	--- INVESTIGAR PORQUE NO ENTIENDO
+	
+}
+n vale "\n" que se usa en todo el programa para representar \n. arregla esto en el codigo.
+
+*/
 /**
  * @brief Imprimimos el ultimo elemento por pantalla y lo liberamos.
  * 
@@ -95,7 +116,27 @@ unsigned short add_operator(struct Array* stack,...){
             case LONGFLOAT:
                 break;//_____________________________________________Pronto se hara uso_____________________________________________
             //default://Para arrays.
-        }
+			case STRING:
+				break;
+			
+			/*
+        PCHAR,
+        CHAR,
+        VALUE_TYPE,
+        //Usado por el interprete:
+        FUNCTION,
+        VAR,
+        CODES_BLOCKS,
+        ARRAY
+			*/
+		}
+	  /*> "a" 1+
+		["a1"]
+		> ; 1 "a" +
+		["1a"]
+		> ; [1 2 3] 1 +
+		[[1 2 3 1]]*/
+		
         break;
     case CODES_BLOCKS:
         break;
@@ -143,6 +184,6 @@ void init_vars_global_gl(struct Array* vars){
     add_var(vars,"puts",FUNCTION,(void*)puts_operator);
     add_var(vars,"+",FUNCTION,(void*)add_operator);
     add_var(vars,"quit",FUNCTION,(void*)end_app);
-
+	add_var(vars,"n",STRING,"\n");
 }
 #endif

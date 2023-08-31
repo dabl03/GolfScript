@@ -16,6 +16,13 @@
         #define ENDL "\n"
     #endif
     #define IF_ENDL(c) (c=='\n')
+    #define U_INT unsigned int
+    #define AND &&
+    #ifndef TRUE
+        #define TRUE 1
+        #define FALSE 0
+    #endif
+    #define NOT !
     extern int CLIMIT_INT;//Para ver el limite del entero.
     extern int CLIMIT_FLOAT;//Para ver el limite del flotante.
     extern int quit;//Para saber si terminó la app.

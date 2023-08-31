@@ -100,7 +100,10 @@
                     add_array(vars,VAR,(void*)this_var);
                 }else if(IF_ENDL(l[i])){
                     continue;//Por velocidad. Innoramos los saltos de lineas como el interprete original.
-                }else{
+				}else if(l[i]=='['){//Arrays:
+					perror("Caracteristica que todavia esta en construccion.\n");
+					exit(0);
+				}else{
                     //Ahora vemos si existe la variable.
                     char* name=get_name_var(l,&i,0);
                     int i_var=search_var(name,vars);
