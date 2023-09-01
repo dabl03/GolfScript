@@ -6,7 +6,9 @@
 #include <gmp.h>
 #include "include/str.h"
 #include "include/run.h"
-#include "include\define.h"
+#include "include/define.h"
+#include "include/stack.h"
+#include "include/global_vars.h"
 /**
  * @todo Usar la biblioteca gmp para los enteros grandes.
  * Tengo la documentación descargada en ingles.
@@ -33,7 +35,7 @@ void init_globals(){
 	char numbers[100];
 	sprintf(numbers,"%d",INT_MAX);
 	CLIMIT_INT=strlen(numbers)-2;
-	sprintf(numbers,"%d",DBL_MAX);
+	sprintf(numbers,"%f",DBL_MAX);
 	CLIMIT_FLOAT=strlen(numbers);
 	quit=0;
 	err_msg=0;
