@@ -23,6 +23,7 @@
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
         unsigned int sub_codes_blocks=0;
+        char* esc_str=NULL;
         /*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
         for (unsigned int i_line=0;i_line<lines->i && !quit;i_line++){
             unsigned int end;
@@ -62,9 +63,11 @@
                     end=get_end_str(l,i,i_end);
                     end=(end)?end+1:strlen(l);
                     struct String str={end-i,0,(char*)malloc(sizeof(char)*((end-i)+1))};
-                    str_add_str_init_end(&str,l,i,end);
-                    add_array(stack,STRING,str.str);//Ingresamos 
+                    str_add_str_init_end(&str,l,i+1,end-1);
+                    esc_str=get_str_escp(str.str);
+                    add_array(stack,STRING,esc_str);//Ingresamos 
                     i=end-1;//Necesitamos retroceder un caracter.
+                    free(str.str);
                     continue;
                 }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
                     break;

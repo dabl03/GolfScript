@@ -12,10 +12,8 @@
 /**
  * @todo Usar la biblioteca gmp para los enteros grandes.
  * Tengo la documentación descargada en ingles.
- * 
- * Quitarle los saltos de lineas a los bloques de codigo,
- * como los saltos de lineas son unas variables hay que buscar
- * la manera de quitarlos cuando se muestre y enseñarlos cuando no.
+ * @todo: Arreglar todos los warning.
+ * Quitarle los saltos de lineas a los bloques de codigo.
  * 
  * Agregar una forma de acceder a los elementos del array.
  * Estudiar el archivo example.gs
@@ -25,26 +23,17 @@
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
 const char* LICENCE="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
-char* err_msg;
-int CLIMIT_INT=0;
-int CLIMIT_FLOAT=0;
+char* err_msg=0;
+int CLIMIT_INT=MAX_INT_DIG;
+int CLIMIT_FLOAT=DBL_DIG-1;
 int quit=0;
 int interprete(struct Array* stack,struct Array* vars);
 void config_all(struct Array* opciones);
-void init_globals(){
-	char numbers[100];
-	sprintf(numbers,"%d",INT_MAX);
-	CLIMIT_INT=strlen(numbers)-2;
-	sprintf(numbers,"%f",DBL_MAX);
-	CLIMIT_FLOAT=strlen(numbers);
-	quit=0;
-	err_msg=0;
-}
 int main(int argc, char *argv[]){
-	struct Array stack={0,0,NULL},
-	vars={0,0,NULL};
-	init_globals();
-	init_vars_global_gl(&vars);
+	struct Array stack={0,0,NULL},//Nuestra pila.
+	vars={0,0,NULL};//Nuestra variables
+	init_gvars(&vars);
+
 	if (argc > 1){//Vemos que parametros se paso.
 		struct Array params={0,0,NULL}, path_files={0,0,NULL};
 
@@ -110,9 +99,10 @@ void config_all(struct Array* opciones){
 }
 int interprete(struct Array* stack,struct Array* vars){
 	int sub = 0;	//para cambiar de >> a .. cuando hay una condición.
+	char type_block=0;//0 no hay bloque, 1 codes block, 2 array.
 	char c_linea[BUFFER];
 	struct Array lineas={0,0,NULL};
-	unsigned int i=0;
+	U_INT i=0;
 	printf("Golfscript Interactive Mode%s",ENDL);
 	
 	while (!quit)
@@ -149,10 +139,9 @@ int interprete(struct Array* stack,struct Array* vars){
 					if (c==type){
 						if (!is_scape)
 							break;//Ya salimos de la subcadenas.
-					}else if(c=='\n'){//Transformamos los saltos de lineas en su analogo \\n
-						c_linea[i++]='\\';
-						c_linea[i]='n';//Vamos por el siguiente caracter:)
-						printf("... ");//Enseñamos que todavia esta en una cadena.
+					}else if(c=='\n'){//Enseñamos que todavia esta en una cadena.
+						//c_linea[i]='\n';//Despues se escapa.
+						printf("... ");
 						continue;
 					}else if(c=='\0'){
 						i=BUFFER;
@@ -164,7 +153,7 @@ int interprete(struct Array* stack,struct Array* vars){
 			}else if(IF_INIT_COMENT(c)){//Innoramos todo despues del comentario.
 				while ((c=getchar())!='\n' && c!='\0');
 				break;
-			}else if (c == '{') // Vemos si hay anidamiento.
+			}else if (c == '{') // Vemos si hay anidamiento. TODO: Usalo: input_block
 				sub += 1;
 			else if (c == '}')
 			{ // Fin del anidamiento.
@@ -175,7 +164,7 @@ int interprete(struct Array* stack,struct Array* vars){
 					break;
 				}
 				sub -= 1;
-			}else if(c==']'){
+			}else if(c=='['){///@TODO: Usarlo input_block.
 				sub += 1;
 			}
 		}
@@ -187,10 +176,55 @@ int interprete(struct Array* stack,struct Array* vars){
 		{ // Podemos interpretar linea a linea.
 			run(&lineas, stack, vars);
 			delete_array(&lineas);
-			char* output = printf_stack(stack);
-			printf("[ %s]%s",output,ENDL);
+			//Mostramos la variable n.
+    		struct Var* this_var=(struct Var*)vars->value[search_var("n",vars)].value;
+			char* extend=to_string_value(this_var->type,this_var->value);
+			char* output = printf_stack(stack);//Obtenemos la pila.
+			if (extend==NULL)
+				printf("[ %s]",output);
+			else{
+				printf("[ %s]%s",output,extend);
+				free(extend);
+			}
 			free(output);
 		}
 	}
 	return 0;
+}
+/**
+ * Aqui nos encargaremos de pedir la entrada al usuario hasta que llegue al fin del bloque
+ * Ojo tomamos encuenta el anidamiento.
+ * @param  init        El inicio del bloque.
+ * @param  end         El final del bloque.
+ * @param  out_nesting Lo que se enseña despues del identado. Puede ser "..." "--" ">>"
+ * @return             La entrada del usuario.
+ * @TODO:{IF_INIT_STRING hacer una funcion que pida la entrada hasta que termine la cadena.}
+ */
+char* input_block(char init,char end,char* out_nesting){
+	U_INT sub=1,max_len=20, p_chr=0;
+	char c,  *out=(char*)malloc(20), is_nline=TRUE;//c this input, is_nline(is new line?)
+	while(sub!=0){
+		if (is_nline){
+			for (U_INT i=0;i<sub;i++){//Identamos.
+				printf("  ");
+			}
+			printf(out_nesting);
+			is_nline=FALSE;
+		}
+		c=getchar();
+		if (c==init)
+			sub++;
+		else if (c==end)
+			sub--;
+		else if (IF_INIT_STRING(c)){
+
+		}else if (IF_INIT_COMENT(c)){
+			while(c=getchar()!='\n' AND c!='\0');
+		}
+		if (p_chr+3==max_len){
+			out=(char*)realloc(out,max_len+=20);
+		}
+		out[p_chr++]=c;
+	}
+	return NULL;
 }

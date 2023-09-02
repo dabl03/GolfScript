@@ -232,7 +232,7 @@ char nscape_char(char c){
 
 	}
 }
-void scape_str(char* out,const char* io){
+/*void scape_str(char* out,const char* io){
 	unsigned int len=strlen(io);
 	if(!len)
 		return;
@@ -247,34 +247,34 @@ void scape_str(char* out,const char* io){
 		*out=c;
 		out++;
 	}
-}
+}*/
 const char* get_name_type(enum TYPE t){
 	switch(t){
 		case INT:
-			return "int";
+			return "(INT)";
         case LONGINT:
-			return "long int";
+			return "(LONG INT)";
 		case FLOAT:
-			return "float";
+			return "(FLOAT)";
 		case LONGFLOAT:
-			return "long float";
+			return "(LONG FLOAT)";
 		case STRING:
-			return "string";
+			return "(STRING)";
 		case PCHAR:
 			return "no se pchar";
 		case CHAR:
-			return "char";
+			return "CHAR";
 		case VALUE_TYPE:
 			return "VALUE_TYPE";
         /*Usado por el interprete:*/
         case FUNCTION:
-			return "native function";
+			return "(NATIVE FUNCTION)";
 		case VAR:
-			return "var";
+			return "(VAR)";
 		case CODES_BLOCKS:
-			return "codes blocks";
+			return "(CODES BLOCKS)";
 		case ARRAY:
-			return "array";
+			return "(ARRAY)";
 		default:
 			return NULL;
 	}

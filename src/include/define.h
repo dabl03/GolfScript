@@ -23,6 +23,7 @@
         #define FALSE 0
     #endif
     #define NOT !
+    #define MAX_INT_DIG 9
     extern int CLIMIT_INT;//Para ver el limite del entero.
     extern int CLIMIT_FLOAT;//Para ver el limite del flotante.
     extern int quit;//Para saber si terminó la app.

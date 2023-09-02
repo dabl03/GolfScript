@@ -23,8 +23,8 @@
 	--- INVESTIGAR PORQUE NO ENTIENDO
 	
 }
-n vale "\n" que se usa en todo el programa para representar \n. arregla esto en el codigo.
-
+Para trabajar con flotante usa la varible globa climit_float
+}
 */
 /**
  * @brief Imprimimos el ultimo elemento por pantalla y lo liberamos.
@@ -42,34 +42,14 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
 	char* out;
     if (stack->i){
 		tv=pop_array(stack);
-        switch (tv->type)
-        {
-        case INT:
-            printf("%d%s",*(int*)tv->value,extend);
-            break;
-        case LONGINT:
-            gmp_printf("%Zd%s",*(mpz_t*)tv->value,extend);
-            break;
-        case FLOAT:
-            printf("%lf%s",*(double*)tv->value,extend);
-            break;
-        //case LONGFLOAT:break;/**@Nota: para gmp double.*///Esta en comentario porque quiero que el compilador me diga donde esta.
-        case CODES_BLOCKS:
-            printf("%s%s",(char*)tv->value,extend);
-            break;
-        case STRING:
-        case ARRAY:
-            len=strlen((char*)tv->value);
-            out=(char*)malloc(sizeof(char)*len+1);
-            strncpy(out,&((char*)tv->value)[1],len-2);
-            printf("%s%s",out,extend);
-            free(out);
-            break;
-        default:
-            puts("ERROR: La pila esta vacia.");
+        out=to_string_value(tv->type,tv->value);
+        if (out==NULL){
+            puts("ERROR: Interno, el tipo de dato desconocido.");
             free(tv->value);
             return 2;
         }
+        printf("%s%s",out,extend);
+        free(out);
         free(tv->value);
     }else{
         puts("Warnign: La pila esta vacia.");
@@ -81,11 +61,17 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
  * @brief Lo mismo que printf_1_ pero con salto de linea de extensión.
  * 
  * @param stack Importante. De donde se pasará el ultimo elemento.
- * @param ... No nesecitamos mas argumentos.
+ * @param vars Para colocarle el salto de linea declarado en la variable n.
  * @return unsigned short 
- */
-unsigned short puts_operator(struct Array* stack,...){
-    return prinft_1_(stack,NULL,"\n");
+*/
+unsigned short puts_operator(struct Array* stack,struct Array* vars){
+    int i_var=search_var("n",vars);
+    struct Var* this_var=(struct Var*)vars->value[i_var].value;
+    char* extend=to_string_value(this_var->type,this_var->value);
+    i_var=prinft_1_(stack,NULL,(extend!=NULL)?extend:"");
+    if (extend!=NULL)
+        free(extend);
+    return i_var;
 }
 /**
  * @brief El operador suma del interprete. Aqui analizaremos y realizamos la operaciones deacuerdo a su tipo.
@@ -170,7 +156,7 @@ unsigned short reset(struct Array* stack,struct Array* vars,...){
     if (vars->i==0)
         return 1;
     delete_array(vars);
-    init_vars_global_gl(vars);
+    init_gvars(vars);
     return 0;
 }
 /**
@@ -178,7 +164,7 @@ unsigned short reset(struct Array* stack,struct Array* vars,...){
  * 
  * @param vars Donde ingresar las variables globales.
  */
-void init_vars_global_gl(struct Array* vars){
+void init_gvars(struct Array* vars){
     add_var(vars,"reset",FUNCTION,(void*)reset);
     add_var(vars,"print",FUNCTION,(void*)prinft_1_);
     add_var(vars,"puts",FUNCTION,(void*)puts_operator);

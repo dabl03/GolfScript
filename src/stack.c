@@ -159,7 +159,8 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
  * @return char* output Recuerda liberar memoria.
 */
 char* printf_stack(struct Array* stack){
-    char* output=(char*)malloc(sizeof(char)*2);
+    char* output=(char*)malloc(sizeof(char)*2),
+    *extend=NULL;//Para el salto de linea, sera determinado por la variable n.
 	char* a_out=NULL;//Cuando necesitemos una cadena secundarias.
     output[0]='\0';
     unsigned int len=1;
@@ -172,10 +173,16 @@ char* printf_stack(struct Array* stack){
                 break;
             case CODES_BLOCKS://Recuerda todo despues de esto es string.
             case ARRAY:
-            case STRING:
                 len+=strlen((char*)stack->value[i].value)+1;
                 output=(char*)realloc(output,sizeof(char)*len);
                 sprintf(output,"%s%s ",output,(char*)stack->value[i].value);
+                break;
+            case STRING:
+                a_out=get_str_nescp((char*)stack->value[i].value);
+                len+=strlen(a_out)+3;
+                output=(char*)realloc(output,sizeof(char)*len);
+                sprintf(output,"%s\"%s\" ",output,a_out);
+                free(a_out);
 				break;
 			case LONGINT:
 				a_out=mpz_get_str(NULL,0,*(mpz_t*)stack->value[i].value);
@@ -219,5 +226,33 @@ void add_var(struct Array* vars,char* name,enum TYPE t,void* value){
     this->type=t;
     this->value=value;
     add_array(vars,VAR,this);
+}
+char* to_string_value(enum TYPE t,void* value){
+    char* out=NULL;
+    switch(t){
+        case INT:
+            out=(char*)malloc(CLIMIT_INT+1);
+            sprintf(out,"%d",*(int*)value);
+            break;
+        case LONGINT:
+            out=mpz_get_str(NULL,0,*(mpz_t*)value);
+            break;
+        case FLOAT:
+            out=(char*)malloc(CLIMIT_FLOAT+1);
+            sprintf(out, "%.*lf", CLIMIT_FLOAT-1,*(double*)value);
+            break;
+        //case LONGFLOAT:break;/**@Nota: para gmp double.*///Esta en comentario porque quiero que el compilador me diga donde esta.
+        case CODES_BLOCKS:
+        case STRING:
+            out=(char*)malloc(strlen((char*)value)+1);
+            sprintf(out,"%s",(char*)value);
+            break;
+        case ARRAY:
+            /**{TODO}:{Recuerda de llamar a esta funcion por cada elemento del array.}*/
+            break;
+        default:
+            return NULL;
+    }
+    return out;
 }
 #endif

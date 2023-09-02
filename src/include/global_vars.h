@@ -19,10 +19,10 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend);
  * @brief Lo mismo que printf_1_ pero con salto de linea de extensión.
  * 
  * @param stack Importante. De donde se pasará el ultimo elemento.
- * @param ... No nesecitamos mas argumentos.
+ * @param vars Para colocarle el salto de linea declarado en la variable n.
  * @return unsigned short 
  */
-unsigned short puts_operator(struct Array* stack,...);
+unsigned short puts_operator(struct Array* stack,struct Array* vars);
 /**
  * @brief El operador suma del interprete. Aqui analizaremos y realizamos la operaciones deacuerdo a su tipo.
  * 
@@ -49,5 +49,5 @@ unsigned short reset(struct Array* stack,struct Array* vars,...);
  * 
  * @param vars Donde ingresar las variables globales.
  */
-void init_vars_global_gl(struct Array* vars);
+void init_gvars(struct Array* vars);
 #endif
