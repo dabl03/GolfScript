@@ -10,6 +10,8 @@
     #include "include/stack.h"
     #include "include/run.h"
     /**
+     * {TODO}:{ Recuerda que el array debe ser ejecutado por una nueva pila. }
+     * {TODO}: {Usar printf_stack para obtener la cadena para la funcion to_string_value }
      * @brief Función que analiza y ejecuta la instrucciones.
      * 
      * @param lines Lineas de codigo que interpretar. 
@@ -19,20 +21,25 @@
     */
    /****
     * @todo Tambien falta colocar la biblioteca gmp.
+    * @todo  get_str_token hacer que en vez de que se ejecute la funcion linea por linea esta funcion get_str_token ordene todo mas la funcion add*
+    * @todo  Al crear una nueva cadena entra en un bucle infinito, revisar porque.
+    * @todo  Es muy lento el programa, sobretodo cuando el entero es muy grande, arreglar
+    * Se que hay otra cosa por hacer pero no me acuerdo.
     */
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
-        unsigned int sub_codes_blocks=0;
-        char* esc_str=NULL;
+        U_INT sub_codes_blocks=0;
+        char* esc_str=NULL,
+        *tmp_str=NULL;
         /*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
-        for (unsigned int i_line=0;i_line<lines->i && !quit;i_line++){
-            unsigned int end;
+        for (U_INT i_line=0;i_line<lines->i && !quit;i_line++){
+            U_INT end;
             if(lines->value[i_line].type!=STRING){
                 return -1;
             }
             const char* l=(char*)lines->value[i_line].value;
-            unsigned int i_end=strlen(l);
-            for(unsigned int i=0;i<i_end;i++){
+            U_INT i_end=strlen(l);
+            for(U_INT i=0;i<i_end;i++){
                 //Primero definimos nuestros signos constantes:
                 if(sub_codes_blocks || l[i]=='{'){
                     if(l[i]=='{'){
@@ -48,26 +55,27 @@
                         }
                     }else if(IF_INIT_STRING(l[i])){
                         end=get_end_str(l,i,i_end);
-                        str_add_str_init_end(&codes_blocks,l,i,end+1);
-                        i=(end)?end:i;
+                        tmp_str=get_sub_str(l,i,end+1);
+                        char* scape_=get_str_escp(tmp_str);
+                        str_add_str_init_end(&codes_blocks,scape_,0,0);
+                        free(tmp_str);
+                        free(scape_);
+                        i=(end)?end:i_end;
                         continue;
                     }else if(IF_INIT_COMENT(l[i])){
                         continue;
                     }else if(IF_ENDL(l[i])){//Cambiamos los saltos de lineas por espacio.
-                        if (i)
                             str_add_char(&codes_blocks,' ');
                         continue;
                     }
                     str_add_char(&codes_blocks,l[i]);
                 }else if (IF_INIT_STRING(l[i])){//Llegamos a " o '
                     end=get_end_str(l,i,i_end);
-                    end=(end)?end+1:strlen(l);
-                    struct String str={end-i,0,(char*)malloc(sizeof(char)*((end-i)+1))};
-                    str_add_str_init_end(&str,l,i+1,end-1);
-                    esc_str=get_str_escp(str.str);
+                    tmp_str=get_sub_str(l,i,end);//Si la cadena es '' se combierte a ""
+                    esc_str=get_str_escp(tmp_str);
+                    free(tmp_str);
                     add_array(stack,STRING,esc_str);//Ingresamos 
                     i=end-1;//Necesitamos retroceder un caracter.
-                    free(str.str);
                     continue;
                 }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
                     break;
@@ -105,6 +113,7 @@
                     continue;//Por velocidad. Innoramos los saltos de lineas como el interprete original.
 				}else if(l[i]=='['){//Arrays:
 					perror("Caracteristica que todavia esta en construccion.\n");
+                    puts(get_str_token(l,i,i_end));
 					exit(0);
 				}else{
                     //Ahora vemos si existe la variable.
@@ -166,11 +175,51 @@
         }else if (is_num(search[*i])){ // Si es un numero.
             for (; i_2 < end && is_num(search[i_2]); i_2++);
             str_add_str_init_end(&name, search, *i, i_2--);
+        }else if(IF_INIT_STRING(search[*i])){
+
         }else{ // Espacio y otros simbolos.
             name.str[0] = search[*i];
             name.str[1] = '\0';
         }
         *i=i_2;
         return name.str;
+    }
+    /**Elimina los excesivos espacio dejando solo uno para separar cada palabra.
+     * Tambien combertimos los saltos de lineas en espacio y se hace lo mismo que el anterior.
+     * Nota: Tomamos en cuenta las cadenas ignorando todo lo que este adentro.
+     * @param str Cadena
+     * @param init { comienzo de la cadena a revisar }
+     * @param end Fin de la cadena. si es 0 se busca el final.
+     * @return     Cadena tratada para prevenir los excesos de espacio y los saltos de linea. Retorna cadena dinamica, liberar.
+     */
+    char* get_str_token(char* str,U_INT init,U_INT end){
+        NEW_STRING(out,20);
+        unsigned char space=0;
+        end=(end)?end:strlen(str);
+        U_INT tmp_i=0;
+        for(U_INT i=init;i<end;i++){
+            if (str[i]=='\n' || str[i]==' ')
+                space=TRUE;
+            else{
+                if (space){
+                    cadd_add_leftover(&out,' ');
+                    space=TRUE;
+                }
+                cadd_add_leftover(&out,str[i]);
+                if (IF_INIT_STRING(str[i])){
+                    tmp_i=get_end_str(str,i,end);
+                    tmp_i=(tmp_i)?tmp_i:end;
+                    out.count--;//Porque necesitamos que ignore la entre comilla anterior.
+                    str_add_str_init_end(&out,str, i,tmp_i);
+                    i=tmp_i;
+                }else if (IF_INIT_COMENT(str[i])){
+                    out.count--;
+                    for (;i<end && str[i]!='\n';i++);
+                    continue;
+                }
+            }
+        }
+        cadd_add_leftover(&out,'\0');
+        return (char*)realloc(out.str,out.count);
     }
 #endif

@@ -17,7 +17,7 @@
  * 
  * Agregar una forma de acceder a los elementos del array.
  * Estudiar el archivo example.gs
- * 
+ * TODO agregar una opcion para que se importe archivos.
  * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
  */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
@@ -29,11 +29,12 @@ int CLIMIT_FLOAT=DBL_DIG-1;
 int quit=0;
 int interprete(struct Array* stack,struct Array* vars);
 void config_all(struct Array* opciones);
+char* get_input_str(char type_string);
+char* input_block(char init,char end,char* out_nesting,U_INT base_sub);
 int main(int argc, char *argv[]){
 	struct Array stack={0,0,NULL},//Nuestra pila.
 	vars={0,0,NULL};//Nuestra variables
 	init_gvars(&vars);
-
 	if (argc > 1){//Vemos que parametros se paso.
 		struct Array params={0,0,NULL}, path_files={0,0,NULL};
 
@@ -99,17 +100,16 @@ void config_all(struct Array* opciones){
 }
 int interprete(struct Array* stack,struct Array* vars){
 	int sub = 0;	//para cambiar de >> a .. cuando hay una condición.
-	char type_block=0;//0 no hay bloque, 1 codes block, 2 array.
-	char c_linea[BUFFER];
+	char *tmp_out=NULL;//Puntero de uso temporal.
+	U_INT tmp_len=0;
 	struct Array lineas={0,0,NULL};
-	U_INT i=0;
+	struct String c_linea={20,0,(char*)malloc(20)};
 	printf("Golfscript Interactive Mode%s",ENDL);
-	
 	while (!quit)
 	{
 		if (sub){// Esta anidando algo.
 			char *space = (char *)malloc(sizeof(char) * (sub + 1));
-			i = 0;
+			U_INT i=0;
 			for (; i < sub; i++)
 				space[i] = ' ';
 			space[i] = '\0';
@@ -117,61 +117,42 @@ int interprete(struct Array* stack,struct Array* vars){
 			free(space);
 		}
 		printf("> ");
-		for(i=0;i<BUFFER;i++){
+		while(TRUE){
 			char c=getchar();
-			if (c=='\n' || c=='\0'){//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
-				c_linea[i++]=c;
-				c_linea[i]='\0';
+			cadd_add_leftover(&c_linea,c);
+			if (IF_ENDL(c))//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
 				break;
-			}
-			c_linea[i]=c;
 			if (IF_INIT_STRING(c)){//Si es el comienzo de una cadena entonces pedimos hasta que el usuario ya no quiera mas string.
-				/**
-				 * @todo Colocar un resaltado a esto.
-				 * 
-				 */
-				unsigned short is_scape=0;
-				char type=c;
-				i++;
-				for(;i<BUFFER;i++){
-					c=getchar();
-					c_linea[i]=c;
-					if (c==type){
-						if (!is_scape)
-							break;//Ya salimos de la subcadenas.
-					}else if(c=='\n'){//Enseñamos que todavia esta en una cadena.
-						//c_linea[i]='\n';//Despues se escapa.
-						printf("... ");
-						continue;
-					}else if(c=='\0'){
-						i=BUFFER;
-						break;
-					}
-					is_scape=(c=='\\' && !is_scape);
-				}
+				tmp_out=get_input_str(c);
+				tmp_len=strlen(tmp_out);
+				char is_new_line_tmp=tmp_out[tmp_len-1]=='\n';
+				c_linea.str[--c_linea.count]='\0';
+				str_add_str_init_end(&c_linea,tmp_out,0,tmp_len);
+				free(tmp_out);
+				if (is_new_line_tmp) break;
 				continue;
 			}else if(IF_INIT_COMENT(c)){//Innoramos todo despues del comentario.
 				while ((c=getchar())!='\n' && c!='\0');
 				break;
-			}else if (c == '{') // Vemos si hay anidamiento. TODO: Usalo: input_block
-				sub += 1;
-			else if (c == '}')
-			{ // Fin del anidamiento.
-				if (sub == 0)
-				{ // Espera no hubo nada que desanidar ;(
-					printf("Advertencia: no hay suficiente anidamiento.");
-					c='\0';
-					break;
-				}
-				sub -= 1;
+			}else if (c == '{'){ // Vemos si hay anidamiento. TODO: Usalo: input_block
+				tmp_out=input_block('{','}',">> ",sub);
+				c_linea.str[--c_linea.count]='\0';
+				str_add_str_init_end(&c_linea,tmp_out,0,0);
+				free(tmp_out);
+				if (c_linea.str[c_linea.count-1]=='\n')break;
+				continue;
 			}else if(c=='['){///@TODO: Usarlo input_block.
-				sub += 1;
+				tmp_out=input_block('[',']',"-- ",sub);
+				c_linea.str[--c_linea.count]='\0';
+				str_add_str_init_end(&c_linea,tmp_out,0,0);
+				free(tmp_out);
+				if (c_linea.str[c_linea.count-1]=='\n')break;
+				continue;
 			}
 		}
-		c_linea[i]='\0';
-		char* l=(char*)malloc(sizeof(char)*(i+1));
-		strcpy(l,c_linea);
-		add_array(&lineas,STRING,l);
+		c_linea.str[c_linea.count]='\0';
+		add_array(&lineas,STRING,(char*)realloc(c_linea.str,c_linea.count+1));
+		INIT_STRING(c_linea,20);
 		if (sub == 0)
 		{ // Podemos interpretar linea a linea.
 			run(&lineas, stack, vars);
@@ -192,39 +173,80 @@ int interprete(struct Array* stack,struct Array* vars){
 	return 0;
 }
 /**
+ * Pide al usuario una cadena con final terminando si hay salto de linea o fin del buffer.
+ * @param  type_string El tipo de cadena("dobles", 'simple').
+ * @return             Cadena dinamica, tiene que liberar.
+ */
+char* get_input_str(char type_string){
+	struct String str_={20,1,(char*)malloc(20)};
+	unsigned char input=0,
+	is_scape=FALSE;//Para saber si escapamos la cadena.
+	str_.str[0]=type_string;
+	while(TRUE){
+		input=getchar();
+		cadd_add_leftover(&str_,input);
+		if (str_.str[str_.count-1]==type_string AND !is_scape){//Si es termino y no es un escape.
+			str_.str[str_.count-1]=type_string;
+			break;
+		}else if (input=='\n' || input=='\0'){
+			str_.str[str_.count-1]=type_string;
+			str_.str[str_.count++]='\n';
+			break;
+		}
+		is_scape=(str_.str[str_.count-1]=='\\' && !is_scape);
+	}
+	cadd_add_leftover(&str_,'\0');
+	return (char*)realloc(str_.str,str_.count);
+}
+/**
  * Aqui nos encargaremos de pedir la entrada al usuario hasta que llegue al fin del bloque
  * Ojo tomamos encuenta el anidamiento.
  * @param  init        El inicio del bloque.
  * @param  end         El final del bloque.
  * @param  out_nesting Lo que se enseña despues del identado. Puede ser "..." "--" ">>"
- * @return             La entrada del usuario.
- * @TODO:{IF_INIT_STRING hacer una funcion que pida la entrada hasta que termine la cadena.}
+ * @param base_sub { Es para no perder la identación base }
+ * @return             La entrada del usuario. Recordar liberar
  */
-char* input_block(char init,char end,char* out_nesting){
-	U_INT sub=1,max_len=20, p_chr=0;
-	char c,  *out=(char*)malloc(20), is_nline=TRUE;//c this input, is_nline(is new line?)
-	while(sub!=0){
-		if (is_nline){
-			for (U_INT i=0;i<sub;i++){//Identamos.
+char* input_block(char init,char end,char* out_nesting,U_INT base_sub){
+	U_INT sub=1;
+	struct String out={20,1,(char*)malloc(20)};
+	char c, is_nline=FALSE, is_init=TRUE;//c this input, is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
+	out.str[0]=init;
+	while(TRUE){
+		c=getchar();
+		if (c==init)
+			sub++;
+		else if (c==end){
+			sub--;
+			cadd_add_leftover(&out,c);
+			break;
+		}else if (IF_INIT_STRING(c)){//Obtenemos la cadena.
+			char* str_=get_input_str(c);
+			U_INT len_=strlen(str_);
+			if (str_[len_-1]=='\n'){
+				is_nline=TRUE;
+			}
+			str_add_str_init_end(&out,str_,0,len_);
+			free(str_);
+			continue;
+		}else if (IF_INIT_COMENT(c)){//Ignoramos los comentarios.
+			while((c=getchar()!='\n') AND c!='\0');
+			is_nline=TRUE;
+			continue;
+		}else if(IF_ENDL(c))
+			is_nline=TRUE;
+		cadd_add_leftover(&out,c);
+		if (is_nline){//Tiene que ser el ultimo por si el usuario solo usa una linea para el bloque.
+			//Tambien se soluciona otro error al dejar esto de ultimo(Un char '\0' hechando
+			//broma se obtiene en el primer prompt).
+			for (U_INT i=0;i<base_sub+sub;i++){//Identamos.
 				printf("  ");
 			}
 			printf(out_nesting);
 			is_nline=FALSE;
+			continue;
 		}
-		c=getchar();
-		if (c==init)
-			sub++;
-		else if (c==end)
-			sub--;
-		else if (IF_INIT_STRING(c)){
-
-		}else if (IF_INIT_COMENT(c)){
-			while(c=getchar()!='\n' AND c!='\0');
-		}
-		if (p_chr+3==max_len){
-			out=(char*)realloc(out,max_len+=20);
-		}
-		out[p_chr++]=c;
 	}
-	return NULL;
+	cadd_add_leftover(&out,'\0');
+	return (char*)realloc(out.str,out.count);
 }

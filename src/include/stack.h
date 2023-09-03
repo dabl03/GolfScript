@@ -97,4 +97,11 @@ int search_var_init(const char* name, unsigned const int init_str_1, struct Arra
  * @param value Se inserta el valor sin crear copia.
  */
 void add_var(struct Array* vars,char* name,enum TYPE t,void* value);
+/**
+ * Combierte a cadena el elemento.
+ * @param  t     Especifica el tipo del elemento
+ * @param  value Elemento
+ * @return       Cadena dinamica. Recuerda liberar.
+ */
+char* to_string_value(enum TYPE t,void* value);
 #endif

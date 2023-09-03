@@ -24,4 +24,13 @@
      * @return char* malloc/calloc/readlloc
      */
     char* get_name_var(const char* search,unsigned int* i,unsigned int end);
+    /**Elimina los excesivos espacio dejando solo uno para separar cada palabra.
+     * Tambien combertimos los saltos de lineas en espacio y se hace lo mismo que el anterior.
+     * Nota: Tomamos en cuenta las cadenas ignorando todo lo que este adentro.
+     * @param str Cadena
+     * @param init { comienzo de la cadena a revisar }
+     * @param end Fin de la cadena. si es 0 se busca el final.
+     * @return     Cadena tratada para prevenir los excesos de espacio y los saltos de linea. Retorna cadena dinamica, liberar.
+     */
+    char* get_str_token(char* str,U_INT init,U_INT end);
 #endif

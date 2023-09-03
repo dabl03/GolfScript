@@ -33,9 +33,18 @@ LOG_OBJ=./build/log/log_obj.txt
 LOG_APP=./build/log/log_app.txt
 
 FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h $(INCLUDE)/global_vars.h
+MAKE=mingw32-make
+
 define delete_obj
 	cd $(BIN_O) && del "*.o"
 	del "$(APP)"
+endef
+define out_log
+	@echo sucess
+	ifeq $(error_code) 0
+		@echo la compilacion termino con error codes: $(error_code)
+		@cat < $(log)
+	endif
 endef
 define append_log
 //Leer los archivos logs y agregarlo en un archivo log final.
@@ -48,6 +57,7 @@ ifeq ($(strip $(OS)),Linux)
 		rm -rf "$(BIN_O)/*.o"
 		rm -rf "$(APP)"
 	endef
+	MAKE=make
 endif
 
 ifeq ($(IF_DEBUG),1)

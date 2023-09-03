@@ -159,8 +159,7 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
  * @return char* output Recuerda liberar memoria.
 */
 char* printf_stack(struct Array* stack){
-    char* output=(char*)malloc(sizeof(char)*2),
-    *extend=NULL;//Para el salto de linea, sera determinado por la variable n.
+    char* output=(char*)malloc(sizeof(char)*2);
 	char* a_out=NULL;//Cuando necesitemos una cadena secundarias.
     output[0]='\0';
     unsigned int len=1;
@@ -227,6 +226,12 @@ void add_var(struct Array* vars,char* name,enum TYPE t,void* value){
     this->value=value;
     add_array(vars,VAR,this);
 }
+/**
+ * Combierte a cadena el elemento.
+ * @param  t     Especifica el tipo del elemento
+ * @param  value Elemento
+ * @return       Cadena dinamica. Recuerda liberar.
+ */
 char* to_string_value(enum TYPE t,void* value){
     char* out=NULL;
     switch(t){

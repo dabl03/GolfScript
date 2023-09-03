@@ -53,20 +53,12 @@ unsigned int get_end_str(const char* str,unsigned const int init,unsigned int i_
 	unsigned short is_scape=0;
 	unsigned const char type=str[i++];//Almacenamos el tipo de cadena para saber si hay un signo de escape+type, y si anida otro tipo de cadena lo tratamos como una subcadena.
 	i_end=(!i_end)?strlen(str):i_end;//Asi aprovechamos si se paso el limite de la cadena.
-	if (i==i_end){
-		return i;
-	}else if(i>i_end){
-		return 0;
-	}
 	for(;i<i_end;i++){
-		if (str[i]==type){//Type debe ser ' "
-			if (!is_scape){//No es parte de la subcadena.
-				return i;//Conseguimos el final de la cadena por lo que terminamos.
-			}
-		}
+		if (str[i]==type AND !is_scape)//Si es termino y no es un escape.
+			return i;//Conseguimos el final de la cadena por lo que terminamos.
 		is_scape=(str[i]=='\\' && !is_scape);
 	}
-	return init;//No hay fin, por lo que retornamos el inicio.
+	return 0;//No hay fin, por lo que retornamos 0
 }
 /**
  * @brief Funcion que transforma de string a entero.
@@ -118,8 +110,8 @@ long int parseLongInt(const char* str){
 void str_add_str_init_end(struct String* str_d,const char* str_copy,unsigned int init,unsigned int end){
 	end=(end)?end:strlen(str_copy);
 	unsigned int len=end-init;
-    if (str_d->count+len>=str_d->max){
-        str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=len));
+    if (str_d->count+len+1>=str_d->max){
+        str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=len+1));
     }
     unsigned int i=init;
 	char* c=&str_copy[i];
@@ -232,22 +224,11 @@ char nscape_char(char c){
 
 	}
 }
-/*void scape_str(char* out,const char* io){
-	unsigned int len=strlen(io);
-	if(!len)
-		return;
-	for (unsigned int i=0;i<len;i++){
-		char c=io[i];
-		if (c=='\\'){
-			c=scape_char(io[++i]);
-			if (c==-1){
-				continue;
-			}
-		}
-		*out=c;
-		out++;
-	}
-}*/
+/**
+ * Funcion para identificar los tipos de datos.
+ * @param  t Tipo
+ * @return   Retorna una cadena no dinamica. No requiere liberar
+ */
 const char* get_name_type(enum TYPE t){
 	switch(t){
 		case INT:
@@ -330,11 +311,51 @@ char* get_str_escp(char* old_str){
 			is_scape=FALSE;
 			continue;
 		}else{
+			if (*c=='"')//Como no tiene un scape entonces la cadena se mostrara sin ""
+				continue;
 			new_str[i_nstr++]=*c;
 		}
 	}
 	new_str[i_nstr]='\0';
 	new_str=(char*)realloc(new_str,i_nstr+1);
 	return new_str;
+}
+/**
+ * Funcion para verificar si la cadena necesita mas memoria para agregarle un char.
+ * Nota leftover porque reserva mas memoria que la que necesita.
+ * @param str_ Structura String.
+ * @param c { char a agregar }
+ */
+void cadd_add_leftover(struct String* str_,char c){
+	if (str_->count+3>=str_->max){
+		str_->str=(char*)realloc(str_->str,str_->max+=20);
+	}
+	str_->str[str_->count++]=c;
+}
+/**
+ * Funcion que retorna una cadena hechas con comillas dobles.
+ * Si fue comillas simple lo que hace es escapar todas las comillas
+ * dobles para que esto: '"hola' pase a esto: "\"hola"
+ * @param  str_ Cadena con comillas dobles.
+ * @param  init Donde inicia las comillas(Toda la evaluacion se hara deacuerdo a esto).
+ * @param  end  Final de la cadena. Si se ingresa 0 se determina el tamaño dentro de la funcion.
+ * @return      Cadena dinamica, recuerda liberar.
+ */
+char* get_sub_str(char* str,U_INT init, U_INT end){
+	NEW_STRING(out,20);
+	U_INT end_c=(end)?end:strlen(str);
+	char type=str[init++],is_scape=FALSE;
+	out.str[out.count++]='"';
+	for (int i=init;i<end_c;i++){
+		if (str[i]==type AND !is_scape)//Si es termino y no es un escape.
+			break;//Conseguimos el final de la cadena por lo que terminamos.
+		if (type=='\'' && str[i]=='"')
+			cadd_add_leftover(&out,'\\');
+		cadd_add_leftover(&out,str[i]);
+		is_scape=(str[i]=='\\' && !is_scape);
+	}
+	cadd_add_leftover(&out,'"');
+	cadd_add_leftover(&out,'\0');
+	return (char*)realloc(out.str,out.count);
 }
 #endif

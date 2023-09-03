@@ -15,7 +15,7 @@
         //Desde el makefile se definirá si es linux.
         #define ENDL "\n"
     #endif
-    #define IF_ENDL(c) (c=='\n')
+    #define IF_ENDL(c) (c=='\n' || c=='\0')
     #define U_INT unsigned int
     #define AND &&
     #ifndef TRUE
