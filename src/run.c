@@ -28,7 +28,8 @@
     */
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
-        U_INT sub_codes_blocks=0;
+        U_INT sub_codes_blocks=0,
+		tmp_istr=0;
         char* esc_str=NULL,
         *tmp_str=NULL;
         /*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
@@ -55,12 +56,13 @@
                         }
                     }else if(IF_INIT_STRING(l[i])){
                         end=get_end_str(l,i,i_end);
+						end=(end)?end:i_end;
                         tmp_str=get_sub_str(l,i,end+1);
                         char* scape_=get_str_escp(tmp_str);
                         str_add_str_init_end(&codes_blocks,scape_,0,0);
                         free(tmp_str);
                         free(scape_);
-                        i=(end)?end:i_end;
+                        i=end;
                         continue;
                     }else if(IF_INIT_COMENT(l[i])){
                         continue;
@@ -71,11 +73,12 @@
                     str_add_char(&codes_blocks,l[i]);
                 }else if (IF_INIT_STRING(l[i])){//Llegamos a " o '
                     end=get_end_str(l,i,i_end);
+					end=(end)?end:i_end;
                     tmp_str=get_sub_str(l,i,end);//Si la cadena es '' se combierte a ""
                     esc_str=get_str_escp(tmp_str);
                     free(tmp_str);
                     add_array(stack,STRING,esc_str);//Ingresamos 
-                    i=end-1;//Necesitamos retroceder un caracter.
+                    i= end;//Recuerda que si end=0 entonces se toma toda la cadena.
                     continue;
                 }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
                     break;
@@ -109,12 +112,25 @@
                     this_var->value=NULL;
                     setValue_tv(this_var,name,stack_var);
                     add_array(vars,VAR,(void*)this_var);
+                    free(name);
                 }else if(IF_ENDL(l[i])){
-                    continue;//Por velocidad. Innoramos los saltos de lineas como el interprete original.
+                    continue;//Por velocidad. Ignoramos los saltos de lineas como el interprete original.
 				}else if(l[i]=='['){//Arrays:
-					perror("Caracteristica que todavia esta en construccion.\n");
-                    puts(get_str_token(l,i,i_end));
-					exit(0);
+                    tmp_str=get_ie_block(l,i,']',&tmp_istr);
+                    //Nueva linea y nuevo stack.
+                    struct Array line={0,0,0};
+    				struct Array* sub_stack=(struct Array*)malloc(sizeof(struct Array));
+    				sub_stack->i=0;
+    				sub_stack->max=0;
+    				sub_stack->value=NULL;
+    				//Iniciamos la linea.
+    				add_array(&line,STRING,tmp_str);
+    				//Ejecutamos y agregamos al stack el array.
+                    run(&line,sub_stack,vars);
+                    add_array(stack,ARRAY,(void*)sub_stack);
+                    delete_array(&line);//Liberamos memoria
+                    //Terminamos.
+					i=tmp_istr;
 				}else{
                     //Ahora vemos si existe la variable.
                     char* name=get_name_var(l,&i,0);
@@ -203,7 +219,7 @@
             else{
                 if (space){
                     cadd_add_leftover(&out,' ');
-                    space=TRUE;
+                    space=FALSE;
                 }
                 cadd_add_leftover(&out,str[i]);
                 if (IF_INIT_STRING(str[i])){
@@ -221,5 +237,67 @@
         }
         cadd_add_leftover(&out,'\0');
         return (char*)realloc(out.str,out.count);
+    }
+    /**
+     * get init end block. Obtiene un bloque buscando en la cadena, desde init hasta conseguirn end block.
+     * Nota: El inicio del bloque se obtiene deacuerdo a init: char inicio=input[init];.
+     * No sirve para obtener cadena, en su lugar use get_sub_str o get_end_str.
+     * @param  input   Cadena a buscar
+     * @param  init    Desde donde empezar
+     * @param  end     El caracter a buscar para ver el final.
+     * @param  out_end Aqui almacenaremos el indice final para que fuera de la funcion se sepa.
+     * @return         retorna el bloque buscado sin el inicio y el final. Recordar liberar cadena.
+     */
+    char* get_ie_block(const char* input,const U_INT init, const char end, U_INT* out_end){
+    	NEW_STRING(out,20);
+    	char cinit=input[init];
+    	U_INT i=init+1,
+    	sub=1;
+    	U_INT tmp_i=0,
+    	iend=strlen(input);
+    	char* tmp_str=NULL;
+    	for (;i<iend;i++){
+
+    		if (input[i]==cinit)
+    			sub++;
+    		else if (input[i]==end){
+    			sub--;
+    			if (sub==0)
+    				break;
+    		}
+    		switch(input[i]){
+    			case '"': /*OR*/ case '\'':
+    				tmp_i=get_end_str(input,i,iend);
+	    			tmp_str=get_sub_str(input,i,tmp_i);
+	    			str_add_str_init_end(&out,tmp_str,0,0);
+	    			i=(tmp_i)?tmp_i:iend;
+	    			free(tmp_str);
+	    			if (i+1<iend AND input[i+1]!=' ')
+	    				cadd_add_leftover(&out,' ');
+	    			break;
+	    		case COMMENT:
+	    			for (;input[i]!='\n' AND input[i]!='\0';i++);//Se ignora todo
+	    		case '\n':
+	    			if (input[i-1]!=' ')
+	    				cadd_add_leftover(&out,' ');
+	    			break;
+	    		default:
+	    			cadd_add_leftover(&out,input[i]);
+    		}
+    		
+    	}
+    	//Para mas velocidad no llamamos a cadd_add_leftover.
+    	if (out.count+sub+1>out.max){//Ya no necesitamos la variable max de la estructura.
+    		out.str=(char*)realloc(out.str,out.count+sub+2);
+    	}
+    	//Si sigue abierto la cerramos.
+    	while(sub>0){
+    		out.str[out.count++]=end;
+    		sub--;
+    	}
+    	if (out_end!=NULL)
+	    	*out_end=i;
+    	out.str[out.count++]='\0';//Retornamos la cadena sin el inicio o el fin del bloque.
+    	return (char*)realloc(out.str,out.count);
     }
 #endif

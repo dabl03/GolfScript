@@ -6,7 +6,8 @@
     #define ERROR_DEFICCION_NO_VALIDA -30
     #define ABC(c) ((c=='_') || (ABC_MAYUSCULA(c) || ABC_MINUSCULA(c)))
     #define IF_INIT_STRING(c) (c=='"' || c=='\'')
-    #define IF_INIT_COMENT(c) (c=='#')
+    #define COMMENT '#'
+    #define IF_INIT_COMENT(c) (c==COMMENT)
     #define ERROR_INDEX_STR (-3)
     #define MEMORY_ERROR (-30)
     #define CHAR_TO_NUM(c) (c-'0')

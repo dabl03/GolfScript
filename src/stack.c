@@ -51,17 +51,26 @@ unsigned short delete_array(struct Array* arr){
     if(arr->value==NULL)
         return 1;
     for (unsigned int i=0;i<arr->i;i++){
-        if(arr->value[i].type==VAR){//Si es una variable o un tipo de dato.
-            struct Var* v=(struct Var*)arr->value[i].value;
-            free(v->name);
-            if(v->type!=FUNCTION)//Como es una funcion no necesita liberar memoria.
-                free(v->value);
-            else if (v->type==LONGINT || v->type==LONGFLOAT){
-                mpz_clear(*(mpz_ptr*)v->value);
-            }
-            free(arr->value[i].value);
-        }else if(arr->value[i].type!=FUNCTION){//Creo que no es necesario.
-            free(arr->value[i].value);
+        switch(arr->value[i].type){
+            case VAR:
+                delete_var((struct Var*)arr->value[i].value);
+                free(arr->value[i].value);
+                break;
+            case FUNCTION:break;//Las funciones no son necesario liberar.
+            case ARRAY:
+                delete_array((struct Array*)arr->value[i].value);
+            break;
+            case LONGINT:
+            case LONGFLOAT:
+                mpz_clear(*(mpz_ptr*)arr->value[i].value);
+                break;
+            //No hay forma diferente para liberar.
+            case INT:
+            case CODES_BLOCKS:
+            case STRING:
+            case FLOAT:
+            default:
+                free(arr->value[i].value);
         }
     }
     //Reiniciamos la estructura para que se pueda volver a usar.
@@ -72,6 +81,49 @@ unsigned short delete_array(struct Array* arr){
     return 0;
 }
 /**
+ * Copiamos un array y retornamos uno nuevo con todo sus elementos.
+ * @param  arr Array a copiar.
+ * @return     Array destino.
+ */
+struct Array* copy_array(struct Array* arr){
+    struct Array* out=(struct Array*)malloc(sizeof(struct Array));
+    void* tmp;
+    for (unsigned int i=0;i<arr->i;i++){
+        switch(arr->value[i].type){
+            case VAR:
+                break;
+            case ARRAY:
+                break;
+            case LONGINT:
+                
+                break;
+            case LONGFLOAT:///Caracteristica no disponible.
+                break;
+            case INT:
+                tmp=malloc(sizeof(int));
+                *(int*)tmp=*(int*)arr->value[i].value;
+                add_array(out,INT,tmp);
+                break;
+            case CODES_BLOCKS:
+            case STRING:
+                tmp=malloc(strlen((char*)arr->value[i].value)+1);
+                strcpy((char*)tmp,(char*)arr->value[i].value);
+                add_array(out,(arr->value[i].type==STRING)?STRING:CODES_BLOCKS,tmp);
+                break;
+            case FLOAT:
+                tmp=malloc(sizeof(double));
+                *(double*)tmp=*(double*)arr->value[i].value;
+                add_array(out,INT,tmp);
+                break;
+            default:
+                perror("Error interno de la app, me falto un tipo de dato por verificar en la funcion copy_array.");
+                printf("\nEl tipo se llama %s\n",get_name_type(arr->value[i].type) );
+                exit(-2);
+        }
+    }
+    return NULL;
+}
+/**
  * @brief Aqui configuramos y si ya estubo definida(tv->value!=NULL)
  * la liberamos para redefinir el valor de la variable.
  * 
@@ -80,9 +132,15 @@ unsigned short delete_array(struct Array* arr){
  * @param tv El tipo y el valor de la variable.
  */
 void setValue_tv(struct Var* v,char* name,struct type_value* tv){
-	char* str=NULL;
-    if (v->value != NULL)
+    name=(name!=NULL)?name:v->name;
+    //Por seguridad no podemos usar el nombre original.(No liberar una cadena que esa parte del ejecutable.)
+	char* str=(char*)malloc(strlen(name)+1);
+    strcpy(str,name);
+    if (v->value != NULL){
+        strcpy(str,name);
         delete_var(v);
+    }
+    v->name=name;
     switch(tv->type){
         case INT:
             v->value=malloc(sizeof(int));
@@ -93,12 +151,17 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
 			mpz_init(*(mpz_t*)v->value);//Importante.
             mpz_set(*(mpz_t*)v->value,*(mpz_t*)tv->value);
             break;
-        case ARRAY:
+        case ARRAY://TODO ver como copiarlo----------------------------------------------------------------
         case STRING:
         case CODES_BLOCKS:
             str=(char*)malloc(sizeof(char)*(strlen((char*)tv->value)+1));
             strcpy(str,(char*)tv->value);
             v->value=str;
+            break;
+        case FUNCTION:break;//No es necesario porque este nunca estará en la pila.
+        default:
+            printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(tv->type) );
+            exit(-3);
     }
     v->type = tv->type;
     v->name=(name)?name:v->name;
@@ -108,14 +171,11 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
  * @param v Variable a eliminar.
  */
 void delete_var(struct Var* v){
-    if (v->type!=FUNCTION && v->value!=NULL){
-        if (v->type==LONGINT)
-            mpz_clear(*(mpz_t*)v->value);
-        else if(v->type==LONGFLOAT){
-
-        }
-        free(v->value);
-    }
+    struct Array sub_arr={1,1,(struct type_value*)malloc(sizeof(struct type_value))};
+    sub_arr.value->type=v->type;
+    sub_arr.value->value=v->value;
+    free(v->name);
+    delete_array(&sub_arr);
     v->value=NULL;
 }
 /**
@@ -132,23 +192,25 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
         value=malloc(sizeof(int));
         *(int*)value=*(int*)v->value;
         break;
-    case FUNCTION: // Creo que en el lenguaje no existe, pero de todos modos lo voy a utilizar para los operadodes:)
-        // No hay nada que liberar, pues solo estoy apuntando a una función no a una memoria dinamica.
-        // Recuerda todas las funciónes deben tener estos dos argumentos:
+    case FUNCTION: //Usamos funciones dentro del mismo programa para esta.
         ((unsigned short (*)(struct Array* stack,struct Array* vars,char* extend))v->value)(stack,var,"");
         return NULL;
     case CODES_BLOCKS://Interpretamos el bloque de código.
         return (char*)v->value;
     case STRING:
-    case ARRAY:
         value=malloc(sizeof(char)*(strlen((char*)v->value)+1));
         strcpy((char*)value,(char*)v->value);
 		break;
+    case ARRAY:////////////////////////////////////////////////////////////////TODO Ver como hacerlo
+        break;
 	case LONGINT://Copiamos el entero largo a otro.
 		value=malloc(sizeof(mpz_t));
 		mpz_init(*(mpz_t*)value);//Importante.
 		mpz_set(*(mpz_t*)value, *(mpz_t*)v->value);
 		break;
+        /*default:
+            printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(tv->type) );
+            exit(-3);*/
     }
     add_array(stack,v->type,value);
     return NULL;
@@ -170,8 +232,14 @@ char* printf_stack(struct Array* stack){
                 output=(char*)realloc(output,sizeof(char)*len);
                 sprintf(output,"%s%d ",output,*(int*)stack->value[i].value);
                 break;
-            case CODES_BLOCKS://Recuerda todo despues de esto es string.
             case ARRAY:
+                a_out=printf_stack((struct Array*)stack->value[i].value);
+                len+=strlen(a_out)+6;
+                output=(char*)realloc(output,len);
+                sprintf(output,"%s[ %s ] ",output,a_out);
+                free(a_out);
+                break;
+            case CODES_BLOCKS://Recuerda todo despues de esto es string.
                 len+=strlen((char*)stack->value[i].value)+1;
                 output=(char*)realloc(output,sizeof(char)*len);
                 sprintf(output,"%s%s ",output,(char*)stack->value[i].value);
@@ -233,7 +301,8 @@ void add_var(struct Array* vars,char* name,enum TYPE t,void* value){
  * @return       Cadena dinamica. Recuerda liberar.
  */
 char* to_string_value(enum TYPE t,void* value){
-    char* out=NULL;
+    char* out=NULL,
+    *tmp=NULL;
     switch(t){
         case INT:
             out=(char*)malloc(CLIMIT_INT+1);
@@ -250,10 +319,15 @@ char* to_string_value(enum TYPE t,void* value){
         case CODES_BLOCKS:
         case STRING:
             out=(char*)malloc(strlen((char*)value)+1);
-            sprintf(out,"%s",(char*)value);
+            strcpy(out,(char*)value);
             break;
         case ARRAY:
             /**{TODO}:{Recuerda de llamar a esta funcion por cada elemento del array.}*/
+            break;
+        case FUNCTION:
+            tmp="(Native-Function)";
+            out=(char*)malloc(strlen((char*)tmp)+1);
+            strcpy(out,tmp);
             break;
         default:
             return NULL;

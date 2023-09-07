@@ -48,7 +48,12 @@ struct type_value* pop_array(struct Array* arr);
  * @return unsigned short 
  */
 unsigned short delete_array(struct Array* arr);
-
+/**
+ * Copiamos un array y retornamos uno nuevo con todo sus elementos.
+ * @param  arr Array a copiar.
+ * @return     Array destino.
+ */
+struct Array* copy_array(struct Array* arr);
 /**
  * @brief Aqui configuramos la variable y si ya estubo definida(tv->value!=NULL)
  * la liberamos para redefinir el valor de la variable.

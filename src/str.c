@@ -341,7 +341,7 @@ void cadd_add_leftover(struct String* str_,char c){
  * @param  end  Final de la cadena. Si se ingresa 0 se determina el tamaño dentro de la funcion.
  * @return      Cadena dinamica, recuerda liberar.
  */
-char* get_sub_str(char* str,U_INT init, U_INT end){
+char* get_sub_str(const char* str,U_INT init, U_INT end){
 	NEW_STRING(out,20);
 	U_INT end_c=(end)?end:strlen(str);
 	char type=str[init++],is_scape=FALSE;

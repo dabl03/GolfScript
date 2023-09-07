@@ -10,15 +10,13 @@
 #include "include/stack.h"
 #include "include/global_vars.h"
 /**
- * @todo Usar la biblioteca gmp para los enteros grandes.
- * Tengo la documentación descargada en ingles.
  * @todo: Arreglar todos los warning.
- * Quitarle los saltos de lineas a los bloques de codigo.
  * 
  * Agregar una forma de acceder a los elementos del array.
  * Estudiar el archivo example.gs
  * TODO agregar una opcion para que se importe archivos.
  * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
+ * @Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
  */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
@@ -210,7 +208,7 @@ char* get_input_str(char type_string){
 char* input_block(char init,char end,char* out_nesting,U_INT base_sub){
 	U_INT sub=1;
 	struct String out={20,1,(char*)malloc(20)};
-	char c, is_nline=FALSE, is_init=TRUE;//c this input, is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
+	char c, is_nline=FALSE;//c this input, is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
 	out.str[0]=init;
 	while(TRUE){
 		c=getchar();

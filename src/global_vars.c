@@ -38,7 +38,7 @@ Para trabajar con flotante usa la varible globa climit_float
  */
 unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
 	struct type_value* tv;
-	unsigned int len;//Para y out para array
+	//unsigned int len;//Para y out para array
 	char* out;
     if (stack->i){
 		tv=pop_array(stack);

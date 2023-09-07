@@ -33,4 +33,15 @@
      * @return     Cadena tratada para prevenir los excesos de espacio y los saltos de linea. Retorna cadena dinamica, liberar.
      */
     char* get_str_token(char* str,U_INT init,U_INT end);
+/**
+ * get init end block. Obtiene un bloque buscando en la cadena, desde init hasta conseguirn end block.
+ * Nota: El inicio del bloque se obtiene deacuerdo a init: char inicio=input[init];.
+ * No sirve para obtener cadena, en su lugar use get_sub_str o get_end_str.
+ * @param  input   Cadena a buscar
+ * @param  init    Desde donde empezar
+ * @param  end     El caracter a buscar para ver el final.
+ * @param  out_end Aqui almacenaremos el indice final para que fuera de la funcion se sepa.
+ * @return         retorna el bloque buscado sin el inicio y el final. Recordar liberar cadena.
+*/
+char* get_ie_block(const char* input,const U_INT init, const char end, U_INT* out_end);
 #endif
