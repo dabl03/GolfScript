@@ -21,6 +21,7 @@
 	-- Lista   Devuelve la longitud de la lista
 	-- lista, bloque	Filtro: selecciona los elementos que devuelven true cuando se les aplica el bloque.
 	--- INVESTIGAR PORQUE NO ENTIENDO
+    @todo ] sera una funcion nativa. No lo agregare directo en run
 	
 }
 Para trabajar con flotante usa la varible globa climit_float

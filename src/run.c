@@ -10,8 +10,6 @@
     #include "include/stack.h"
     #include "include/run.h"
     /**
-     * {TODO}:{ Recuerda que el array debe ser ejecutado por una nueva pila. }
-     * {TODO}: {Usar printf_stack para obtener la cadena para la funcion to_string_value }
      * @brief Función que analiza y ejecuta la instrucciones.
      * 
      * @param lines Lineas de codigo que interpretar. 
@@ -20,11 +18,11 @@
      * @return int error_codes.
     */
    /****
-    * @todo Tambien falta colocar la biblioteca gmp.
+    * @todo Tambien falta colocar la biblioteca gmp flotante.
     * @todo  get_str_token hacer que en vez de que se ejecute la funcion linea por linea esta funcion get_str_token ordene todo mas la funcion add*
-    * @todo  Al crear una nueva cadena entra en un bucle infinito, revisar porque.
+    * Afirmo la idea anterior para trabajar con archivos.
     * @todo  Es muy lento el programa, sobretodo cuando el entero es muy grande, arreglar
-    * Se que hay otra cosa por hacer pero no me acuerdo.
+    * @todo  ] sera una funcion nativa. No lo agregare directo en run
     */
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
@@ -71,15 +69,6 @@
                         continue;
                     }
                     str_add_char(&codes_blocks,l[i]);
-                }else if (IF_INIT_STRING(l[i])){//Llegamos a " o '
-                    end=get_end_str(l,i,i_end);
-					end=(end)?end:i_end;
-                    tmp_str=get_sub_str(l,i,end);//Si la cadena es '' se combierte a ""
-                    esc_str=get_str_escp(tmp_str);
-                    free(tmp_str);
-                    add_array(stack,STRING,esc_str);//Ingresamos 
-                    i= end;//Recuerda que si end=0 entonces se toma toda la cadena.
-                    continue;
                 }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
                     break;
                 }else if (l[i]==';'){
@@ -135,10 +124,9 @@
                     //Ahora vemos si existe la variable.
                     char* name=get_name_var(l,&i,0);
                     int i_var=search_var(name,vars);
-                    if(i_var!=-1){//Significa que se encontro la variable.
+                    if(i_var!=-1){//Variable exists
                         struct Var* v=vars->value[i_var].value;
                         if (v->type==CODES_BLOCKS){
-                            //No lo paso de una vez porque no se.
                             unsigned int len=strlen((char*)v->value);
                             char* code=(char*)malloc(sizeof(char)*(len+1));
                             struct Array arr={0,0,NULL};
@@ -162,12 +150,15 @@
                             mpz_init_set_str(*n,name,0);
                             add_array(stack,LONGINT,n);
                         }
-                    }
+                    }else if (IF_INIT_STRING(l[i])){//Llegamos a " o 
+	                    add_array(stack,STRING,name);//Usamos de una vez name porque ya tiene la cadena.
+	                    continue;
+	                }
                     free(name);
                 }
             }
         }
-        if (codes_blocks.str!=NULL){//Si quieres lo reemplazas con if (sub_codes_blocks){
+        if (codes_blocks.str!=NULL){
             str_add_char(&codes_blocks,'}');
             add_array(stack,CODES_BLOCKS,codes_blocks.str);
         }
@@ -182,7 +173,7 @@
      * @return char* malloc/calloc/readlloc
      */
     char* get_name_var(const char* search,unsigned int* i,unsigned int end){
-        struct String name = {3, 0, (char *)malloc(sizeof(char) * 3)};
+        struct String name = {3, 0, (char *)malloc(3)};
         unsigned int i_2 = *i;
         end=(end)?end:strlen(search);
         if (is_abc(search[*i])){ // Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
@@ -191,14 +182,18 @@
         }else if (is_num(search[*i])){ // Si es un numero.
             for (; i_2 < end && is_num(search[i_2]); i_2++);
             str_add_str_init_end(&name, search, *i, i_2--);
-        }else if(IF_INIT_STRING(search[*i])){
-
+        }else if(IF_INIT_STRING(search[*i])){//Obtenemos la cadena.
+        	*i=get_end_str(search,i_2,end);
+	    	*i=(*i)?*i:end;
+	    	free(name.str);
+	    	return get_sub_str(search,i_2,*i);
         }else{ // Espacio y otros simbolos.
             name.str[0] = search[*i];
             name.str[1] = '\0';
+            name.count=2;
         }
         *i=i_2;
-        return name.str;
+        return (char*)realloc(name.str,name.count+1);
     }
     /**Elimina los excesivos espacio dejando solo uno para separar cada palabra.
      * Tambien combertimos los saltos de lineas en espacio y se hace lo mismo que el anterior.

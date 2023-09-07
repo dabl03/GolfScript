@@ -17,6 +17,7 @@
  * TODO agregar una opcion para que se importe archivos.
  * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
  * @Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
+ * @todo Terminar las funciones que trabajan sobre array en el archivo stack.
  */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";

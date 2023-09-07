@@ -137,11 +137,11 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
 	char* str=(char*)malloc(strlen(name)+1);
     strcpy(str,name);
     if (v->value != NULL){
-        strcpy(str,name);
         delete_var(v);
     }
-    v->name=name;
-    switch(tv->type){
+    v->name=str;
+    v->type = tv->type;
+    switch(v->type){
         case INT:
             v->value=malloc(sizeof(int));
             *(int*)v->value=*(int*)tv->value;
@@ -151,7 +151,8 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
 			mpz_init(*(mpz_t*)v->value);//Importante.
             mpz_set(*(mpz_t*)v->value,*(mpz_t*)tv->value);
             break;
-        case ARRAY://TODO ver como copiarlo----------------------------------------------------------------
+        case ARRAY://TODO ver como copiarlo------------copy_array
+            break;
         case STRING:
         case CODES_BLOCKS:
             str=(char*)malloc(sizeof(char)*(strlen((char*)tv->value)+1));
@@ -163,8 +164,6 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
             printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(tv->type) );
             exit(-3);
     }
-    v->type = tv->type;
-    v->name=(name)?name:v->name;
 }
 /**
  * @brief Liberamos la memoria reserbada para almacenar una variable.
@@ -201,7 +200,7 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
         value=malloc(sizeof(char)*(strlen((char*)v->value)+1));
         strcpy((char*)value,(char*)v->value);
 		break;
-    case ARRAY:////////////////////////////////////////////////////////////////TODO Ver como hacerlo
+    case ARRAY://///////copy_array///////////////////////////TODO Ver como hacerlo
         break;
 	case LONGINT://Copiamos el entero largo a otro.
 		value=malloc(sizeof(mpz_t));
@@ -322,7 +321,7 @@ char* to_string_value(enum TYPE t,void* value){
             strcpy(out,(char*)value);
             break;
         case ARRAY:
-            /**{TODO}:{Recuerda de llamar a esta funcion por cada elemento del array.}*/
+            out=printf_stack((struct Array*)value);
             break;
         case FUNCTION:
             tmp="(Native-Function)";
