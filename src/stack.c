@@ -14,6 +14,9 @@
  * @param value Cualquier clase de objeto que este definido en enum TYPE.
  * @return unsigned short 
 */
+/**
+ * @TODO Arregrar el problema que el array se ve con un espacio adicional en el final.
+ */
 unsigned short add_array(struct Array* arr,enum TYPE type, void* value){
     if (arr->i==arr->max){//Si se necesita aumentar el espacio.
         arr->value=(struct type_value*)realloc(
