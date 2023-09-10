@@ -5,11 +5,6 @@
 #include <gmp.h>
 #include "./include/define.h"
 #include "./include/str.h"
-/*********{TODO}:{
-	Hacer una funcion que escape y descape una cadena para ponerlo en el visualizador de pila.
-}
-	
-*/
 /**
  * @brief Función que busca un char dentro de una cadena.
  * 
@@ -92,13 +87,6 @@ long int parseLongInt(const char* str){
     }
     return output;
 }
-/*struct type_value* get_int(const char* str){
-	unsigned int len=strlen(str);
-	if (len>=10){
-		
-	}
-	return NULL;
-}*/
 /**
  * @brief Función que concatena dos cadena usando la estructura de String.
  * 

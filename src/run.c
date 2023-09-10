@@ -22,14 +22,12 @@
     * @todo  get_str_token hacer que en vez de que se ejecute la funcion linea por linea esta funcion get_str_token ordene todo mas la funcion add*
     * Afirmo la idea anterior para trabajar con archivos.
     * @todo  Es muy lento el programa, sobretodo cuando el entero es muy grande, arreglar
-    * @todo  ] sera una funcion nativa. No lo agregare directo en run
     */
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
         struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
         U_INT sub_codes_blocks=0,
 		tmp_istr=0;
-        char* esc_str=NULL,
-        *tmp_str=NULL;
+        char* tmp_str=NULL;
         /*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
         for (U_INT i_line=0;i_line<lines->i && !quit;i_line++){
             U_INT end;

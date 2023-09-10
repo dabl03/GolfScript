@@ -9,13 +9,13 @@
 /**
  * @brief Ingresa un elemento en el array.
  * 
- * @param arr Array
+ * @param arr Array- Recordar que tienes que llenar la estructuras aunque todos los valores sean 0 es necesario por un error que no entiendo.
  * @param type Tipo del elemento, determinado por el enum TYPE
  * @param value Cualquier clase de objeto que este definido en enum TYPE.
  * @return unsigned short 
 */
 /**
- * @TODO Arregrar el problema que el array se ve con un espacio adicional en el final.
+ * @todo       : Ver que otras funciones dependen de print_stack y hacer que la cadena no se muestre con \" en inicio y en final
  */
 unsigned short add_array(struct Array* arr,enum TYPE type, void* value){
     if (arr->i==arr->max){//Si se necesita aumentar el espacio.
@@ -90,28 +90,37 @@ unsigned short delete_array(struct Array* arr){
  */
 struct Array* copy_array(struct Array* arr){
     struct Array* out=(struct Array*)malloc(sizeof(struct Array));
-    void* tmp;
+    void* tmp;//Aqui almacenaremos los punteros para despues guardarlos.
+    out->i=0;
+    out->max=0;
+    out->value=NULL;
     for (unsigned int i=0;i<arr->i;i++){
         switch(arr->value[i].type){
+            case LONGFLOAT:///Caracteristicas no disponible.
             case VAR:
+                perror("Caracteristica no añadio la caracteristica. Dile al desarrollador o añadela.\n"
+                "En funcion copy_array->caso VAR.\nEnter para terminar.");
+                tmp=malloc(sizeof(int));
+                while((*(int*)tmp=getchar())!=EOF && *(int*)tmp!='\0');
+                free(tmp);
+                exit(-4);
                 break;
             case ARRAY:
+                tmp=copy_array((struct Array*)arr->value[i].value);
                 break;
             case LONGINT:
-                
-                break;
-            case LONGFLOAT:///Caracteristica no disponible.
+                tmp=malloc(sizeof(mpz_t));
+                mpz_init(*(mpz_t*)tmp);
+                mpz_set(*(mpz_t*)tmp,*(mpz_t*)arr->value[i].value);
                 break;
             case INT:
                 tmp=malloc(sizeof(int));
                 *(int*)tmp=*(int*)arr->value[i].value;
-                add_array(out,INT,tmp);
                 break;
             case CODES_BLOCKS:
             case STRING:
                 tmp=malloc(strlen((char*)arr->value[i].value)+1);
                 strcpy((char*)tmp,(char*)arr->value[i].value);
-                add_array(out,(arr->value[i].type==STRING)?STRING:CODES_BLOCKS,tmp);
                 break;
             case FLOAT:
                 tmp=malloc(sizeof(double));
@@ -123,8 +132,14 @@ struct Array* copy_array(struct Array* arr){
                 printf("\nEl tipo se llama %s\n",get_name_type(arr->value[i].type) );
                 exit(-2);
         }
+        add_array(out,arr->value[i].type,tmp);
     }
-    return NULL;
+    /** / //No me decido si agregarlo
+    if (out->max==0){
+        free(out);
+        return NULL;
+    }/**/
+    return out;
 }
 /**
  * @brief Aqui configuramos y si ya estubo definida(tv->value!=NULL)
@@ -154,7 +169,8 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
 			mpz_init(*(mpz_t*)v->value);//Importante.
             mpz_set(*(mpz_t*)v->value,*(mpz_t*)tv->value);
             break;
-        case ARRAY://TODO ver como copiarlo------------copy_array
+        case ARRAY:
+            v->value=copy_array((struct Array*)tv->value);
             break;
         case STRING:
         case CODES_BLOCKS:
@@ -203,16 +219,17 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
         value=malloc(sizeof(char)*(strlen((char*)v->value)+1));
         strcpy((char*)value,(char*)v->value);
 		break;
-    case ARRAY://///////copy_array///////////////////////////TODO Ver como hacerlo
+    case ARRAY:
+        value=copy_array((struct Array*)v->value);
         break;
 	case LONGINT://Copiamos el entero largo a otro.
 		value=malloc(sizeof(mpz_t));
 		mpz_init(*(mpz_t*)value);//Importante.
 		mpz_set(*(mpz_t*)value, *(mpz_t*)v->value);
 		break;
-        /*default:
-            printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(tv->type) );
-            exit(-3);*/
+    default:
+        printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(v->type) );
+        exit(-3);
     }
     add_array(stack,v->type,value);
     return NULL;
@@ -238,7 +255,7 @@ char* printf_stack(struct Array* stack){
                 a_out=printf_stack((struct Array*)stack->value[i].value);
                 len+=strlen(a_out)+6;
                 output=(char*)realloc(output,len);
-                sprintf(output,"%s[ %s ] ",output,a_out);
+                sprintf(output,"%s[ %s] ",output,a_out);
                 free(a_out);
                 break;
             case CODES_BLOCKS://Recuerda todo despues de esto es string.
@@ -247,10 +264,10 @@ char* printf_stack(struct Array* stack){
                 sprintf(output,"%s%s ",output,(char*)stack->value[i].value);
                 break;
             case STRING:
-                a_out=get_str_nescp((char*)stack->value[i].value);
+                a_out=(char*)stack->value[i].value;//get_str_nescp((char*)stack->value[i].value);
                 len+=strlen(a_out)+3;
                 output=(char*)realloc(output,sizeof(char)*len);
-                sprintf(output,"%s\"%s\" ",output,a_out);
+                sprintf(output,"%s%s ",output,a_out);
                 free(a_out);
 				break;
 			case LONGINT:
@@ -317,7 +334,11 @@ char* to_string_value(enum TYPE t,void* value){
             out=(char*)malloc(CLIMIT_FLOAT+1);
             sprintf(out, "%.*lf", CLIMIT_FLOAT-1,*(double*)value);
             break;
-        //case LONGFLOAT:break;/**@Nota: para gmp double.*///Esta en comentario porque quiero que el compilador me diga donde esta.
+        case LONGFLOAT:
+            tmp="(ERR: LONGFLOAT NO TRATADO en to_string_value)";
+            out=(char*)malloc(strlen(tmp)+1);
+            strcpy(out,tmp);
+        break;
         case CODES_BLOCKS:
         case STRING:
             out=(char*)malloc(strlen((char*)value)+1);

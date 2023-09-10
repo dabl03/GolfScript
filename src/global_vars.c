@@ -21,8 +21,8 @@
 	-- Lista   Devuelve la longitud de la lista
 	-- lista, bloque	Filtro: selecciona los elementos que devuelven true cuando se les aplica el bloque.
 	--- INVESTIGAR PORQUE NO ENTIENDO
-    @todo ] sera una funcion nativa. No lo agregare directo en run
-	
+    @todo En la funcion help:
+        Agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
 }
 Para trabajar con flotante usa la varible globa climit_float
 }
@@ -161,6 +161,53 @@ unsigned short reset(struct Array* stack,struct Array* vars,...){
     return 0;
 }
 /**
+ * Copia el stack en un array la libera he ingresa ese array en la pila.
+ * @param  stack stack of user
+ * @return       unsigned short error(si es 1 hubo error)
+ */
+unsigned short pack_stack(struct Array* stack,...){
+    struct Array* tmp=copy_array(stack);
+    delete_array(stack);
+    add_array(stack,ARRAY,tmp);
+    return 0;
+}
+/**
+ * @brief      Muestra una descripción de las funciones predecterminadas.
+ * @param[in]  stack 
+ * @param[in]  vars -- Para obtener el salto de linea.
+ * @param[in]  ...
+ * @return     0-Por copatibilidad.
+ */
+unsigned short help(struct Array* stack,struct Array* vars,...){
+    char* key_fun[]={
+            "reset",
+            "print",
+            "puts",
+            "quit",
+            "]",
+            "help",
+            "fin_cadena"//Marca un final este array.
+    };
+    char* value_fun[]={
+        "Reinicia las variables globales si se rescriben",
+        "Imprime el ultimo elemento en la pila","Imprime el ultimo elemento en la pila y agrega un salto de linea",
+        "Termina el programa",
+        "Reempraza todos los elementos en la pila con un array con el contenido de esta",
+        "Muestra este menu de ayuda - Agrega una cadena en la pila con un operador y te muestra su descripción."
+    };
+    int i_var=search_var("n",vars);
+    struct Var* this_var=(struct Var*)vars->value[i_var].value;
+    char* extend=to_string_value(this_var->type,this_var->value);
+
+    printf("%s%s %s%s  Version: %s",LICENSE,extend,AUTHOR,extend,VERSION);
+    for (U_INT i=0;strcmp(key_fun[i],"fin_cadena");i++){
+        printf("%s%s -- %s%s",extend,key_fun[i],value_fun[i],extend);
+    }
+    if (extend!=NULL)
+        free(extend);
+    return 0;
+}
+/**
  * @brief Aqui iniciamos las variables globales. Tambien puede ser usada para reiniciar las variables globales.
  * 
  * @param vars Donde ingresar las variables globales.
@@ -171,6 +218,8 @@ void init_gvars(struct Array* vars){
     add_var(vars,"puts",FUNCTION,(void*)puts_operator);
     add_var(vars,"+",FUNCTION,(void*)add_operator);
     add_var(vars,"quit",FUNCTION,(void*)end_app);
+    add_var(vars,"]",FUNCTION,(void*)pack_stack);
 	add_var(vars,"n",STRING,"\n");
+    add_var(vars,"help",FUNCTION,(void*)help);
 }
 #endif

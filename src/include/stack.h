@@ -28,7 +28,7 @@ struct Array{
 /**
  * @brief Ingresa un elemento en el array.
  * 
- * @param arr Array
+ * @param arr Array- Recordar que tienes que llenar la estructuras aunque todos los valores sean 0 es necesario por un error que no entiendo.
  * @param type Tipo del elemento, determinado por el enum TYPE
  * @param value Cualquier clase de objeto que este definido en enum TYPE.
  * @return unsigned short 

@@ -17,11 +17,14 @@
  * TODO agregar una opcion para que se importe archivos.
  * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
  * @Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
- * @todo Terminar las funciones que trabajan sobre array en el archivo stack.
+ * La cadena esta demasiado escapada. Investigar porque.
+ * stack:
+ * * @todo       : Ver que otras funciones dependen de print_stack y hacer que la cadena no se muestre con \" en inicio y en final
  */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
-const char* AUTHOR="    Interprete: Daniel Briceño.\n    Sintaxis: Darren Smith.";
-const char* LICENCE="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
+const char* AUTHOR="  Interprete: Daniel Briceño.\n  Sintaxis: Darren Smith.";
+const char* LICENSE_URL="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
+const char* LICENSE="Copyright (c) 2022 Daniel Alexander";
 char* err_msg=0;
 int CLIMIT_INT=MAX_INT_DIG;
 int CLIMIT_FLOAT=DBL_DIG-1;

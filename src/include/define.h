@@ -28,6 +28,10 @@
     extern int CLIMIT_INT;//Para ver el limite del entero.
     extern int CLIMIT_FLOAT;//Para ver el limite del flotante.
     extern int quit;//Para saber si terminó la app.
+    extern const char* VERSION;//0 porque todavia se esta en desarrollo.
+    extern const char* AUTHOR;
+    extern const char* LICENSE_URL;
+    extern const char* LICENSE;
     enum TYPE{
         INT,
         LONGINT,

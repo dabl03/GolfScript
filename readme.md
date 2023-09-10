@@ -87,3 +87,6 @@ Creando funciones:
 ```
 ## Problemas:
 - Sale un problema al asignar un valor a un objeto y despues a llamar a la función add al momento en que la pila esta vacia o tiene un elemento. En gdb indica que el problema se encuentra en search_var_init
+
+## Creditos:
+-  Interprete basado en interprete GolfScript de: <a href="https://github.com/darrenks/golfscript">Darren Smith</a>. 

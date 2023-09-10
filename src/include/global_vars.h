@@ -45,6 +45,20 @@ unsigned short end_app(void);
  */
 unsigned short reset(struct Array* stack,struct Array* vars,...);
 /**
+ * Copia el stack en un array la libera he ingresa ese array en la pila.
+ * @param  stack stack of user
+ * @return       unsigned short error(si es 1 hubo error)
+ */
+unsigned short pack_stack(struct Array* stack,...);
+/**
+ * @brief      Muestra una descripción de las funciones predecterminadas.
+ * @param[in]  stack -------------------@todo agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
+ * @param[in]  vars -- Para obtener el salto de linea.
+ * @param[in]  ...
+ * @return     0-Por copatibilidad.
+ */
+unsigned short help(struct Array* stack,struct Array* vars,...);
+/**
  * @brief Aqui iniciamos las variables globales. Tambien puede ser usada para reiniciar las variables globales.
  * 
  * @param vars Donde ingresar las variables globales.
