@@ -14,9 +14,6 @@
  * @param value Cualquier clase de objeto que este definido en enum TYPE.
  * @return unsigned short 
 */
-/**
- * @todo       : Ver que otras funciones dependen de print_stack y hacer que la cadena no se muestre con \" en inicio y en final
- */
 unsigned short add_array(struct Array* arr,enum TYPE type, void* value){
     if (arr->i==arr->max){//Si se necesita aumentar el espacio.
         arr->value=(struct type_value*)realloc(
@@ -54,27 +51,7 @@ unsigned short delete_array(struct Array* arr){
     if(arr->value==NULL)
         return 1;
     for (unsigned int i=0;i<arr->i;i++){
-        switch(arr->value[i].type){
-            case VAR:
-                delete_var((struct Var*)arr->value[i].value);
-                free(arr->value[i].value);
-                break;
-            case FUNCTION:break;//Las funciones no son necesario liberar.
-            case ARRAY:
-                delete_array((struct Array*)arr->value[i].value);
-            break;
-            case LONGINT:
-            case LONGFLOAT:
-                mpz_clear(*(mpz_ptr*)arr->value[i].value);
-                break;
-            //No hay forma diferente para liberar.
-            case INT:
-            case CODES_BLOCKS:
-            case STRING:
-            case FLOAT:
-            default:
-                free(arr->value[i].value);
-        }
+        delete_item(arr->value[i].type,arr->value[i].value);
     }
     //Reiniciamos la estructura para que se pueda volver a usar.
     free(arr->value);
@@ -142,22 +119,22 @@ struct Array* copy_array(struct Array* arr){
     return out;
 }
 /**
- * @brief Aqui configuramos y si ya estubo definida(tv->value!=NULL)
- * la liberamos para redefinir el valor de la variable.
+ * @brief Aqui configuramos y si ya estubo definida pase NULL en name
+ ** para indicar que ya existe y hay que liberar su valor.
  * 
  * @param v Variable a configurar.
  * @param name Nombre de la variable.
  * @param tv El tipo y el valor de la variable.
  */
 void setValue_tv(struct Var* v,char* name,struct type_value* tv){
-    name=(name!=NULL)?name:v->name;
-    //Por seguridad no podemos usar el nombre original.(No liberar una cadena que esa parte del ejecutable.)
-	char* str=(char*)malloc(strlen(name)+1);
-    strcpy(str,name);
-    if (v->value != NULL){
-        delete_var(v);
+    char* str;
+    //No estuvo definida antes
+    if (name==NULL){
+        delete_item(v->type,v->value);
+    }else{
+        v->name=(char*)malloc(sizeof(name));
+        strcpy(v->name,name);
     }
-    v->name=str;
     v->type = tv->type;
     switch(v->type){
         case INT:
@@ -189,12 +166,44 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
  * @param v Variable a eliminar.
  */
 void delete_var(struct Var* v){
-    struct Array sub_arr={1,1,(struct type_value*)malloc(sizeof(struct type_value))};
-    sub_arr.value->type=v->type;
-    sub_arr.value->value=v->value;
+    delete_item(v->type,v->value);
     free(v->name);
-    delete_array(&sub_arr);
     v->value=NULL;
+}
+/**
+ * Elimina un item.
+ * @param t     Tipo de dato del item
+ * @param value Valor
+ */
+void delete_item(enum TYPE t, void* value){
+    switch(t){
+        case VAR:
+            delete_var((struct Var*)value);
+            free(value);
+            break;
+        case FUNCTION:break;//Las funciones no son necesario liberar.
+        case ARRAY:
+            delete_array((struct Array*)value);
+            free(value);
+        break;
+        case LONGINT:
+            mpz_clear(*(mpz_t*)value);
+            free(value);
+            break;
+        case LONGFLOAT:
+            mpz_clear(*(mpz_ptr*)value);
+        //No hay forma diferente para liberar.
+        case INT:
+        case CODES_BLOCKS:
+        case STRING:
+        case FLOAT:
+            free(value);
+            break;
+        default:
+            perror("Error: Se intenta liberar un tipo de dato no tratado. \nFuncion \"delete_item\" ");
+            printf("Type: %s",get_name_type(t));
+            exit(-111111);
+    }
 }
 /**
  * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
@@ -259,15 +268,15 @@ char* printf_stack(struct Array* stack){
                 free(a_out);
                 break;
             case CODES_BLOCKS://Recuerda todo despues de esto es string.
-                len+=strlen((char*)stack->value[i].value)+1;
+                len+=strlen((char*)stack->value[i].value)+7;
                 output=(char*)realloc(output,sizeof(char)*len);
-                sprintf(output,"%s%s ",output,(char*)stack->value[i].value);
+                sprintf(output,"%s{%s} ",output,(char*)stack->value[i].value);
                 break;
             case STRING:
-                a_out=(char*)stack->value[i].value;//get_str_nescp((char*)stack->value[i].value);
+                a_out=get_str_nescp((char*)stack->value[i].value);
                 len+=strlen(a_out)+3;
                 output=(char*)realloc(output,sizeof(char)*len);
-                sprintf(output,"%s%s ",output,a_out);
+                sprintf(output,"%s\"%s\" ",output,a_out);
                 free(a_out);
 				break;
 			case LONGINT:

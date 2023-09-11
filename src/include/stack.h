@@ -49,14 +49,20 @@ struct type_value* pop_array(struct Array* arr);
  */
 unsigned short delete_array(struct Array* arr);
 /**
+ * Elimina un item.
+ * @param t     Tipo de dato del item
+ * @param value Valor
+ */
+void delete_item(enum TYPE t, void* value);
+/**
  * Copiamos un array y retornamos uno nuevo con todo sus elementos.
  * @param  arr Array a copiar.
  * @return     Array destino.
  */
 struct Array* copy_array(struct Array* arr);
 /**
- * @brief Aqui configuramos la variable y si ya estubo definida(tv->value!=NULL)
- * la liberamos para redefinir el valor de la variable.
+ * @brief Aqui configuramos y si ya estubo definida pase NULL en name
+ ** para indicar que ya existe y hay que liberar su valor.
  * 
  * @param v Variable a configurar.
  * @param name Nombre de la variable.

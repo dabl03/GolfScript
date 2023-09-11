@@ -17,10 +17,7 @@
  * TODO agregar una opcion para que se importe archivos.
  * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
  * @Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
- * La cadena esta demasiado escapada. Investigar porque.
- * stack:
- * * @todo       : Ver que otras funciones dependen de print_stack y hacer que la cadena no se muestre con \" en inicio y en final
- */
+*/
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="  Interprete: Daniel Briceño.\n  Sintaxis: Darren Smith.";
 const char* LICENSE_URL="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
@@ -59,29 +56,33 @@ int main(int argc, char *argv[]){
             return interprete(&stack,&vars);
         }else{
 			FILE* file=fopen((char*)path_files.value[0].value,"r");
-            struct Array lineas={0,0,NULL};
-			struct String str={0,0,NULL};
-			init_str(&str,BUFFER);
-			if (file==NULL)
-			{
-				printf("El archivo no existe, revise la ruta.%s",ENDL);
+            struct Array lineas={1,0,malloc(sizeof(struct type_value))};
+            long int size_file=0;
+            char* str;
+			//No existe.
+			if (file==NULL){
+				printf("El archivo \"%s\" no existe, revise la ruta.%s",(char*)path_files.value[0].value,ENDL);
 				delete_array(&path_files);
-				free(str.str);
 				exit(EXIT_FAILURE);
 			}
-
-			while (fgets(str.str, BUFFER, file)){
-				char* linea=(char*)malloc(sizeof(char*)*(strlen(str.str)+1));
-				strcpy(linea,str.str);
-				add_array(&lineas,STRING,linea);
-			}
+            //Movemos al final del archivo para ver donde termina su contenido.
+            fseek(file, 0L, SEEK_END);
+            size_file=ftell(file);
+			fseek(file, 0L, SEEK_SET);//Regreso al inicio.
+			
+			str=(char*)malloc(size_file+2);
+			//Leemos todo de una.
+			fread(str,sizeof(char),size_file,file);
+			str[size_file]='\0';//Seguridad.
 			fclose(file);
-			delete_array(&path_files);
-			free(str.str);
+			//Ejecutamos:
+			add_array(&lineas,STRING,str);
 			run(&lineas,&stack,&vars);
+			//Liberamos todo.
 			delete_array(&lineas);
 			delete_array(&stack);
 			delete_array(&vars);
+			delete_array(&path_files);
 		}
 	}else{//Interpretamos.
 		return interprete(&stack,&vars);

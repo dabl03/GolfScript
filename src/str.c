@@ -43,8 +43,8 @@ unsigned short is_num(unsigned const char c){
  * @param i_end limite de la cadena. Si se coloca 0 se buscará hasta el final de la cadena.
  * @return unsigned int end si retorna 0 entonces no se consiguió el final.
  */
-unsigned int get_end_str(const char* str,unsigned const int init,unsigned int i_end){
-	unsigned int i=init;
+U_INT get_end_str(const char* str,unsigned const int init,unsigned int i_end){
+	U_INT i=init;
 	unsigned short is_scape=0;
 	unsigned const char type=str[i++];//Almacenamos el tipo de cadena para saber si hay un signo de escape+type, y si anida otro tipo de cadena lo tratamos como una subcadena.
 	i_end=(!i_end)?strlen(str):i_end;//Asi aprovechamos si se paso el limite de la cadena.
@@ -69,7 +69,7 @@ int parseInt(const char* str){
             output=(output*10)+CHAR_TO_NUM(str[i]);
         }
     }
-    return output;
+    return (is_negative)?-output:output;
 }
 /**
  * @brief Mismo que parseInt pero para enteros long int.

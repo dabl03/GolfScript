@@ -46,12 +46,12 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
         out=to_string_value(tv->type,tv->value);
         if (out==NULL){
             puts("ERROR: Interno, el tipo de dato desconocido.");
-            free(tv->value);
+            delete_item(tv->type,tv->value);
             return 2;
         }
         printf("%s%s",out,extend);
         free(out);
-        free(tv->value);
+        delete_item(tv->type,tv->value);
     }else{
         puts("Warnign: La pila esta vacia.");
         return 1;
@@ -88,9 +88,14 @@ unsigned short add_operator(struct Array* stack,...){
     }
     struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
     struct type_value* num_1=&stack->value[stack->i-1];
+    void* tmp=NULL;
+    U_INT tmp_len=0;
     switch (num_2->type){
     case INT:
-        switch(num_1->type){
+        
+        break;
+    case CODES_BLOCKS:
+        switch(num_1->type){ //[num_1 num_2]
             case INT:
                 *(int*)num_1->value+=*(int*)num_2->value;
                 break;
@@ -100,40 +105,54 @@ unsigned short add_operator(struct Array* stack,...){
             case FLOAT:
                 *(double*)num_2->value+=*(double*)num_1->value;
                 break;
-            case LONGFLOAT:
-                break;//_____________________________________________Pronto se hara uso_____________________________________________
-            //default://Para arrays.
-			case STRING:
-				break;
-			
-			/*
-        PCHAR,
-        CHAR,
-        VALUE_TYPE,
-        //Usado por el interprete:
-        FUNCTION,
-        VAR,
-        CODES_BLOCKS,
-        ARRAY
-			*/
-		}
-	  /*> "a" 1+
-		["a1"]
-		> ; 1 "a" +
-		["1a"]
-		> ; [1 2 3] 1 +
-		[[1 2 3 1]]*/
-		
-        break;
-    case CODES_BLOCKS:
+            case STRING:
+                tmp=to_string_value(INT,num_2->value);
+                tmp_len=strlen(tmp)+strlen((char*)num_1->value)+1;
+                num_1->value=realloc(num_1->value,tmp_len);
+                strcat((char*)num_1->value,tmp);
+                free(tmp);
+                break;
+            case CODES_BLOCKS:
+                tmp=to_string_value(INT,num_2->value);
+                tmp_len=strlen(tmp);
+                num_1->value=realloc(num_1->value,tmp_len+strlen((char*)num_1->value)+4);
+                tmp_len=strlen((char*)num_1->value);
+                ((char*)num_1->value)[tmp_len-2]='\0';
+                sprintf((char*)num_1->value,"%s%s }",(char*)num_1->value,tmp);
+                free(tmp);
+                break;
+            case ARRAY:
+                tmp=malloc(sizeof(int));
+                *(int*)tmp=*(int*)num_2->value;
+                add_array((struct Array*)num_1->value,INT,tmp);
+                break;
+            default:
+                perror("Caracteristica no disponible en la funcion add_operator\n");
+                printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
+                exit(-8);
+        }
         break;
     case STRING:
     case ARRAY:
         break;
     default:
-        printf("ERROR: Fallo en la app TYPE: %d, VALUE: %p",num_1->type,num_1->value);
+        perror("Caracteristica no disponible en la funcion add_operator\n");
+        printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
+        exit(-8);
     }
-    free(num_2->value);
+    delete_item(num_2->type,num_2->value);
+    return 0;
+}
+/**
+ * @brief      Operador de resta.
+ * @param      stack      The stack es donde se saca los numeros
+ * @param[in]  ... No necesitamos mas parametros
+ *
+ * @return     is_error?
+ */
+unsigned short sub_operator(struct Array* stack,...){
+    perror("caracteristica no disponible.\nFuncion sub_operator sin terminar.");
+    exit(-7);
     return 0;
 }
 /**
@@ -217,6 +236,7 @@ void init_gvars(struct Array* vars){
     add_var(vars,"print",FUNCTION,(void*)prinft_1_);
     add_var(vars,"puts",FUNCTION,(void*)puts_operator);
     add_var(vars,"+",FUNCTION,(void*)add_operator);
+    add_var(vars,"-",FUNCTION,(void*)sub_operator);
     add_var(vars,"quit",FUNCTION,(void*)end_app);
     add_var(vars,"]",FUNCTION,(void*)pack_stack);
 	add_var(vars,"n",STRING,"\n");

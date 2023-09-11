@@ -19,18 +19,13 @@
     */
    /****
     * @todo Tambien falta colocar la biblioteca gmp flotante.
-    * @todo  get_str_token hacer que en vez de que se ejecute la funcion linea por linea esta funcion get_str_token ordene todo mas la funcion add*
-    * Afirmo la idea anterior para trabajar con archivos.
     * @todo  Es muy lento el programa, sobretodo cuando el entero es muy grande, arreglar
     */
     int run(struct Array* lines,struct Array* stack,struct Array* vars){
-        struct String codes_blocks={0,0,NULL};//Importante iniciarlo en null, esto nos dirá si es un bloque de codigo.
-        U_INT sub_codes_blocks=0,
-		tmp_istr=0;
+        U_INT tmp_istr=0;
         char* tmp_str=NULL;
         /*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
         for (U_INT i_line=0;i_line<lines->i && !quit;i_line++){
-            U_INT end;
             if(lines->value[i_line].type!=STRING){
                 return -1;
             }
@@ -38,41 +33,17 @@
             U_INT i_end=strlen(l);
             for(U_INT i=0;i<i_end;i++){
                 //Primero definimos nuestros signos constantes:
-                if(sub_codes_blocks || l[i]=='{'){
-                    if(l[i]=='{'){
-                        sub_codes_blocks+=1;
-                    }else if (l[i]=='}'){
-                        sub_codes_blocks-=1;
-                        if (!sub_codes_blocks){
-                            str_add_char(&codes_blocks,'}');//Nota esto no debe ser asi porque cuando el bucle termina se pone diferentes caracteres. A juro hay que appenarlos.
-                            add_array(stack,CODES_BLOCKS,(void*)codes_blocks.str);
-                            sub_codes_blocks=0;
-                            codes_blocks.str=NULL;//Ahora la referencia está dentro de la pila.
-                            continue;
-                        }
-                    }else if(IF_INIT_STRING(l[i])){
-                        end=get_end_str(l,i,i_end);
-						end=(end)?end:i_end;
-                        tmp_str=get_sub_str(l,i,end+1);
-                        char* scape_=get_str_escp(tmp_str);
-                        str_add_str_init_end(&codes_blocks,scape_,0,0);
-                        free(tmp_str);
-                        free(scape_);
-                        i=end;
-                        continue;
-                    }else if(IF_INIT_COMENT(l[i])){
-                        continue;
-                    }else if(IF_ENDL(l[i])){//Cambiamos los saltos de lineas por espacio.
-                            str_add_char(&codes_blocks,' ');
-                        continue;
-                    }
-                    str_add_char(&codes_blocks,l[i]);
-                }else if (IF_INIT_COMENT(l[i])){//Llegamos a un comentario.
+                if(l[i]=='{'){
+                    tmp_str=get_ie_block(l,i,'}',&tmp_istr);
+                    add_array(stack,CODES_BLOCKS,tmp_str);
+                    //Terminamos.
+                    i=tmp_istr;
+                }else if (IF_INIT_COMENT(l[i]))//Llegamos a un comentario.
                     break;
-                }else if (l[i]==';'){
+                else if (l[i]==';'){
                     if (stack->i){
                         struct type_value* tv=pop_array(stack);
-                        free(tv->value);
+                        delete_item(tv->type,tv->value);
                     }else{
                         puts("Warnign: La pila esta vacia.");
                     }
@@ -96,7 +67,6 @@
                     //No estubo definida antes.
                     struct Var* this_var=(struct Var*)malloc(sizeof(struct Var));
                     struct type_value* stack_var=&stack->value[stack->i-1];
-                    this_var->value=NULL;
                     setValue_tv(this_var,name,stack_var);
                     add_array(vars,VAR,(void*)this_var);
                     free(name);
@@ -125,40 +95,31 @@
                     if(i_var!=-1){//Variable exists
                         struct Var* v=vars->value[i_var].value;
                         if (v->type==CODES_BLOCKS){
-                            unsigned int len=strlen((char*)v->value);
-                            char* code=(char*)malloc(sizeof(char)*(len+1));
                             struct Array arr={0,0,NULL};
-                            strncpy(code,&((char*)v->value)[1],len-2);
-                            code[len-2]='\0';
-                            add_array(&arr,STRING,code);
+                            add_array(&arr,STRING,(char*)v->value);
                             run(&arr,stack,vars);
                             free(arr.value);
-                            free(code);
                         }else{
                             interpret(stack,vars,v);
                         }
-                    }else if(is_num(name[0])){
+                    }else if(is_num(name[0]) || name[0]=='-'){//Sino se ejecuta la condicion anterioro significa que - es para un numero.
                         unsigned int len=strlen(name)-1;
                         if (len<=CLIMIT_INT){
                             int* v=(int*)malloc(sizeof(int));
-                            *v=parseInt(name);
+                            *v=(int)atoi(name);//parseInt(name);
                             add_array(stack,INT,(void*)v);
                         }else{
                             mpz_t* n=(mpz_t*)malloc(sizeof(mpz_t));
                             mpz_init_set_str(*n,name,0);
                             add_array(stack,LONGINT,n);
                         }
-                    }else if (IF_INIT_STRING(l[i])){//Llegamos a " o 
-	                    add_array(stack,STRING,name);//Usamos de una vez name porque ya tiene la cadena.
-	                    continue;
+                    }else if (IF_INIT_STRING(l[i])){//Llegamos a " o
+                        char* scape_=get_str_escp(name);
+	                    add_array(stack,STRING,scape_);//Usamos de una vez name porque ya tiene la cadena.
 	                }
                     free(name);
                 }
             }
-        }
-        if (codes_blocks.str!=NULL){
-            str_add_char(&codes_blocks,'}');
-            add_array(stack,CODES_BLOCKS,codes_blocks.str);
         }
         return 0;
     }
@@ -177,8 +138,9 @@
         if (is_abc(search[*i])){ // Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
             for (; i_2 < end && (is_abc(search[i_2]) || is_num(search[i_2])); i_2++);
             str_add_str_init_end(&name, search, *i, i_2--);//Necesitamos disminuir para que el bucle vaja para el siguiente caracter.
-        }else if (is_num(search[*i])){ // Si es un numero.
-            for (; i_2 < end && is_num(search[i_2]); i_2++);
+        }else if (is_num(search[*i]) || search[*i]=='-'){ // Si es un numero.
+            for (i_2+=(search[*i]=='-')?1:0;
+                i_2 < end && is_num(search[i_2]); i_2++);
             str_add_str_init_end(&name, search, *i, i_2--);
         }else if(IF_INIT_STRING(search[*i])){//Obtenemos la cadena.
         	*i=get_end_str(search,i_2,end);

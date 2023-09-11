@@ -31,6 +31,14 @@ unsigned short puts_operator(struct Array* stack,struct Array* vars);
  * @return unsigned short 
  */
 unsigned short add_operator(struct Array* stack,...);
+/**
+ * @brief      Operador de resta.
+ * @param      stack      The stack es donde se saca los numeros
+ * @param[in]  ... No necesitamos mas parametros
+ *
+ * @return     is_error?
+ */
+unsigned short sub_operator(struct Array* stack,...);
 /***
  * Terminamos la app.
 */
