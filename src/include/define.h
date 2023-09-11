@@ -33,6 +33,7 @@
     extern const char* LICENSE_URL;
     extern const char* LICENSE;
     enum TYPE{
+        NONE,
         INT,
         LONGINT,
         FLOAT,

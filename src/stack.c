@@ -37,7 +37,6 @@ struct type_value* pop_array(struct Array* arr){
     if (arr->i<(arr->max-10)){//Para asegurar de que no se desperdicie demasiada memoria.
         arr->max-=10;
         arr->value=(struct type_value*)realloc((void*)arr->value,sizeof(struct type_value)*arr->max);
-        
     }
     return &arr->value[--arr->i];//Quitamos un elemento de la pila y retornamos ese elemento.
 }
@@ -111,12 +110,58 @@ struct Array* copy_array(struct Array* arr){
         }
         add_array(out,arr->value[i].type,tmp);
     }
-    /** / //No me decido si agregarlo
-    if (out->max==0){
-        free(out);
-        return NULL;
-    }/**/
     return out;
+}
+/**
+ * @brief      Agrega un item en una posicion indicada a un array.
+ *
+ * @param      arr        El array a modificar.
+ * @param[in]  is_append  Indica si se agrega(TRUE) o simpremente se modifica la posición del elemento(FALSE)
+ * @param[in]  index_set  El indice a modificar. Si es -1 entonces se agrega al final.
+ * @param[in]  t_out      Tipo de dato
+ * @param      value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
+ */
+void array_set_item(struct Array* arr,char is_append,int index_set, enum TYPE t_out, void* value){
+    struct type_value cp,
+    cp_after;
+    U_INT i=index_set+1;
+    if (!is_append){//Si no es append item entonces modificamos el valor de ese espacio.
+        int index=(index_set!=-1)?index_set:arr->i-1;
+        delete_item(arr->value[index].type,arr->value[index].value);
+        arr->value[index].type=t_out;
+        arr->value[index].value=value;
+        return;
+    }else if (index_set==-1){//Aunque si es -1 significa agregar al final
+        add_array(arr,t_out,value);
+        return;
+    }else if(index_set>arr->i || index_set<0){//No queremos indices negativos.
+        //Prevenimos que el indice pasado sea mayor
+        //al ultimo objeto+1 para no dejar espacios vacios.
+        printf("Advertencia: se intenta acceder a una posición que no se puede."
+            "\nIndice pasado: %d  -  Indice maximo a modificar: %d.\n",index_set,arr->i);
+        return;
+    }
+    //Modo Append.
+    //Si no hay mas espacio se agregara 10 mas para almacenar todo
+    add_array(arr,PCHAR,NULL);
+    //Copiamos el primer elemento.
+    cp.type=arr->value[index_set].type;
+    cp.value=arr->value[index_set].value;
+    //Agregamos el elemento modificaco.
+    arr->value[index_set].type=t_out;
+    arr->value[index_set].value=value;
+
+    for (;i<arr->i;i++){
+        //Copiamos el elemento actual para despues agregarlo.
+        cp_after.type=arr->value[i].type;
+        cp_after.value=arr->value[i].value;
+        //Agregamos el elemento anterior.
+        arr->value[i].type=cp.type;
+        arr->value[i].value=cp.value;
+        //Copiamos el elemento para el proximo ciclo.
+        cp.type=cp_after.type;
+        cp.value=cp_after.value;
+    }
 }
 /**
  * @brief Aqui configuramos y si ya estubo definida pase NULL en name

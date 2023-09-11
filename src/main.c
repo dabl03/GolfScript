@@ -11,6 +11,7 @@
 #include "include/global_vars.h"
 /**
  * @todo: Arreglar todos los warning.
+ * @todo: Agregar un tester.
  * 
  * Agregar una forma de acceder a los elementos del array.
  * Estudiar el archivo example.gs

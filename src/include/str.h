@@ -2,6 +2,7 @@
 #define STR_H 1
 #include <string.h>
 #include <gmp.h>
+#include <limits.h>
 #include "./define.h"
 struct String{
     unsigned int max;

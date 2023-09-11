@@ -5,6 +5,7 @@
 #include "./include/str.h"
 #include "./include/stack.h"
 #include "./include/global_vars.h"
+#include "./include/operators.h"
 /*******{TODO}:{
 	Operadores que faltan: 
 	- .	cualquier	Duplicar en pila
@@ -87,52 +88,33 @@ unsigned short add_operator(struct Array* stack,...){
         return 1;
     }
     struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
-    struct type_value* num_1=&stack->value[stack->i-1];
+    struct type_value* num_1=&stack->value[stack->i-1],
+    *tmp_tv=NULL;
     void* tmp=NULL;
     U_INT tmp_len=0;
-    switch (num_2->type){
+    //[num_1 num_2]
+    switch (num_1->type){
     case INT:
-        
+        tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value,TRUE); 
+        break;
+    case LONGINT:
+        add_longint(*(mpz_t*)num_1->value,num_2->type,num_2->value,TRUE);
         break;
     case CODES_BLOCKS:
-        switch(num_1->type){ //[num_1 num_2]
-            case INT:
-                *(int*)num_1->value+=*(int*)num_2->value;
-                break;
-            case LONGINT:
-                mpz_add_ui(*(mpz_t*)num_1->value,*(mpz_t*)num_1->value,*(int*)num_2->value);
-                break;
-            case FLOAT:
-                *(double*)num_2->value+=*(double*)num_1->value;
-                break;
-            case STRING:
-                tmp=to_string_value(INT,num_2->value);
-                tmp_len=strlen(tmp)+strlen((char*)num_1->value)+1;
-                num_1->value=realloc(num_1->value,tmp_len);
-                strcat((char*)num_1->value,tmp);
-                free(tmp);
-                break;
-            case CODES_BLOCKS:
-                tmp=to_string_value(INT,num_2->value);
-                tmp_len=strlen(tmp);
-                num_1->value=realloc(num_1->value,tmp_len+strlen((char*)num_1->value)+4);
-                tmp_len=strlen((char*)num_1->value);
-                ((char*)num_1->value)[tmp_len-2]='\0';
-                sprintf((char*)num_1->value,"%s%s }",(char*)num_1->value,tmp);
-                free(tmp);
-                break;
-            case ARRAY:
-                tmp=malloc(sizeof(int));
-                *(int*)tmp=*(int*)num_2->value;
-                add_array((struct Array*)num_1->value,INT,tmp);
-                break;
-            default:
-                perror("Caracteristica no disponible en la funcion add_operator\n");
-                printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
-                exit(-8);
-        }
+        tmp_tv=(struct type_value*)malloc(sizeof(struct type_value*));
+        tmp_tv->type=CODES_BLOCKS;
+        tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value,TRUE);
         break;
     case STRING:
+        //Usar add_longint en lugar de lo que hay aqui.
+        if (num_2->type==CODES_BLOCKS){
+            tmp_tv=(struct type_value*)malloc(sizeof(struct type_value*));
+            tmp_tv->type=CODES_BLOCKS;
+            tmp_tv->value=add_codes_block((char*)num_2->value,num_1->type,num_1->value,FALSE);
+        }else{
+
+        }
+        break;
     case ARRAY:
         break;
     default:
@@ -141,6 +123,9 @@ unsigned short add_operator(struct Array* stack,...){
         exit(-8);
     }
     delete_item(num_2->type,num_2->value);
+    delete_item(num_1->type,num_1->value);
+    stack->value[stack->i-1].type=tmp_tv->type;
+    stack->value[stack->i-1].value=tmp_tv->value;
     return 0;
 }
 /**

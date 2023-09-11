@@ -1,6 +1,7 @@
 #ifndef STACK_H
 #define STACK_H 1
 #include <string.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "define.h"
@@ -60,6 +61,16 @@ void delete_item(enum TYPE t, void* value);
  * @return     Array destino.
  */
 struct Array* copy_array(struct Array* arr);
+/**
+ * @brief      Agrega un item en una posicion indicada a un array.
+ *
+ * @param      arr        El array a modificar.
+ * @param[in]  is_append  Indica si se agrega(TRUE) o simpremente se modifica la posición del elemento(FALSE)
+ * @param[in]  index_set  El indice a modificar. Si es -1 entonces se agrega al final.
+ * @param[in]  t_out      Tipo de dato
+ * @param      value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
+ */
+void array_set_item(struct Array* arr,char is_append,int index_set, enum TYPE t_out, void* value);
 /**
  * @brief Aqui configuramos y si ya estubo definida pase NULL en name
  ** para indicar que ya existe y hay que liberar su valor.

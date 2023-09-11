@@ -21,18 +21,20 @@ STR=$(SRC)/str.c
 STACK=$(SRC)/stack.c
 RUN=$(SRC)/run.c
 GLOBAL_VARS=$(SRC)/global_vars.c
+OPERATORS=$(SRC)/operators.c
 
 STR_O=$(BIN_O)/str.o
 STACK_O=$(BIN_O)/stack.o
 RUN_O=$(BIN_O)/run.o
 GLOBAL_VARS_O=$(BIN_O)/global_vars.o
+OPERATORS_O=$(BIN_O)/operators.o
 
-OBJ_S=$(RUN_O) $(STACK_O) $(STR_O) $(GLOBAL_VARS_O)
+OBJ_S=$(RUN_O) $(STACK_O) $(STR_O) $(GLOBAL_VARS_O) $(OPERATORS_O)
 LOG=./build/log
 LOG_OBJ=./build/log/log_obj.txt
 LOG_APP=./build/log/log_app.txt
 
-FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h $(INCLUDE)/global_vars.h
+FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h $(INCLUDE)/global_vars.h $(INCLUDE)/operators.h
 MAKE=mingw32-make
 
 define delete_obj
@@ -88,6 +90,10 @@ $(RUN_O): $(RUN) $(FILE_H)
 $(GLOBAL_VARS_O): $(GLOBAL_VARS) $(FILE_H)
 	@echo "Compilando el archivo objeto de $(GLOBAL_VARS)."
 	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/global_vars.log
+
+$(OPERATORS_O): $(OPERATORS) $(FILE_H)
+	@echo "Compilando el archivo objeto de $(OPERATORS)."
+	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/operators.log
 
 clear:
 	$(call delete_obj)

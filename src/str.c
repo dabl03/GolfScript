@@ -170,6 +170,8 @@ char scape_char(const char c){
 		return '\0';
 	case '?':
 		return '\?';
+	case 'x':
+		return -2;
 	default:
 		return -1;
 	}
@@ -294,6 +296,18 @@ char* get_str_escp(char* old_str){
 			if (chr==-1){
 				new_str[i_nstr++]=*c;
 			}else{
+				if (chr==-2 AND (c+1!='\0' AND c+2!='\0')){//Convertimos a exadecimal.
+					char* tmp=(char*)alloca(3);
+					tmp[0]=*(++c);
+					tmp[1]=*(++c);
+					tmp[2]='\0';
+					U_INT otro=(int) strtol(tmp, NULL, 16);
+					if (otro>CHAR_MAX){
+						new_str[i_nstr++]=CHAR_MAX;
+						chr=otro-CHAR_MAX;
+					}else
+						chr=otro;
+				}
 				new_str[i_nstr++]=chr;
 			}
 			is_scape=FALSE;
