@@ -95,27 +95,36 @@ unsigned short add_operator(struct Array* stack,...){
     //[num_1 num_2]
     switch (num_1->type){
     case INT:
-        tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value,TRUE); 
+        tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value,true); 
         break;
     case LONGINT:
-        add_longint(*(mpz_t*)num_1->value,num_2->type,num_2->value,TRUE);
+        tmp_tv=add_longint(*(mpz_t*)num_1->value,num_2->type,num_2->value,true);
         break;
     case CODES_BLOCKS:
-        tmp_tv=(struct type_value*)malloc(sizeof(struct type_value*));
+        //Usamos alloca para no liberar este bloque:D
+        tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
         tmp_tv->type=CODES_BLOCKS;
-        tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value,TRUE);
+        tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value,true);
         break;
     case STRING:
-        //Usar add_longint en lugar de lo que hay aqui.
-        if (num_2->type==CODES_BLOCKS){
-            tmp_tv=(struct type_value*)malloc(sizeof(struct type_value*));
-            tmp_tv->type=CODES_BLOCKS;
-            tmp_tv->value=add_codes_block((char*)num_2->value,num_1->type,num_1->value,FALSE);
-        }else{
-
-        }
+        tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
         break;
     case ARRAY:
+        switch(num_2->type){
+            case STRING:
+                tmp_tv=add_str((char*)num_2,ARRAY,num_1->value,false);
+                break;
+            case CODES_BLOCKS:
+                tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
+                tmp_tv->type=CODES_BLOCKS;
+                tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value,false);
+                break;
+            default:
+                //No son cadenas ni bloques de codigo asi que podemos agregarlo tranquilos:D
+                //Como solo es agregar al final no es necesario liberar num_2 porque este se usara en num_1
+                add_array((struct Array*)num_1,num_2->type,num_2->value);
+                return 0;
+        }
         break;
     default:
         perror("Caracteristica no disponible en la funcion add_operator\n");

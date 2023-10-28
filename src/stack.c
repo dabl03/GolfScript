@@ -72,8 +72,7 @@ struct Array* copy_array(struct Array* arr){
     out->value=NULL;
     for (unsigned int i=0;i<arr->i;i++){
         switch(arr->value[i].type){
-            case LONGFLOAT:///Caracteristicas no disponible.
-            case VAR:
+            case VAR:///Caracteristicas no disponible.
                 perror("Caracteristica no añadio la caracteristica. Dile al desarrollador o añadela.\n"
                 "En funcion copy_array->caso VAR.\nEnter para terminar.");
                 tmp=malloc(sizeof(int));
@@ -84,24 +83,27 @@ struct Array* copy_array(struct Array* arr){
             case ARRAY:
                 tmp=copy_array((struct Array*)arr->value[i].value);
                 break;
+            case INT:
+                tmp=malloc(sizeof(int));
+                *(int*)tmp=*(int*)arr->value[i].value;
+                break;
+            case FLOAT:
+                tmp=malloc(sizeof(double));
+                *(double*)tmp=*(double*)arr->value[i].value;
+                break;
             case LONGINT:
                 tmp=malloc(sizeof(mpz_t));
                 mpz_init(*(mpz_t*)tmp);
                 mpz_set(*(mpz_t*)tmp,*(mpz_t*)arr->value[i].value);
                 break;
-            case INT:
-                tmp=malloc(sizeof(int));
-                *(int*)tmp=*(int*)arr->value[i].value;
+            case LONGFLOAT:
+                tmp=malloc(sizeof(mpf_t));
+                mpf_init_set(*(mpf_t*)tmp,*(mpf_t*)arr->value[i].value);
                 break;
             case CODES_BLOCKS:
             case STRING:
                 tmp=malloc(strlen((char*)arr->value[i].value)+1);
                 strcpy((char*)tmp,(char*)arr->value[i].value);
-                break;
-            case FLOAT:
-                tmp=malloc(sizeof(double));
-                *(double*)tmp=*(double*)arr->value[i].value;
-                add_array(out,INT,tmp);
                 break;
             default:
                 perror("Error interno de la app, me falto un tipo de dato por verificar en la funcion copy_array.");
@@ -116,12 +118,12 @@ struct Array* copy_array(struct Array* arr){
  * @brief      Agrega un item en una posicion indicada a un array.
  *
  * @param      arr        El array a modificar.
- * @param[in]  is_append  Indica si se agrega(TRUE) o simpremente se modifica la posición del elemento(FALSE)
+ * @param[in]  is_append  Indica si se agrega(true) o simpremente se modifica la posición del elemento(false)
  * @param[in]  index_set  El indice a modificar. Si es -1 entonces se agrega al final.
  * @param[in]  t_out      Tipo de dato
  * @param      value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
  */
-void array_set_item(struct Array* arr,char is_append,int index_set, enum TYPE t_out, void* value){
+void array_set_item(struct Array* arr,bool is_append,int index_set, enum TYPE t_out, void* value){
     struct type_value cp,
     cp_after;
     U_INT i=index_set+1;
@@ -186,10 +188,18 @@ void setValue_tv(struct Var* v,char* name,struct type_value* tv){
             v->value=malloc(sizeof(int));
             *(int*)v->value=*(int*)tv->value;
             break;
+        case FLOAT:
+            v->value=malloc(sizeof(double));
+            *(double*)v->value=*(double*)tv->value;
+            break;
         case LONGINT:
             v->value=malloc(sizeof(mpz_t));
 			mpz_init(*(mpz_t*)v->value);//Importante.
             mpz_set(*(mpz_t*)v->value,*(mpz_t*)tv->value);
+            break;
+        case LONGFLOAT:
+            v->value=malloc(sizeof(mpf_t));
+            mpf_init_set(*(mpf_t*)v->value,*(mpf_t*)tv->value);
             break;
         case ARRAY:
             v->value=copy_array((struct Array*)tv->value);
@@ -236,7 +246,7 @@ void delete_item(enum TYPE t, void* value){
             free(value);
             break;
         case LONGFLOAT:
-            mpz_clear(*(mpz_ptr*)value);
+            mpf_clear(*(mpf_t*)value);
         //No hay forma diferente para liberar.
         case INT:
         case CODES_BLOCKS:
@@ -264,6 +274,10 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
         value=malloc(sizeof(int));
         *(int*)value=*(int*)v->value;
         break;
+    case FLOAT:
+        value=malloc(sizeof(double));
+        *(double*)value=*(double*)v->value;
+        break;
     case FUNCTION: //Usamos funciones dentro del mismo programa para esta.
         ((unsigned short (*)(struct Array* stack,struct Array* vars,char* extend))v->value)(stack,var,"");
         return NULL;
@@ -281,6 +295,10 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
 		mpz_init(*(mpz_t*)value);//Importante.
 		mpz_set(*(mpz_t*)value, *(mpz_t*)v->value);
 		break;
+    case LONGFLOAT:
+        value=malloc(sizeof(mpf_t));
+        mpf_init_set(*(mpf_t*)value, *(mpf_t*)v->value);
+        break;
     default:
         printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(v->type) );
         exit(-3);
@@ -296,14 +314,24 @@ char* interpret(struct Array* stack,struct Array* var,struct Var* v){
 char* printf_stack(struct Array* stack){
     char* output=(char*)malloc(sizeof(char)*2);
 	char* a_out=NULL;//Cuando necesitemos una cadena secundarias.
+    void* tmp=NULL;//Para un uso general.
     output[0]='\0';
     unsigned int len=1;
     for(unsigned int i=0;i<stack->i;i++){
         switch(stack->value[i].type){
             case INT:
-                len+=8;
-                output=(char*)realloc(output,sizeof(char)*len);
-                sprintf(output,"%s%d ",output,*(int*)stack->value[i].value);
+                tmp=alloca(50);
+                itoa(*(int*)stack->value[i].value,(char*)tmp,10);
+                len+=strlen((char*)tmp)+1;
+                output=(char*)realloc(output,len);
+                sprintf(output,"%s%s ",output,(char*)tmp);
+                break;
+            case FLOAT:
+                tmp=alloca(60);
+                sprintf((char*)tmp,"%f",*(double*)stack->value[i].value);
+                len+=strlen((char*)tmp)+1;
+                output=(char*)realloc(output,len);
+                sprintf(output,"%s%s ",output,(char*)tmp);
                 break;
             case ARRAY:
                 a_out=printf_stack((struct Array*)stack->value[i].value);
@@ -325,7 +353,10 @@ char* printf_stack(struct Array* stack){
                 free(a_out);
 				break;
 			case LONGINT:
-				a_out=mpz_get_str(NULL,0,*(mpz_t*)stack->value[i].value);
+            case LONGFLOAT:
+				a_out=(stack->value[i].type==LONGINT)?
+                mpz_get_str(NULL,0,*(mpz_t*)stack->value[i].value)
+                :mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)stack->value[i].value);
 				output=(char*)realloc(output,len+=strlen(a_out)+1);
 				sprintf(output,"%s%s ",output,a_out);
 				free(a_out);
@@ -378,20 +409,20 @@ char* to_string_value(enum TYPE t,void* value){
     *tmp=NULL;
     switch(t){
         case INT:
-            out=(char*)malloc(CLIMIT_INT+1);
-            sprintf(out,"%d",*(int*)value);
-            break;
-        case LONGINT:
-            out=mpz_get_str(NULL,0,*(mpz_t*)value);
+            tmp=(char*)alloca(60);
+            itoa(*(int*)value,(char*)tmp,10);
+            out=(char*)malloc(strlen((char*)tmp)+1);
+            sprintf(out,"%s",tmp);
             break;
         case FLOAT:
             out=(char*)malloc(CLIMIT_FLOAT+1);
             sprintf(out, "%.*lf", CLIMIT_FLOAT-1,*(double*)value);
             break;
+        case LONGINT:
+            out=mpz_get_str(NULL,0,*(mpz_t*)value);
+            break;
         case LONGFLOAT:
-            tmp="(ERR: LONGFLOAT NO TRATADO en to_string_value)";
-            out=(char*)malloc(strlen(tmp)+1);
-            strcpy(out,tmp);
+            out=mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)value);
         break;
         case CODES_BLOCKS:
         case STRING:

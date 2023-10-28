@@ -165,16 +165,16 @@
      */
     char* get_str_token(char* str,U_INT init,U_INT end){
         NEW_STRING(out,20);
-        unsigned char space=0;
+        bool space=false;
         end=(end)?end:strlen(str);
         U_INT tmp_i=0;
         for(U_INT i=init;i<end;i++){
             if (str[i]=='\n' || str[i]==' ')
-                space=TRUE;
+                space=true;
             else{
                 if (space){
                     cadd_add_leftover(&out,' ');
-                    space=FALSE;
+                    space=false;
                 }
                 cadd_add_leftover(&out,str[i]);
                 if (IF_INIT_STRING(str[i])){

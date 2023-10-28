@@ -16,7 +16,7 @@
  *
  * @return     struct type_valur* . Nuevo objeto. No es necesario liberar
  */
-struct type_value* add_int(int num,enum TYPE type_n2,void* num_2,char is_right);
+struct type_value* add_int(int num,enum TYPE type_n2,void* num_2,bool is_right);
 /**
  * Agrega algo al bloque de codigo
  * @param  codes    Bloque de codigo
@@ -25,7 +25,7 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2,char is_right);
  * @param  is_right Si se agregara al inicio o final
  * @return          Char* . Recordar liberar.
  */
-char* add_codes_block(char* codes,enum TYPE t, void* value,char is_right);
+char* add_codes_block(char* codes,enum TYPE t, void* value,bool is_right);
 /**
  * Suma un entero grande con algo
  * @param  arr    Array
@@ -34,5 +34,7 @@ char* add_codes_block(char* codes,enum TYPE t, void* value,char is_right);
  * @param  is_right Si se agregara al inicio o final
  * @return          struct type_value* . Nuevo objeto array. No es necesario liberar.
  */
-struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value,char is_right);
+struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value,bool is_right);
+
+struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right);
 #endif

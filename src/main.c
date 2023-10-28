@@ -121,7 +121,7 @@ int interprete(struct Array* stack,struct Array* vars){
 			free(space);
 		}
 		printf("> ");
-		while(TRUE){
+		while(true){
 			char c=getchar();
 			cadd_add_leftover(&c_linea,c);
 			if (IF_ENDL(c))//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
@@ -183,10 +183,10 @@ int interprete(struct Array* stack,struct Array* vars){
  */
 char* get_input_str(char type_string){
 	struct String str_={20,1,(char*)malloc(20)};
-	unsigned char input=0,
-	is_scape=FALSE;//Para saber si escapamos la cadena.
+	unsigned char input=0;
+	bool is_scape=false;//Para saber si escapamos la cadena.
 	str_.str[0]=type_string;
-	while(TRUE){
+	while(true){
 		input=getchar();
 		cadd_add_leftover(&str_,input);
 		if (str_.str[str_.count-1]==type_string AND !is_scape){//Si es termino y no es un escape.
@@ -214,9 +214,10 @@ char* get_input_str(char type_string){
 char* input_block(char init,char end,char* out_nesting,U_INT base_sub){
 	U_INT sub=1;
 	struct String out={20,1,(char*)malloc(20)};
-	char c, is_nline=FALSE;//c this input, is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
+	char c;//c this input
+	bool is_nline=false;//is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
 	out.str[0]=init;
-	while(TRUE){
+	while(true){
 		c=getchar();
 		if (c==init)
 			sub++;
@@ -228,17 +229,17 @@ char* input_block(char init,char end,char* out_nesting,U_INT base_sub){
 			char* str_=get_input_str(c);
 			U_INT len_=strlen(str_);
 			if (str_[len_-1]=='\n'){
-				is_nline=TRUE;
+				is_nline=true;
 			}
 			str_add_str_init_end(&out,str_,0,len_);
 			free(str_);
 			continue;
 		}else if (IF_INIT_COMENT(c)){//Ignoramos los comentarios.
 			while((c=getchar()!='\n') AND c!='\0');
-			is_nline=TRUE;
+			is_nline=true;
 			continue;
 		}else if(IF_ENDL(c))
-			is_nline=TRUE;
+			is_nline=true;
 		cadd_add_leftover(&out,c);
 		if (is_nline){//Tiene que ser el ultimo por si el usuario solo usa una linea para el bloque.
 			//Tambien se soluciona otro error al dejar esto de ultimo(Un char '\0' hechando
@@ -247,7 +248,7 @@ char* input_block(char init,char end,char* out_nesting,U_INT base_sub){
 				printf("  ");
 			}
 			printf(out_nesting);
-			is_nline=FALSE;
+			is_nline=false;
 			continue;
 		}
 	}

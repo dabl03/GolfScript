@@ -1,6 +1,9 @@
 #ifndef DEFINE_H
 #define DEFINE_H 1
     #include <string.h>
+    #include <math.h> //isinf para ver si se deborda un double.
+    #include <stdint.h>//int64_t
+    #include <stdlib.h>//Alloca function
     #define ABC_MINUSCULA(c) (c>='a' && c<='z')
     #define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
     #define ERROR_DEFICCION_NO_VALIDA -30
@@ -19,9 +22,8 @@
     #define IF_ENDL(c) (c=='\n' || c=='\0')
     #define U_INT unsigned int
     #define AND &&
-    #ifndef TRUE
-        #define TRUE 1
-        #define FALSE 0
+    #ifndef bool
+        #include <stdbool.h>
     #endif
     #define NOT !
     #define MAX_INT_DIG 9

@@ -283,13 +283,14 @@ char* get_str_escp(char* old_str){
 	U_INT len=strlen(old_str),
 	i_nstr=0;
 	char* new_str=(char*)malloc(len);//Tamaño base.
-	char is_scape=FALSE,chr=0;
+	char chr=0;
+	bool is_scape=false;
 	for (char* c=old_str;*c!='\0';c++){
 		if (i_nstr+3>=len){
 			new_str=(char*)realloc(new_str,len=i_nstr+20);
 		}
 		if (*c=='\\' AND NOT is_scape){
-			is_scape=TRUE;
+			is_scape=true;
 			continue;
 		}else if (is_scape){
 			chr=scape_char(*c);
@@ -310,7 +311,7 @@ char* get_str_escp(char* old_str){
 				}
 				new_str[i_nstr++]=chr;
 			}
-			is_scape=FALSE;
+			is_scape=false;
 			continue;
 		}else{
 			if (*c=='"')//Como no tiene un scape entonces la cadena se mostrara sin ""
@@ -346,7 +347,8 @@ void cadd_add_leftover(struct String* str_,char c){
 char* get_sub_str(const char* str,U_INT init, U_INT end){
 	NEW_STRING(out,20);
 	U_INT end_c=(end)?end:strlen(str);
-	char type=str[init++],is_scape=FALSE;
+	char type=str[init++];
+	bool is_scape=false;
 	out.str[out.count++]='"';
 	for (int i=init;i<end_c;i++){
 		if (str[i]==type AND !is_scape)//Si es termino y no es un escape.
