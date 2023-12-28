@@ -47,11 +47,11 @@ endif
 
 $(APP): $(O_FILES) $(MAIN_O)
 	@echo compilando APP...
-	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.md
+	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.mk
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG_APP)/main.c.md
+	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG_APP)/main.c.mk
 
 $(BIN_O)/%.o:	$(SRC)/%.c
 	@echo Compilando el archivo objeto de $<...
