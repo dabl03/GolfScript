@@ -11,42 +11,20 @@ APP=./GolfScript_pirata.exe
 SRC=./src
 INCLUDE=$(SRC)/include
 BIN_O=./build/obj
-#BIN_O_INCLUDE estará en un lugar a parte porque los archivos que se guarden ahi solo será necesario compilarlo una vez.
-BIN_O_INCLUDE=./build/include
-
-MAIN_SRC=$(SRC)/main.c
-MAIN_O=$(BIN_O)/main.o
-
-STR=$(SRC)/str.c
-STACK=$(SRC)/stack.c
-RUN=$(SRC)/run.c
-GLOBAL_VARS=$(SRC)/global_vars.c
-OPERATORS=$(SRC)/operators.c
-
-STR_O=$(BIN_O)/str.o
-STACK_O=$(BIN_O)/stack.o
-RUN_O=$(BIN_O)/run.o
-GLOBAL_VARS_O=$(BIN_O)/global_vars.o
-OPERATORS_O=$(BIN_O)/operators.o
-
-OBJ_S=$(RUN_O) $(STACK_O) $(STR_O) $(GLOBAL_VARS_O) $(OPERATORS_O)
-LOG=./build/log
-LOG_OBJ=./build/log/log_obj.txt
-LOG_APP=./build/log/log_app.txt
-
-FILE_H=$(INCLUDE)/run.h $(INCLUDE)/define.h $(INCLUDE)/str.h $(INCLUDE)/stack.h $(INCLUDE)/global_vars.h $(INCLUDE)/operators.h
+LOG_APP=./build/log
 MAKE=mingw32-make
-
+#Main:
+MAIN_O=$(BIN_O)/main.o
+MAIN_SRC=$(SRC)/main.c
+#*.c
+C_FILES:= $(filter-out $(SRC)/main.c,$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
+#*.o
+O_FILES := $(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
+#*.h
+FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 define delete_obj
 	cd $(BIN_O) && del "*.o"
 	del "$(APP)"
-endef
-define out_log
-	@echo sucess
-	ifeq $(error_code) 0
-		@echo la compilacion termino con error codes: $(error_code)
-		@cat < $(log)
-	endif
 endef
 define append_log
 //Leer los archivos logs y agregarlo en un archivo log final.
@@ -67,33 +45,17 @@ ifeq ($(IF_DEBUG),1)
 	CFLAG:=$(CFLAG) -g
 endif
 
-$(APP): $(OBJ_S) $(MAIN_O)
+$(APP): $(O_FILES) $(MAIN_O)
 	@echo compilando APP...
-	$(GCC) $(CFLAG) $(MAIN_O) $(OBJ_S) -o $(APP) $(LINGC) 2> $(LOG_APP)
+	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.md
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/main.log
+	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG_APP)/main.c.md
 
-$(STR_O): $(STR) $(FILE_H)
-	@echo "Compilando el archivo objeto de $(STR)."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/str.log
-
-$(STACK_O): $(STACK) $(FILE_H)
-	@echo "Compilando el archivo objeto de $(STACK)."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/stack.log
-
-$(RUN_O): $(RUN) $(FILE_H)
-	@echo "Compilando el archivo objeto de $(RUN)."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/run.log
-
-$(GLOBAL_VARS_O): $(GLOBAL_VARS) $(FILE_H)
-	@echo "Compilando el archivo objeto de $(GLOBAL_VARS)."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/global_vars.log
-
-$(OPERATORS_O): $(OPERATORS) $(FILE_H)
-	@echo "Compilando el archivo objeto de $(OPERATORS)."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG)/operators.log
+$(BIN_O)/%.o:	$(SRC)/%.c
+	@echo Compilando el archivo objeto de $<...
+	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.mk)
 
 clear:
 	$(call delete_obj)
