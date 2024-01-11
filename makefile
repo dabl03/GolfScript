@@ -9,7 +9,8 @@ IF_DEBUG=1
 APP=./GolfScript_pirata.exe
 
 SRC=./src
-INCLUDE=$(SRC)/include
+SRC_OPERATOR=$(SRC)/operators
+INCLUDE=$(SRC)/header
 BIN_O=./build/obj
 LOG_APP=./build/log
 MAKE=mingw32-make
@@ -18,8 +19,10 @@ MAIN_O=$(BIN_O)/main.o
 MAIN_SRC=$(SRC)/main.c
 #*.c
 C_FILES:= $(filter-out $(SRC)/main.c,$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
+C_OPERATOR:=$(foreach dir,$(SRC_OPERATOR),$(wildcard $(dir)/*.c))
 #*.o
-O_FILES := $(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
+O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
+O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 #*.h
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 define delete_obj
@@ -45,9 +48,9 @@ ifeq ($(IF_DEBUG),1)
 	CFLAG:=$(CFLAG) -g
 endif
 
-$(APP): $(O_FILES) $(MAIN_O)
+$(APP): $(O_FILES) $(O_OPERATOR) $(MAIN_O)
 	@echo compilando APP...
-	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.mk
+	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) $(O_OPERATOR) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.mk
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
@@ -55,6 +58,10 @@ $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 
 $(BIN_O)/%.o:	$(SRC)/%.c
 	@echo Compilando el archivo objeto de $<...
+	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.mk)
+
+$(BIN_O)/%.o:	$(SRC_OPERATOR)/%.c
+	@echo Compilando el operador: $<...
 	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.mk)
 
 clear:

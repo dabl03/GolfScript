@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "./include/str.h"
-#include "./include/stack.h"
-#include "./include/define.h"
+#include "./header/str.h"
+#include "./header/stack.h"
+#include "./header/define.h"
 /**
  * @brief Ingresa un elemento en el array.
  * 

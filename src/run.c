@@ -5,10 +5,10 @@
     #include <stdio.h>
     #include <limits.h>
     #include <gmp.h>
-    #include "include/define.h"
-    #include "include/str.h"
-    #include "include/stack.h"
-    #include "include/run.h"
+    #include "header/define.h"
+    #include "header/str.h"
+    #include "header/stack.h"
+    #include "header/run.h"
     /**
      * @brief Función que analiza y ejecuta la instrucciones.
      * 

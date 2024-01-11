@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <gmp.h>
-#include "./include/define.h"
-#include "./include/str.h"
+#include "./header/define.h"
+#include "./header/str.h"
 /**
  * @brief Función que busca un char dentro de una cadena.
  * 

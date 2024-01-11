@@ -4,11 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "define.h"
+/**
+ * @brief Estructura usada para guardar variables
+ * @param name char* Nombre de la variable
+ * @param type Tipo de variable.
+ * @param value void* Valor de la variable.
+*/
 struct Var{
 	char* name;//Nombre de la variable
 	enum TYPE type;//El tipo.
 	void* value;//Valor. Nota usare malloc/ calloc y readllock.
 };
+/**
+ * @brief Estructura usada para guardar un valor de cualquier tipo
+ * @param type enum TYPE
+ * @param value Void*
+*/
 struct type_value{
     enum TYPE type;
     void* value;

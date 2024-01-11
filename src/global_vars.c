@@ -2,10 +2,10 @@
 #define GLOBAL_VARS_C
 #include <string.h>
 #include <gmp.h>
-#include "./include/str.h"
-#include "./include/stack.h"
-#include "./include/global_vars.h"
-#include "./include/operators.h"
+#include "./header/str.h"
+#include "./header/stack.h"
+#include "./header/global_vars.h"
+#include "./operators/header/add.h"
 /*******{TODO}:{
 	Operadores que faltan: 
 	- .	cualquier	Duplicar en pila

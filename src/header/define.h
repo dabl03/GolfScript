@@ -4,6 +4,11 @@
     #include <math.h> //isinf para ver si se deborda un double.
     #include <stdint.h>//int64_t
     #include <stdlib.h>//Alloca function
+    #if defined(_MSC_VER) || defined(__MINGW32__)
+        #include <malloc.h>     // alloca
+    #else
+        #include <alloca.h>     // alloca
+    #endif
     #define ABC_MINUSCULA(c) (c>='a' && c<='z')
     #define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
     #define ERROR_DEFICCION_NO_VALIDA -30

@@ -4,11 +4,11 @@
 #include <float.h>
 #include <limits.h>
 #include <gmp.h>
-#include "include/str.h"
-#include "include/run.h"
-#include "include/define.h"
-#include "include/stack.h"
-#include "include/global_vars.h"
+#include "header/str.h"
+#include "header/run.h"
+#include "header/define.h"
+#include "header/stack.h"
+#include "header/global_vars.h"
 /**
  * @todo: Arreglar todos los warning.
  * @todo: Agregar un tester.
