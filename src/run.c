@@ -115,8 +115,8 @@
                         }
                     }else if (IF_INIT_STRING(l[i])){//Llegamos a " o
                         unsigned int len=strlen(name);
-                        char* scape_=name;
-                        strncpy(extraida, name + 1, len-1);
+                        char* scape_=(char*)malloc(len+1);
+                        strncpy(scape_, name + 1, len-1);
 	                    add_array(stack,STRING,scape_);
                         continue;//Usamos de una vez name porque ya tiene la cadena.
 	                }

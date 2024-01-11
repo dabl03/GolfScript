@@ -8,14 +8,14 @@ CFLAG:=-Wall
 IF_DEBUG=1
 APP=./gsp
 #Por problemas que he tenido lo hago a parte.
-SYSTEM_OS=WINDOWS
+SYSTEM_OS=Linux
 
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators
 INCLUDE=$(SRC)/header
 BIN_O=./build/obj
 LOG_APP=./build/log
-MAKE=mingw32-make
+MAKE=make
 #Main:
 MAIN_O=$(BIN_O)/main.o
 MAIN_SRC=$(SRC)/main.c
@@ -42,6 +42,7 @@ ifeq (SYSTEM_OS,WINDOWS)
 		cd $(BIN_O) && del "*.o"
 		del "$(APP)"
 	endef
+	MAKE=Mingw32-make
 endif
 
 ifeq ($(IF_DEBUG),1)
