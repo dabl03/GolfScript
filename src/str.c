@@ -268,6 +268,11 @@ char* get_str_nescp(char* old_str){
 			new_str[i_nstr++]=*c;
 		else{
 			new_str[i_nstr++]='\\';
+			if (*(c+1)=='x'){
+				new_str[i_nstr++]='x';
+				c++;
+				continue;
+			}
 			new_str[i_nstr++]=chr;
 		}
 	}
@@ -303,11 +308,12 @@ char* get_str_escp(char* old_str){
 					tmp[1]=*(++c);
 					tmp[2]='\0';
 					U_INT otro=(int) strtol(tmp, NULL, 16);
+					printf("otro: %c.\n",otro);
 					if (otro>CHAR_MAX){
 						new_str[i_nstr++]=CHAR_MAX;
-						chr=otro-CHAR_MAX;
+						chr=(char)otro-CHAR_MAX;
 					}else
-						chr=otro;
+						chr=(char)otro;
 				}
 				new_str[i_nstr++]=chr;
 			}

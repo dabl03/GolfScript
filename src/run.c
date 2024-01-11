@@ -114,8 +114,11 @@
                             add_array(stack,LONGINT,n);
                         }
                     }else if (IF_INIT_STRING(l[i])){//Llegamos a " o
-                        char* scape_=get_str_escp(name);
-	                    add_array(stack,STRING,scape_);//Usamos de una vez name porque ya tiene la cadena.
+                        unsigned int len=strlen(name);
+                        char* scape_=name;
+                        strncpy(extraida, name + 1, len-1);
+	                    add_array(stack,STRING,scape_);
+                        continue;//Usamos de una vez name porque ya tiene la cadena.
 	                }
                     free(name);
                 }

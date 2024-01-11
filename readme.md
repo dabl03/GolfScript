@@ -85,8 +85,18 @@ Creando funciones:
 > function
 [ { 1 + 4 2 3 - -} 1 2 4 4 6 8 3 ]
 ```
-## Problemas:
-- Sale un problema al asignar un valor a un objeto y despues a llamar a la función add al momento en que la pila esta vacia o tiene un elemento. En gdb indica que el problema se encuentra en search_var_init
+## Dependencias:
+- <a href="https://gmplib.org/manual/Headers-and-Libraries">GMP</a>: Biblioteca para hacer operaciones con numeros realmente largos.
+- GCC: Para compilarlo.
+- make: Para automatizar el compilado.
+## Como compilarlo:
+Si quiere compilar en linux debes cambiar el valor de la variable `SYSTEM_OS` del archivo `makefile` y listo.
+<br/>
+Ejecuta el archivo makefile y listo, sino debes hacer:
+```Bash
+gcc -Wall ./src/main.c {Pon aqui todos los archivos ./src/operators/*.c} {Pon aqui todos los archivos ./src/*.c} -o ./gsp -lgmp
+```
+Y listo:)
 
 ## Creditos:
 -  Interprete basado en interprete GolfScript de: <a href="https://github.com/darrenks/golfscript">Darren Smith</a>. 

@@ -409,10 +409,11 @@ char* to_string_value(enum TYPE t,void* value){
     *tmp=NULL;
     switch(t){
         case INT:
-            tmp=(char*)alloca(60);
+            tmp=(char*)alloca(30);
             itoa(*(int*)value,(char*)tmp,10);
+            
             out=(char*)malloc(strlen((char*)tmp)+1);
-            sprintf(out,"%s",tmp);
+            itoa(*(int*)value,out,10);
             break;
         case FLOAT:
             out=(char*)malloc(CLIMIT_FLOAT+1);

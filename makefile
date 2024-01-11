@@ -6,7 +6,9 @@ CXXFLAG:=-std=c++20 -Wall
 LINGC=-lgmp
 CFLAG:=-Wall
 IF_DEBUG=1
-APP=./GolfScript_pirata.exe
+APP=./gsp
+#Por problemas que he tenido lo hago a parte.
+SYSTEM_OS=WINDOWS
 
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators
@@ -26,21 +28,20 @@ O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 #*.h
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 define delete_obj
-	cd $(BIN_O) && del "*.o"
-	del "$(APP)"
+	rm -rf "$(BIN_O)/*.o"
+	rm -rf "$(APP)"
 endef
 define append_log
 //Leer los archivos logs y agregarlo en un archivo log final.
 //Borrar este archivo cuando se compile la app y crearlo cuando se compile.
 //Leerlo cuando se llame mingw32-make logs.
 endef
-ifeq ($(strip $(OS)),Linux)
-	APP=./GolfScript_pirata
+ifeq (SYSTEM_OS,WINDOWS)
+	APP=./gsp.exe
 	define delete_obj
-		rm -rf "$(BIN_O)/*.o"
-		rm -rf "$(APP)"
+		cd $(BIN_O) && del "*.o"
+		del "$(APP)"
 	endef
-	MAKE=make
 endif
 
 ifeq ($(IF_DEBUG),1)

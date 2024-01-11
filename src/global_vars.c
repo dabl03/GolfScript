@@ -44,7 +44,10 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
 	char* out;
     if (stack->i){
 		tv=pop_array(stack);
-        out=to_string_value(tv->type,tv->value);
+        if (tv->type==STRING){//Escapamos la cadena si la hay.
+            out=get_str_escp(tv->value);
+        }else
+            out=to_string_value(tv->type,tv->value);
         if (out==NULL){
             puts("ERROR: Interno, el tipo de dato desconocido.");
             delete_item(tv->type,tv->value);
@@ -90,36 +93,42 @@ unsigned short add_operator(struct Array* stack,...){
     struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
     struct type_value* num_1=&stack->value[stack->i-1],
     *tmp_tv=NULL;
+    //Todo, buscar la forma de no liberar todo, puede ser util:)
+    //Usar push para apenear si se suma un array excepto otro array o estudiar que hay que hacer.
     void* tmp=NULL;
     U_INT tmp_len=0;
     //[num_1 num_2]
     switch (num_1->type){
     case INT:
-        tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value,true); 
+        tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value); 
         break;
     case LONGINT:
-        tmp_tv=add_longint(*(mpz_t*)num_1->value,num_2->type,num_2->value,true);
+        tmp_tv=add_longint(*(mpz_t*)num_1->value,num_2->type,num_2->value);
         break;
     case CODES_BLOCKS:
         //Usamos alloca para no liberar este bloque:D
         tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
         tmp_tv->type=CODES_BLOCKS;
-        tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value,true);
+        tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
         break;
     case STRING:
-        tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
+        tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value);
         break;
     case ARRAY:
+        //Los array+ string combierte el array en hexadecimal de dos rango y lo mete en la cadena: \x03
+        //Los array+ bloque de codigo solo se agrega al bloque. Mi version pone el array dentro del bloque.
         switch(num_2->type){
             case STRING:
-                tmp_tv=add_str((char*)num_2,ARRAY,num_1->value,false);
+                tmp_tv=add_str((char*)num_2,ARRAY,num_1->value);
                 break;
             case CODES_BLOCKS:
                 tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
                 tmp_tv->type=CODES_BLOCKS;
-                tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value,false);
+                tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
                 break;
             default:
+                tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
+                tmp_tv->type=ARRAY;
                 //No son cadenas ni bloques de codigo asi que podemos agregarlo tranquilos:D
                 //Como solo es agregar al final no es necesario liberar num_2 porque este se usara en num_1
                 add_array((struct Array*)num_1,num_2->type,num_2->value);
