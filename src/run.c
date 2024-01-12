@@ -118,6 +118,7 @@
 						char* scape_=(char*)malloc(len);
 						strncpy(scape_, name + 1, len-2);
             scape_[len-2]='\0';
+
 						add_array(stack,STRING,scape_);
 					}
 					free(name);

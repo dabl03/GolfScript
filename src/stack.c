@@ -346,11 +346,12 @@ char* printf_stack(struct Array* stack){
 				sprintf(output,"%s{%s} ",output,(char*)stack->value[i].value);
 				break;
 			case STRING:
-				a_out=get_str_nescp((char*)stack->value[i].value);
+				a_out=(char*)stack->value[i].value;
+				////@TODO: No quitar hasta estar seguro: get_str_nescp((char*)stack->value[i].value);
 				len+=strlen(a_out)+3;
 				output=(char*)realloc(output,sizeof(char)*len);
 				sprintf(output,"%s\"%s\" ",output,a_out);
-				free(a_out);
+				//free(a_out);
 				break;
 			case LONGINT:
 			case LONGFLOAT:
