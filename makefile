@@ -8,7 +8,7 @@ CFLAG:=-Wall
 IF_DEBUG=1
 APP=./gsp
 #Por problemas que he tenido lo hago a parte.
-SYSTEM_OS=Linux
+SYSTEM_OS=WINDOWS
 
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators

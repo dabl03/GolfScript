@@ -9,7 +9,9 @@
 #include "../header/define.h"
 
 #include "./header/add.h"
-
+/**
+ * @TODO:Buscar la manera de mejorar la sintaxis.
+*/ 
 /**
  * @brief      Adds an integer.
  *
@@ -114,7 +116,7 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
 	char* out=NULL;
 	char* tmp;
 	switch (t){
-	    case STRING:
+		case STRING:
 		   	out=(char*)malloc(strlen((char*)value)+strlen(codes)+4);
 			sprintf(out,"%s \"%s\"",codes,(char*)value);
 			break;
@@ -123,37 +125,34 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
 			sprintf(out,"%s %s",codes,(char*)value);
 			break;
 		case ARRAY:
-    		tmp=to_string_value(t,value);
+			tmp=to_string_value(t,value);
 
 			out=(char*)malloc(strlen(tmp)+strlen(codes)+5);
 			sprintf(out,"%s [ %s]",codes,tmp);
 
-    		free(tmp);
+			free(tmp);
 			break;
 		default:
-    		tmp=to_string_value(t,value);
+			tmp=to_string_value(t,value);
 
 			out=(char*)malloc(strlen(tmp)+strlen(codes)+2);
 			sprintf(out,"%s %s",codes,tmp);
 
-    		free(tmp);
+			free(tmp);
 	}
-    return out;
+	return out;
 }
 /**
- * @todo       : Recuerda si es un bloque de codigo la cadena se agrega dentro de este, si es un array recuerda hacer:
- Si el numero es mayor a FF entonces dejarlo en solo numero o si quieres hacer \xFF\FF\FF hasta poner todo el numero en la cadena.
- Recuerda que los bloques de codigo dentro de los array se agregan tal cual estan.
- Y la cadenas igual pero sin ""
  * @brief      Concatena str con tipo de dato.
  *
  * @param str          The string
  * @param t        parameter_description
  * @param value        The value
+ * @param is_right Es para saber si poner el resultado a la derecha.
  *
  * @return static struct type_value* -  El resultado, no se requiere liberar la estructura.
  */
-struct type_value* add_str(char* str,enum TYPE t, void* value){
+struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
 	static struct type_value out;
 	struct String tmp_str={0,0,NULL};
 	struct type_value* now=NULL;
@@ -161,21 +160,25 @@ struct type_value* add_str(char* str,enum TYPE t, void* value){
 	out.type=STRING;
 	switch(t){
 		case CODES_BLOCKS:
+		case STRING:
 			*(int*)tmp=strlen(str)+strlen((char*)value)+1;
 			out.value=malloc(*(int*)tmp);
-			sprintf(out.value,"%s%s",str,(char*)value);
+			(is_right)?
+				sprintf(out.value,"%s%s",str,(char*)value)
+			:
+				sprintf(out.value,"%s%s",(char*)value,str);
 			break;
 		case ARRAY://Revisar.
 			//Ponemos todo el array en una cadena.
 			for (U_INT i=0;i<((struct Array*)value)->i;i++){
 				now=&((struct Array*)value)->value[i];
+				str_add_char(&tmp_str,' ');
 				switch(now->type){
 					case INT:
 					case FLOAT:
 						tmp=alloca(70);
 						sprintf((char*)tmp,"\\x%.2x",*(int*)now->value);
 						str_add_str(&tmp_str,(char*)tmp);
-						//str_add_char(&tmp_str,*(int*)now->value);
 						break;
 					default:
 						tmp=(void*)to_string_value(now->type,now->value);
@@ -183,11 +186,21 @@ struct type_value* add_str(char* str,enum TYPE t, void* value){
 						free(tmp);
 				}
 			}
+			tmp=alloca(sizeof(int));//Recuerda que ya no es un entero:)
+			//Un seguro por si no hay elementos.
+			if (((struct Array*)value)->i==0){
+				*(int*)tmp=strlen(str)+1;
+				out.value=malloc(*(int*)tmp);
+				strcpy(out.value,str);
+				break;
+			}
 			//Hacemos el valor a retornar.
 			*(int*)tmp=strlen(str)+tmp_str.count+1;
-
 			out.value=malloc(*(int*)tmp);
-			sprintf(out.value,"%s%s",str,tmp_str.str);
+			(is_right)?
+				sprintf(out.value,"%s%s",str,tmp_str.str)
+			:
+				sprintf(out.value,"%s%s",tmp_str.str,str);
 
 			free(tmp_str.str);
 			break;
@@ -195,7 +208,10 @@ struct type_value* add_str(char* str,enum TYPE t, void* value){
 			tmp=(void*)to_string_value(t,value);
 
 			out.value=malloc(strlen(str)+strlen((char*)tmp)+1);
-			sprintf(out.value,"%s%s",str,tmp_str);
+			(is_right)?
+				sprintf(out.value,"%s%s",str,(char*)tmp)
+			:
+				sprintf(out.value,"%s%s",(char*)tmp,str);
 			
 			free(tmp);
 	}
@@ -270,6 +286,49 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			perror("Caracteristica no disponible en la funcion add_longint\n");
 			printf("Type num_2{ %s }",get_name_type(t));
 			exit(-8);
+	}
+	return &out;
+}
+/**
+ * @param arr Array*, el array.
+ * @param t TYPE, el tipo de dato a evaluar.
+ * @param value void*, el dato.
+ * @return &static struct type_value. Retorna type_value.type=none para indicar
+ ** que no se debe liberar value porque se usa en el nuevo array.
+ ** Ojo si se pasa array despues de copiar se hace free(((struct Array*)value)->value);
+*/
+struct type_value* op_add_array(struct Array* arr,enum TYPE t, void* value){
+	static struct type_value out;
+	void* tmp=alloca(sizeof(int));
+	out.type=NONE;
+	out.value=NULL;
+	switch (t){
+		case STRING:
+			out.type=STRING;
+			out.value=add_str((char*)value,ARRAY,(void*)arr,false)->value;
+			break;
+		case CODES_BLOCKS:
+			out.type=CODES_BLOCKS;
+			//Ponemos todo el array en una cadena.
+			tmp=to_string_value(ARRAY,arr);
+
+			out.value=malloc(strlen((char*)tmp)+strlen((char*)value)+5);
+			sprintf((char*)out.value,"[ %s] %s",(char*)tmp,(char*)value);
+
+			free(tmp);
+			break;
+		case ARRAY:
+			for (U_INT i=0;i<((struct Array*)value)->i;i++){
+				tmp=(void*)&(((struct Array*)value)->value[i]);
+				add_array(arr,((struct type_value*)tmp)->type,((struct type_value*)tmp)->value);
+			}
+			free(((struct Array*)value)->value);
+			((struct Array*)value)->value=NULL;
+			((struct Array*)value)->i=0;
+			((struct Array*)value)->max=0;
+			break;
+		default:
+			add_array(arr,t,value);
 	}
 	return &out;
 }

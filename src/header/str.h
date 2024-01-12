@@ -4,14 +4,19 @@
 #include <gmp.h>
 #include <limits.h>
 #include "./define.h"
+/**
+ * @param max Maximo caracteres a insertar.
+ * @param count caracteres actuales.
+ * @param str cadena.
+*/
 struct String{
-    unsigned int max;
-    unsigned int count;
-    char* str;
+  unsigned int max;
+  unsigned int count;
+  char* str;
 };
 #define INIT_STRING(str___,max_____) str___.str=(char*)malloc(max_____);\
-	str___.max=max_____; \
-	str___.count=0;
+  str___.max=max_____; \
+  str___.count=0;
 #define NEW_STRING(str___,max_____) struct String str___={max_____,0,(char*)malloc(max_____)}
 /**
  * @brief Función que busca un char dentro de una cadena.
@@ -126,4 +131,13 @@ void cadd_add_leftover(struct String* str_,char c);//Nota: Nombre se repite add 
  * @return      Cadena dinamica, recuerda liberar.
  */
 char* get_sub_str(const char* str,U_INT init, U_INT end);
+/**
+ * C++ version 0.4 char* style "itoa":
+ * Written by Lukás Chmela
+ * Released under GPLv3.
+ * @param value int. El entero a convertir.
+ * @param result char*. Donde se guardara.
+ * @param base int. Que reprecentación queremos.
+*/
+char* itoa(int value, char* result, int base);
 #endif

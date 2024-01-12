@@ -49,26 +49,26 @@ int main(int argc, char *argv[]){
 			}
 			add_array(&path_files,STRING,opcion);
 		}
-        if (params.i){
-            config_all(&params);
+		if (params.i){
+			config_all(&params);
 			delete_array(&params);
-        }
+		}
 		if (!path_files.i){
-            return interprete(&stack,&vars);
-        }else{
+			return interprete(&stack,&vars);
+		}else{
 			FILE* file=fopen((char*)path_files.value[0].value,"r");
-            struct Array lineas={1,0,malloc(sizeof(struct type_value))};
-            long int size_file=0;
-            char* str;
+			struct Array lineas={1,0,malloc(sizeof(struct type_value))};
+			long int size_file=0;
+			char* str;
 			//No existe.
 			if (file==NULL){
 				printf("El archivo \"%s\" no existe, revise la ruta.%s",(char*)path_files.value[0].value,ENDL);
 				delete_array(&path_files);
 				exit(EXIT_FAILURE);
 			}
-            //Movemos al final del archivo para ver donde termina su contenido.
-            fseek(file, 0L, SEEK_END);
-            size_file=ftell(file);
+			//Movemos al final del archivo para ver donde termina su contenido.
+			fseek(file, 0L, SEEK_END);
+			size_file=ftell(file);
 			fseek(file, 0L, SEEK_SET);//Regreso al inicio.
 			
 			str=(char*)malloc(size_file+2);
@@ -91,16 +91,16 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 void config_all(struct Array* opciones){
-    for(unsigned int i=0;i<opciones->i;i++){
-        /****
-         * @todo Hacer opciones de configuracion para configurarlas aqui.
-         * Me gustaria una que esamble y compile el archivo para que sea mas facil analizarlo.
-         * Otra -o
-         * --help
-         * --v o --version
-         * --license
-        */
-    }
+	for(unsigned int i=0;i<opciones->i;i++){
+		/****
+		 * @todo Hacer opciones de configuracion para configurarlas aqui.
+		 * Me gustaria una que esamble y compile el archivo para que sea mas facil analizarlo.
+		 * Otra -o
+		 * --help
+		 * --v o --version
+		 * --license
+		*/
+	}
 }
 int interprete(struct Array* stack,struct Array* vars){
 	int sub = 0;	//para cambiar de >> a .. cuando hay una condición.
@@ -162,7 +162,7 @@ int interprete(struct Array* stack,struct Array* vars){
 			run(&lineas, stack, vars);
 			delete_array(&lineas);
 			//Mostramos la variable n.
-    		struct Var* this_var=(struct Var*)vars->value[search_var("n",vars)].value;
+			struct Var* this_var=(struct Var*)vars->value[search_var("n",vars)].value;
 			char* extend=to_string_value(this_var->type,this_var->value);
 			char* output = printf_stack(stack);//Obtenemos la pila.
 			if (extend==NULL)

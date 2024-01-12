@@ -21,8 +21,8 @@ struct Var{
  * @param value Void*
 */
 struct type_value{
-    enum TYPE type;
-    void* value;
+	enum TYPE type;
+	void* value;
 };
 /**
  * @brief Para crear array dinamicos de cualquier tipo.
@@ -32,9 +32,9 @@ struct type_value{
  * @param value el Valor almacenado en el array.
  */
 struct Array{
-    unsigned int max;//Para asignar mas memoria de lo que se necesita asegurando velocidad.
-    unsigned int i;//Contenido actual.
-    struct type_value* value;//Por cada valor necesitamos algo que nos diga que es.
+	unsigned int max;//Para asignar mas memoria de lo que se necesita asegurando velocidad.
+	unsigned int i;//Contenido actual.
+	struct type_value* value;//Por cada valor necesitamos algo que nos diga que es.
 };
 /**
  * @brief Ingresa un elemento en el array.
@@ -74,11 +74,11 @@ struct Array* copy_array(struct Array* arr);
 /**
  * @brief      Agrega un item en una posicion indicada a un array.
  *
- * @param      arr        El array a modificar.
- * @param[in]  is_append  Indica si se agrega(true) o simpremente se modifica la posición del elemento(false)
- * @param[in]  index_set  El indice a modificar. Si es -1 entonces se agrega al final.
- * @param[in]  t_out      Tipo de dato
- * @param      value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
+ * @param arr        El array a modificar.
+ * @param is_append  Indica si se agrega(true) o simpremente se modifica la posición del elemento(false)
+ * @param index_set  El indice a modificar. Si es -1 entonces se agrega al final.
+ * @param t_out      Tipo de dato
+ * @param value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
  */
 void array_set_item(struct Array* arr,bool is_append,int index_set, enum TYPE t_out, void* value);
 /**

@@ -36,8 +36,18 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value);
  * @param str          The string
  * @param t        parameter_description
  * @param value        The value
+ * @param is_right Es para saber si poner el resultado a la derecha.
  *
  * @return static struct type_value* -  El resultado, no se requiere liberar la estructura.
 */
-struct type_value* add_str(char* str,enum TYPE t, void* value);
+struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right);
+/**
+ * @param arr Array*, el array.
+ * @param t TYPE, el tipo de dato a evaluar.
+ * @param value void*, el dato.
+ * @return &static struct type_value. Retorna type_value.type=none para indicar
+ ** que no se debe liberar value porque se usa en el nuevo array.
+ ** Ojo si se pasa array despues de copiar se hace free(((struct Array*)value)->value);
+*/
+struct type_value* op_add_array(struct Array* arr,enum TYPE t, void* value);
 #endif

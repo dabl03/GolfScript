@@ -308,7 +308,7 @@ char* get_str_escp(char* old_str){
 					tmp[1]=*(++c);
 					tmp[2]='\0';
 					U_INT otro=(int) strtol(tmp, NULL, 16);
-					printf("otro: %c.\n",otro);
+					//Si el entero sobrepasa los limites entonces hacemos mas hexadecimales.
 					if (otro>CHAR_MAX){
 						new_str[i_nstr++]=CHAR_MAX;
 						chr=(char)otro-CHAR_MAX;
@@ -367,5 +367,34 @@ char* get_sub_str(const char* str,U_INT init, U_INT end){
 	cadd_add_leftover(&out,'"');
 	cadd_add_leftover(&out,'\0');
 	return (char*)realloc(out.str,out.count);
+}
+
+/**
+ * C++ version 0.4 char* style "itoa":
+ * Written by Lukás Chmela
+ * Released under GPLv3.
+ * @param value int. El entero a convertir.
+ * @param result char*. Donde se guardara.
+ * @param base int. Que reprecentación queremos.
+*/
+char* itoa(int value, char* result, int base) {
+  // check that the base if valid
+  if (base < 2 || base > 36) { *result = '\0'; return result; }
+  char* ptr = result, *ptr1 = result, tmp_char;
+  int tmp_value;
+  do {
+    tmp_value = value;
+    value /= base;
+    *ptr++ ="zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+  } while ( value );
+  // Apply negative sign
+  if (tmp_value < 0) *ptr++ = '-';
+  *ptr-- = '\0';
+  while(ptr1 < ptr){
+    tmp_char = *ptr;
+    *ptr--= *ptr1;
+    *ptr1++ = tmp_char;
+  }
+  return result;
 }
 #endif

@@ -22,8 +22,8 @@
 	-- Lista   Devuelve la longitud de la lista
 	-- lista, bloque	Filtro: selecciona los elementos que devuelven true cuando se les aplica el bloque.
 	--- INVESTIGAR PORQUE NO ENTIENDO
-    @todo En la funcion help:
-        Agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
+	@todo En la funcion help:
+		Agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
 }
 Para trabajar con flotante usa la varible globa climit_float
 }
@@ -42,25 +42,25 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
 	struct type_value* tv;
 	//unsigned int len;//Para y out para array
 	char* out;
-    if (stack->i){
+	if (stack->i){
 		tv=pop_array(stack);
-        if (tv->type==STRING){//Escapamos la cadena si la hay.
-            out=get_str_escp(tv->value);
-        }else
-            out=to_string_value(tv->type,tv->value);
-        if (out==NULL){
-            puts("ERROR: Interno, el tipo de dato desconocido.");
-            delete_item(tv->type,tv->value);
-            return 2;
-        }
-        printf("%s%s",out,extend);
-        free(out);
-        delete_item(tv->type,tv->value);
-    }else{
-        puts("Warnign: La pila esta vacia.");
-        return 1;
-    }
-    return 0;
+		if (tv->type==STRING){//Escapamos la cadena si la hay.
+			out=get_str_escp(tv->value);
+		}else
+			out=to_string_value(tv->type,tv->value);
+		if (out==NULL){
+			puts("ERROR: Interno, el tipo de dato desconocido.");
+			delete_item(tv->type,tv->value);
+			return 2;
+		}
+		printf("%s%s",out,extend);
+		free(out);
+		delete_item(tv->type,tv->value);
+	}else{
+		puts("Warnign: La pila esta vacia.");
+		return 1;
+	}
+	return 0;
 }
 /**
  * @brief Lo mismo que printf_1_ pero con salto de linea de extensión.
@@ -70,13 +70,13 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
  * @return unsigned short 
 */
 unsigned short puts_operator(struct Array* stack,struct Array* vars){
-    int i_var=search_var("n",vars);
-    struct Var* this_var=(struct Var*)vars->value[i_var].value;
-    char* extend=to_string_value(this_var->type,this_var->value);
-    i_var=prinft_1_(stack,NULL,(extend!=NULL)?extend:"");
-    if (extend!=NULL)
-        free(extend);
-    return i_var;
+	int i_var=search_var("n",vars);
+	struct Var* this_var=(struct Var*)vars->value[i_var].value;
+	char* extend=to_string_value(this_var->type,this_var->value);
+	i_var=prinft_1_(stack,NULL,(extend!=NULL)?extend:"");
+	if (extend!=NULL)
+		free(extend);
+	return i_var;
 }
 /**
  * @brief El operador suma del interprete. Aqui analizaremos y realizamos la operaciones deacuerdo a su tipo.
@@ -86,65 +86,47 @@ unsigned short puts_operator(struct Array* stack,struct Array* vars){
  * @return unsigned short 
  */
 unsigned short add_operator(struct Array* stack,...){
-    if (stack->i<2){
-        puts("Error: No hay suficientes elementos para hacer la suma");
-        return 1;
-    }
-    struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
-    struct type_value* num_1=&stack->value[stack->i-1],
-    *tmp_tv=NULL;
-    //Todo, buscar la forma de no liberar todo, puede ser util:)
-    //Usar push para apenear si se suma un array excepto otro array o estudiar que hay que hacer.
-    void* tmp=NULL;
-    U_INT tmp_len=0;
-    //[num_1 num_2]
-    switch (num_1->type){
-    case INT:
-        tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value); 
-        break;
-    case LONGINT:
-        tmp_tv=add_longint(*(mpz_t*)num_1->value,num_2->type,num_2->value);
-        break;
-    case CODES_BLOCKS:
-        //Usamos alloca para no liberar este bloque:D
-        tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
-        tmp_tv->type=CODES_BLOCKS;
-        tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
-        break;
-    case STRING:
-        tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value);
-        break;
-    case ARRAY:
-        //Los array+ string combierte el array en hexadecimal de dos rango y lo mete en la cadena: \x03
-        //Los array+ bloque de codigo solo se agrega al bloque. Mi version pone el array dentro del bloque.
-        switch(num_2->type){
-            case STRING:
-                tmp_tv=add_str((char*)num_2,ARRAY,num_1->value);
-                break;
-            case CODES_BLOCKS:
-                tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
-                tmp_tv->type=CODES_BLOCKS;
-                tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
-                break;
-            default:
-                tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
-                tmp_tv->type=ARRAY;
-                //No son cadenas ni bloques de codigo asi que podemos agregarlo tranquilos:D
-                //Como solo es agregar al final no es necesario liberar num_2 porque este se usara en num_1
-                add_array((struct Array*)num_1,num_2->type,num_2->value);
-                return 0;
-        }
-        break;
-    default:
-        perror("Caracteristica no disponible en la funcion add_operator\n");
-        printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
-        exit(-8);
-    }
-    delete_item(num_2->type,num_2->value);
-    delete_item(num_1->type,num_1->value);
-    stack->value[stack->i-1].type=tmp_tv->type;
-    stack->value[stack->i-1].value=tmp_tv->value;
-    return 0;
+	if (stack->i<2){
+		puts("Error: No hay suficientes elementos para hacer la suma");
+		return 1;
+	}
+	struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
+	struct type_value* num_1=&stack->value[stack->i-1],
+	*tmp_tv=NULL;
+	//[num_1 num_2]
+	switch (num_1->type){
+	case INT:
+		tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value); 
+		break;
+	case LONGINT:
+		tmp_tv=add_longint((mpz_t*)num_1->value,num_2->type,num_2->value);
+		break;
+	case CODES_BLOCKS:
+		//Usamos alloca para no liberar este bloque:D
+		tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
+		tmp_tv->type=CODES_BLOCKS;
+		tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
+		break;
+	case STRING:
+		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
+		break;
+	case ARRAY:
+		tmp_tv=op_add_array((struct Array*)num_1->value,num_2->type,num_2->value);
+		if (tmp_tv->type==NONE){
+			//No fue necesario liberar nada pues la misma funcion lo hizo, y se reuso lo que se pudo.
+			return 0;
+		}
+		break;
+	default:
+		perror("Caracteristica no disponible en la funcion add_operator\n");
+		printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
+		exit(-8);
+	}
+	delete_item(num_2->type,num_2->value);
+	delete_item(num_1->type,num_1->value);
+	stack->value[stack->i-1].type=tmp_tv->type;
+	stack->value[stack->i-1].value=tmp_tv->value;
+	return 0;
 }
 /**
  * @brief      Operador de resta.
@@ -154,9 +136,9 @@ unsigned short add_operator(struct Array* stack,...){
  * @return     is_error?
  */
 unsigned short sub_operator(struct Array* stack,...){
-    perror("caracteristica no disponible.\nFuncion sub_operator sin terminar.");
-    exit(-7);
-    return 0;
+	perror("caracteristica no disponible.\nFuncion sub_operator sin terminar.");
+	exit(-7);
+	return 0;
 }
 /**
  * @brief Terminaoms la app.
@@ -164,8 +146,8 @@ unsigned short sub_operator(struct Array* stack,...){
  * @return unsigned short 
  */
 unsigned short end_app(void){
-    quit=1;
-    return 0;
+	quit=1;
+	return 0;
 }
 /**
  * @brief Funcion para reiniciar las variables globales. Nota: No aqui liberamos la memoria.
@@ -176,11 +158,11 @@ unsigned short end_app(void){
  * @return unsigned short 
  */
 unsigned short reset(struct Array* stack,struct Array* vars,...){
-    if (vars->i==0)
-        return 1;
-    delete_array(vars);
-    init_gvars(vars);
-    return 0;
+	if (vars->i==0)
+		return 1;
+	delete_array(vars);
+	init_gvars(vars);
+	return 0;
 }
 /**
  * Copia el stack en un array la libera he ingresa ese array en la pila.
@@ -188,10 +170,10 @@ unsigned short reset(struct Array* stack,struct Array* vars,...){
  * @return       unsigned short error(si es 1 hubo error)
  */
 unsigned short pack_stack(struct Array* stack,...){
-    struct Array* tmp=copy_array(stack);
-    delete_array(stack);
-    add_array(stack,ARRAY,tmp);
-    return 0;
+	struct Array* tmp=copy_array(stack);
+	delete_array(stack);
+	add_array(stack,ARRAY,tmp);
+	return 0;
 }
 /**
  * @brief      Muestra una descripción de las funciones predecterminadas.
@@ -201,33 +183,33 @@ unsigned short pack_stack(struct Array* stack,...){
  * @return     0-Por copatibilidad.
  */
 unsigned short help(struct Array* stack,struct Array* vars,...){
-    char* key_fun[]={
-            "reset",
-            "print",
-            "puts",
-            "quit",
-            "]",
-            "help",
-            "fin_cadena"//Marca un final este array.
-    };
-    char* value_fun[]={
-        "Reinicia las variables globales si se rescriben",
-        "Imprime el ultimo elemento en la pila","Imprime el ultimo elemento en la pila y agrega un salto de linea",
-        "Termina el programa",
-        "Reempraza todos los elementos en la pila con un array con el contenido de esta",
-        "Muestra este menu de ayuda - Agrega una cadena en la pila con un operador y te muestra su descripción."
-    };
-    int i_var=search_var("n",vars);
-    struct Var* this_var=(struct Var*)vars->value[i_var].value;
-    char* extend=to_string_value(this_var->type,this_var->value);
+	char* key_fun[]={
+			"reset",
+			"print",
+			"puts",
+			"quit",
+			"]",
+			"help",
+			"fin_cadena"//Marca un final este array.
+	};
+	char* value_fun[]={
+		"Reinicia las variables globales si se rescriben",
+		"Imprime el ultimo elemento en la pila","Imprime el ultimo elemento en la pila y agrega un salto de linea",
+		"Termina el programa",
+		"Reempraza todos los elementos en la pila con un array con el contenido de esta",
+		"Muestra este menu de ayuda - Agrega una cadena en la pila con un operador y te muestra su descripción."
+	};
+	int i_var=search_var("n",vars);
+	struct Var* this_var=(struct Var*)vars->value[i_var].value;
+	char* extend=to_string_value(this_var->type,this_var->value);
 
-    printf("%s%s %s%s  Version: %s",LICENSE,extend,AUTHOR,extend,VERSION);
-    for (U_INT i=0;strcmp(key_fun[i],"fin_cadena");i++){
-        printf("%s%s -- %s%s",extend,key_fun[i],value_fun[i],extend);
-    }
-    if (extend!=NULL)
-        free(extend);
-    return 0;
+	printf("%s%s %s%s  Version: %s",LICENSE,extend,AUTHOR,extend,VERSION);
+	for (U_INT i=0;strcmp(key_fun[i],"fin_cadena");i++){
+		printf("%s%s -- %s%s",extend,key_fun[i],value_fun[i],extend);
+	}
+	if (extend!=NULL)
+		free(extend);
+	return 0;
 }
 /**
  * @brief Aqui iniciamos las variables globales. Tambien puede ser usada para reiniciar las variables globales.
@@ -235,14 +217,14 @@ unsigned short help(struct Array* stack,struct Array* vars,...){
  * @param vars Donde ingresar las variables globales.
  */
 void init_gvars(struct Array* vars){
-    add_var(vars,"reset",FUNCTION,(void*)reset);
-    add_var(vars,"print",FUNCTION,(void*)prinft_1_);
-    add_var(vars,"puts",FUNCTION,(void*)puts_operator);
-    add_var(vars,"+",FUNCTION,(void*)add_operator);
-    add_var(vars,"-",FUNCTION,(void*)sub_operator);
-    add_var(vars,"quit",FUNCTION,(void*)end_app);
-    add_var(vars,"]",FUNCTION,(void*)pack_stack);
+	add_var(vars,"reset",FUNCTION,(void*)reset);
+	add_var(vars,"print",FUNCTION,(void*)prinft_1_);
+	add_var(vars,"puts",FUNCTION,(void*)puts_operator);
+	add_var(vars,"+",FUNCTION,(void*)add_operator);
+	add_var(vars,"-",FUNCTION,(void*)sub_operator);
+	add_var(vars,"quit",FUNCTION,(void*)end_app);
+	add_var(vars,"]",FUNCTION,(void*)pack_stack);
 	add_var(vars,"n",STRING,"\n");
-    add_var(vars,"help",FUNCTION,(void*)help);
+	add_var(vars,"help",FUNCTION,(void*)help);
 }
 #endif
