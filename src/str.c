@@ -280,7 +280,9 @@ char* get_str_nescp(char* old_str){
 	new_str=(char*)realloc(new_str,i_nstr+1);
 	return new_str;
 }
-/**Tratar la cadena para escapar todos los caracteres especiales.
+/**
+ * Tratar la cadena para escapar todos los caracteres especiales.
+ * @TODO: Buscar y Arreglar un error que impide que \xhex muestre los caracteres hexadecimales. 
  * @param[char*] old_str { Cadena a escapar }
  * @return  nueva cadena reservando memoria dinamica. Recueda usar free.
 */

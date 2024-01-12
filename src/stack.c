@@ -347,17 +347,16 @@ char* printf_stack(struct Array* stack){
 				break;
 			case STRING:
 				a_out=(char*)stack->value[i].value;
-				////@TODO: No quitar hasta estar seguro: get_str_nescp((char*)stack->value[i].value);
 				len+=strlen(a_out)+3;
 				output=(char*)realloc(output,sizeof(char)*len);
 				sprintf(output,"%s\"%s\" ",output,a_out);
-				//free(a_out);
 				break;
 			case LONGINT:
 			case LONGFLOAT:
 				a_out=(stack->value[i].type==LONGINT)?
 				mpz_get_str(NULL,0,*(mpz_t*)stack->value[i].value)
 				:mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)stack->value[i].value);
+				
 				output=(char*)realloc(output,len+=strlen(a_out)+1);
 				sprintf(output,"%s%s ",output,a_out);
 				free(a_out);
