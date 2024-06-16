@@ -1,27 +1,19 @@
-#ifndef ADD_C
-#define ADD_C
-#include <string.h>
-#include <gmp.h>
-//Agrego esto más para que el IDE sepa cuáles son los prototipos
-#include "../header/str.h"
-#include "../header/stack.h"
-#include "../header/global_vars.h"
-#include "../header/define.h"
-
-#include "./header/add.h"
+#ifdef SUB_C
+#define SUB_C 1
+  #include "./header/sub.h"
 /**
- * @TODO:Buscar la manera de mejorar la sintaxis.
-*/ 
+ * @todo Investigar mpf_cmp. Hacer que se vea si esta en el rango y no en solo menor o maximo.
+ * */
 /**
- * @brief      Adds an integer.
+ * @brief subtract an integer from a data
  *
- * @param[in] num      The number
- * @param[in] type_n2  The type n 2
- * @param[] num_2    The number 2
+ * @param num      The number
+ * @param type_n2  The type n 2
+ * @param num_2    The number 2
  *
- * @return tatic struct type_valur* -  El resultado, no se requiere liberar la estructura.
+ * @return tatic struct type_valur* - The result is no need to release the structure.
  */
-struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
+struct type_value* sub_int(int num,enum TYPE type_n2,void* num_2){
 	static struct type_value out;
 	int* copy_n=NULL;
 	int64_t tmp_i;
@@ -29,7 +21,7 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 	out.type=type_n2;
 	switch(type_n2){
 		case INT:
-			tmp_i=num+*(int*)num_2;
+			tmp_i=num-*(int*)num_2;
 			//Primero verificamos si hubo un desbordamiento.
 			if (tmp_i<INT_MIN || tmp_i>INT_MAX){
 				out.value=malloc(sizeof(mpz_t));
@@ -38,26 +30,41 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 				tmp=alloca(sizeof(mpz_t));
 				mpz_init_set_si(*(mpz_t*)tmp,*(int*)num_2);
 
-				mpz_add(*(mpz_t*)out.value,*(mpz_t*)out.value,*(mpz_t*)tmp);
+				mpz_sub(*(mpz_t*)out.value,*(mpz_t*)out.value,*(mpz_t*)tmp);
 				mpz_clear(*(mpz_t*)tmp);
 				out.type=LONGINT;
 				break;
 			}
 			out.value=malloc(sizeof(int));
-			*(int*)out.value=num+*(int*)num_2;
+			*(int*)out.value=num-*(int*)num_2;
 			break;
 		case LONGINT:
 			out.value=malloc(sizeof(mpz_t));
 			mpz_init_set_si(*(mpz_t*)out.value,num);
+			//Se resta...
+			mpz_sub(*(mpz_t*)out.value,*(mpz_t*)out.value,*(mpz_t*)num_2);
 			
-			mpz_add(*(mpz_t*)out.value,*(mpz_t*)out.value,*(mpz_t*)num_2);
+			tmp=alloca(sizeof(mpz_t));
+      mpz_init_set_si(*(mpz_t*)tmp,INT_MIN);
+      int c = mpz_cmp(*(mpz_t*)tmp, *(mpz_t*)out.value);
+			//If out->value>-2... then out->value=(int)out.value
+      if (c < 0) {
+				mpz_clear(*(mpz_t*)tmp);
+				*(int*)tmp=(int)mpz_get_si(*(mpz_t*)out.value);
+				mpz_clear(*(mpz_t*)out.value);
+				free(out.value);
+
+				out.value=malloc(sizeof(int));
+				*(int*)out.value=*(int*)tmp;
+				out.type=INT;
+      }
 			break;
 		case FLOAT:
-			out.value=malloc(sizeof(double));
-			*(double*)out.value=*(double*)num_2+num;
+			out.value=malloc(sizeof(long double));
+			*(long double*)out.value=*(double*)num_2-num;
 
 			//Si se desborda el double
-			if (isinf(*(double*)out.value)){
+			if (DBL_MIN<*(long double*)out.value){
 				free(out.value);
 				//LONGFLOAT.
 				out.type=LONGFLOAT;
@@ -67,8 +74,7 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 				tmp=alloca(sizeof(mpf_t));
 				mpf_init_set_d(*(mpf_t*)tmp,(double)num);
 				
-				mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-				mpf_clear(*(mpf_t*)tmp);
+				mpf_sub(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
 			}
 			break;
 		case LONGFLOAT:
@@ -78,8 +84,11 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 			tmp=alloca(sizeof(mpf_t));
 			mpf_init_set_d(*(mpf_t*)tmp,(double)num);
 
-			mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-			mpf_clear(*(mpf_t*)tmp);
+			mpf_sub(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
+			
+			mpf_set_d(*(mpf_t*),DBL_MIN);
+      int c = mpf_cmp(*(mpf_t*)tmp, *(mpf_t*)out.value);
+			if (c<)
 			break;
 		case STRING:
 			tmp=alloca(30);
@@ -115,12 +124,12 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
  * @param value    valor
  * @return Char*  - El resultado, recordar liberar.
  */
-char* add_codes_block(char* codes,enum TYPE t, void* value){
+char* sub_codes_block(char* codes,enum TYPE t, void* value){
 	char* out=NULL;
 	char* tmp;
 	switch (t){
 		case STRING:
-		  out=(char*)malloc(strlen((char*)value)+strlen(codes)+4);
+		   	out=(char*)malloc(strlen((char*)value)+strlen(codes)+4);
 			sprintf(out,"%s \"%s\"",codes,(char*)value);
 			break;
 		case CODES_BLOCKS:
@@ -155,7 +164,7 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
  *
  * @return static struct type_value* -  El resultado, no se requiere liberar la estructura.
  */
-struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
+struct type_value* sub_str(char* str,enum TYPE t, void* value,bool is_right){
 	static struct type_value out;
 	struct String tmp_str={0,0,NULL};
 	struct type_value* now=NULL;
@@ -228,7 +237,7 @@ struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
  * @param value - El segundo dato
  * @return static struct type_value - El resultado, no se requiere liberar la estructura. 
 */
-struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
+struct type_value* sub_longint(mpz_t* long_int,enum TYPE t, void* value){
 	static struct type_value out;
 	mpz_t* copy_n=NULL;
 	void* tmp;
@@ -245,9 +254,6 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			if (t==INT){
 				tmp=alloca(sizeof(mpz_t));
 				mpz_init_set_si(*(mpz_t*)tmp,*(int*)value);
-			  mpz_add(*(mpz_t*)out.value,*long_int,*(mpz_t*)tmp);
-				mpz_clear(*(mpz_t*)tmp);
-				break;
 			}
 			mpz_add(*(mpz_t*)out.value,*long_int,*(mpz_t*)tmp);
 			break;
@@ -264,11 +270,7 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			mpf_set_d(*(mpf_t*)tmp, *(double*)value);
 
 			mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-			mpz_clear(*(mpf_t*)tmp);
 			break;
-		case LONGFLOAT:break;/** 
-		* @todo: Hacer...
-		*/
 		case STRING:
 			tmp=(void*)mpz_get_str(NULL,10, *long_int);
 
@@ -299,16 +301,6 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 	}
 	return &out;
 }
-struct type_value* add_longfloat(void){
-	/**
-	 * @todo ...
-	 * */
-}
-struct type_value* add_float(void){
-	/**
-	 * @todo ...
-	 * */
-}
 /**
  * @param arr Array*, el array.
  * @param t TYPE, el tipo de dato a evaluar.
@@ -317,7 +309,7 @@ struct type_value* add_float(void){
  ** que no se debe liberar value porque se usa en el nuevo array.
  ** Ojo si se pasa array despues de copiar se hace free(((struct Array*)value)->value);
 */
-struct type_value* op_add_array(struct Array* arr,enum TYPE t, void* value){
+struct type_value* op_sub_array(struct Array* arr,enum TYPE t, void* value){
 	static struct type_value out;
 	void* tmp=alloca(sizeof(int));
 	out.type=NONE;
@@ -352,5 +344,15 @@ struct type_value* op_add_array(struct Array* arr,enum TYPE t, void* value){
 	}
 	return &out;
 }
+struct type_value* add_longfloat(void){
+	/**
+	 * @todo ...
+	 * */
+}
+struct type_value* add_float(void){
+	/**
+	 * @todo ...
+	 * */
+}b
 //Para restar long int debes ver si ek resultado es menor a INT_MAX
 #endif

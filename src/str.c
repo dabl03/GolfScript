@@ -287,6 +287,7 @@ char* get_str_nescp(char* old_str){
  * @return  nueva cadena reservando memoria dinamica. Recueda usar free.
 */
 char* get_str_escp(char* old_str){
+	puts("comenzamos.");
 	U_INT len=strlen(old_str),
 	i_nstr=0;
 	char* new_str=(char*)malloc(len);//Tamaño base.
@@ -304,12 +305,14 @@ char* get_str_escp(char* old_str){
 			if (chr==-1){
 				new_str[i_nstr++]=*c;
 			}else{
-				if (chr==-2 AND (c+1!='\0' AND c+2!='\0')){//Convertimos a exadecimal.
+				printf("Primera condición. %d %d",chr,c);
+				if (chr==-2 AND (c+1!='\0' AND c+2!='\0')){//Convertimos a hexadecimal.
 					char* tmp=(char*)alloca(3);
 					tmp[0]=*(++c);
 					tmp[1]=*(++c);
 					tmp[2]='\0';
 					U_INT otro=(int) strtol(tmp, NULL, 16);
+					printf("El %s es %d\n",tmp,otro);
 					//Si el entero sobrepasa los limites entonces hacemos mas hexadecimales.
 					if (otro>CHAR_MAX){
 						new_str[i_nstr++]=CHAR_MAX;

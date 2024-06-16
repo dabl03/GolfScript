@@ -14,10 +14,9 @@
  * @todo: Agregar un tester.
  * 
  * Agregar una forma de acceder a los elementos del array.
- * Estudiar el archivo example.gs
  * TODO agregar una opcion para que se importe archivos.
  * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
- * @Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
+ * @todo Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
 */
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="  Interprete: Daniel Briceño.\n  Sintaxis: Darren Smith.";
@@ -27,10 +26,35 @@ char* err_msg=0;
 int CLIMIT_INT=MAX_INT_DIG;
 int CLIMIT_FLOAT=DBL_DIG-1;
 int quit=0;
+/** Interpreta golfscript desde la consola
+ * 
+ * @param stack Pila donde se almacenara todos los datos. 
+ * @param vars Array que contendrá las variables.
+ * @return int Error codes.
+*/
 int interprete(struct Array* stack,struct Array* vars);
+/** Trata los flags por consola.
+ * 
+ * @param opciones Array de string que representa los flags.
+*/
 void config_all(struct Array* opciones);
+/** Pide al usuario una cadena con terminando si hay salto de linea o fin del buffer.
+ * | Si consigue una comilla doble o simple, seguirá pidiendo hasta su termino.
+ * @param  type_string El tipo de cadena.
+ * @return             Cadena dinamica, tiene que liberar.
+*/
 char* get_input_str(char type_string);
-char* input_block(char init,char end,char* out_nesting,U_INT base_sub);
+/** Pide por consola hasta llegar a "cEnd".
+ * | Si hay anidamiento seguirá pidiendo hasta que termine
+ *
+ * @param[in]  cInit,cEnd  Inicio y final del bloque
+ * @param[in]  out_nesting Si hay anidamiento out_nesting se mostrará. Recomiendo "...", "--" o ">>"
+ * @param[in] base_sub     Identación base.
+ * @return La entrada del usuario. Recordar liberar
+ */
+char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub);
+//Para testear todo
+#ifndef TEST_
 int main(int argc, char *argv[]){
 	struct Array stack={0,0,NULL},//Nuestra pila.
 	vars={0,0,NULL};//Nuestra variables
@@ -90,6 +114,7 @@ int main(int argc, char *argv[]){
 	}
 	return 0;
 }
+#endif
 void config_all(struct Array* opciones){
 	for(unsigned int i=0;i<opciones->i;i++){
 		/****
@@ -176,11 +201,6 @@ int interprete(struct Array* stack,struct Array* vars){
 	}
 	return 0;
 }
-/**
- * Pide al usuario una cadena con final terminando si hay salto de linea o fin del buffer.
- * @param  type_string El tipo de cadena("dobles", 'simple').
- * @return             Cadena dinamica, tiene que liberar.
- */
 char* get_input_str(char type_string){
 	struct String str_={20,1,(char*)malloc(20)};
 	unsigned char input=0;
@@ -202,48 +222,45 @@ char* get_input_str(char type_string){
 	cadd_add_leftover(&str_,'\0');
 	return (char*)realloc(str_.str,str_.count);
 }
-/**
- * Aqui nos encargaremos de pedir la entrada al usuario hasta que llegue al fin del bloque
- * Ojo tomamos encuenta el anidamiento.
- * @param  init        El inicio del bloque.
- * @param  end         El final del bloque.
- * @param  out_nesting Lo que se enseña despues del identado. Puede ser "..." "--" ">>"
- * @param base_sub { Es para no perder la identación base }
- * @return             La entrada del usuario. Recordar liberar
- */
-char* input_block(char init,char end,char* out_nesting,U_INT base_sub){
+char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub){
 	U_INT sub=1;
 	struct String out={20,1,(char*)malloc(20)};
 	char c;//c this input
 	bool is_nline=false;//is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
-	out.str[0]=init;
+	out.str[0]=cInit;
 	while(true){
 		c=getchar();
-		if (c==init)
+
+		// Verificamos el anidamiento.
+		if (c==cInit)
 			sub++;
-		else if (c==end){
+		else if (c==cEnd){
 			sub--;
 			cadd_add_leftover(&out,c);
 			break;
-		}else if (IF_INIT_STRING(c)){//Obtenemos la cadena.
+		// Get string of console.
+		}else if (IF_INIT_STRING(c)){
 			char* str_=get_input_str(c);
 			U_INT len_=strlen(str_);
+
+			//Hubo un salto de linea a escribir la cadena.
 			if (str_[len_-1]=='\n'){
 				is_nline=true;
 			}
+
 			str_add_str_init_end(&out,str_,0,len_);
 			free(str_);
 			continue;
-		}else if (IF_INIT_COMENT(c)){//Ignoramos los comentarios.
+		}else if (IF_INIT_COMENT(c)){
 			while((c=getchar()!='\n') AND c!='\0');
 			is_nline=true;
 			continue;
 		}else if(IF_ENDL(c))
 			is_nline=true;
 		cadd_add_leftover(&out,c);
-		if (is_nline){//Tiene que ser el ultimo por si el usuario solo usa una linea para el bloque.
-			//Tambien se soluciona otro error al dejar esto de ultimo(Un char '\0' hechando
-			//broma se obtiene en el primer prompt).
+
+		// Nueva linea. ¡Identamos!.
+		if (is_nline){
 			for (U_INT i=0;i<base_sub+sub;i++){//Identamos.
 				printf("  ");
 			}

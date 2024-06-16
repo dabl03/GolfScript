@@ -102,7 +102,7 @@
 						}else{
 							interpret(stack,vars,v);
 						}
-					}else if(is_num(name[0]) || name[0]=='-'){//Sino se ejecuta la condicion anterioro significa que - es para un numero.
+					}else if(is_num(name[0]) || name[0]=='-'){//Sino se ejecuta la condicion anterior, significa que - es para un numero.
 						unsigned int len=strlen(name)-1;
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));

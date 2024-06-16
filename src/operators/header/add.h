@@ -1,5 +1,5 @@
-#ifndef OPERATOR_H
-#define OPERATOR_H
+#ifndef ADD_H
+#define ADD_H
 #include "../../header/str.h"
 #include "../../header/stack.h"
 #include "../../header/global_vars.h"

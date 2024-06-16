@@ -90,13 +90,19 @@ Creando funciones:
 - GCC: Para compilarlo.
 - make: Para automatizar el compilado.
 ## Como compilarlo:
-Si quiere compilar en linux debes cambiar el valor de la variable `SYSTEM_OS` del archivo `makefile` y listo.
+Si quiere compilar en linux, debes cambiar el valor de la variable `SYSTEM_OS` en el archivo makefile y listo. Tambien puedes pasar como parámetro `SYSTEM_OS=CualquierValor` para compilarlo para linux.
 <br/>
-Ejecuta el archivo makefile y listo, sino debes hacer:
+Con solo ejecutar el archivo makefile compilarás toda la app. Si deseas hacerlo tu mismo debes hacer:
 ```Bash
 gcc -Wall ./src/main.c {Pon aqui todos los archivos ./src/operators/*.c} {Pon aqui todos los archivos ./src/*.c} -o ./gsp -lgmp
 ```
 Y listo:)
+
+## ¿Como compilar los test?
+Si quieres compilar la app para hacer un test, debes pasar `TEST=1` como parámetro al makefile para hacer el test:
+```Bash
+make TEST=1
+```
 
 ## Creditos:
 -  Interprete basado en interprete GolfScript de: <a href="https://github.com/darrenks/golfscript">Darren Smith</a>. 

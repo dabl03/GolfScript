@@ -6,9 +6,10 @@ CXXFLAG:=-std=c++20 -Wall
 LINGC=-lgmp
 CFLAG:=-Wall
 IF_DEBUG=1
-APP=./gsp
-#Por problemas que he tenido lo hago a parte.
-SYSTEM_OS=WINDOWS
+APP=gsp
+APPTEST:=./test/$(APP)_test
+#Sistema Operativo. Otro valor para Linux.
+SYSTEM_OS:=$(SYSTEM_OS)WINDOWS
 
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators
@@ -27,27 +28,42 @@ O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
 O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 #*.h
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
+
+ifeq ($(SYSTEM_OS),WINDOWS)
+APP:=$(APP).exe
+MAKE=Mingw32-make
+APPTEST:=$(APPTEST).exe
 define delete_obj
-	rm -rf "$(BIN_O)/*.o"
+	cd $(BIN_O) && del "*.o"
+	del "$(APP)"
+endef
+else
+define delete_obj
+	rm $(BIN_O)/*.o
 	rm -rf "$(APP)"
 endef
+endif
+
 define append_log
 //Leer los archivos logs y agregarlo en un archivo log final.
 //Borrar este archivo cuando se compile la app y crearlo cuando se compile.
 //Leerlo cuando se llame mingw32-make logs.
 endef
-ifeq (SYSTEM_OS,WINDOWS)
-	APP=./gsp.exe
-	define delete_obj
-		cd $(BIN_O) && del "*.o"
-		del "$(APP)"
-	endef
-	MAKE=Mingw32-make
+
+ifeq ($(TEST),1)
+	CXXFLAG:=$(CXXFLAG) "-D TEST_=1"
+	CFLAG:=$(CFLAG) "-D TEST_=1"
+	BIN_O:=$(BIN_O)/test
+	LOG_APP:=$(LOG_APP)/test
+	O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
+	O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 endif
 
-ifeq ($(IF_DEBUG),1)
-	CXXFLAG:=$(CXXFLAG) -g
-	CFLAG:=$(CFLAG) -g
+ifneq ($(TEST),1)
+all: $(APP)
+else
+all: $(APPTEST)
+include ./test/makefile.mk
 endif
 
 $(APP): $(O_FILES) $(O_OPERATOR) $(MAIN_O)
@@ -66,7 +82,7 @@ $(BIN_O)/%.o:	$(SRC_OPERATOR)/%.c
 	@echo Compilando el operador: $<...
 	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.mk)
 
-clear:
+clean:
 	$(call delete_obj)
 
 gdb:
