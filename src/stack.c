@@ -17,6 +17,10 @@ bool add_array(struct Array* arr_allData,const enum TYPE typ_data, void* v_data)
 		);
 		if (arr_allData->value==NULL)
 			return true;
+	}else if (arr_allData->value==NULL){
+	  arr_allData->i=0;
+		arr_allData->max=0;
+		return true;
 	}
 	
 	arr_allData->value[arr_allData->i].type=typ_data;
@@ -35,8 +39,9 @@ bool delete_array(struct Array* arr_allData){
 	if(arr_allData->value==NULL)
 		return true;
 	
-	for (unsigned int i=0;i<arr_allData->i;i++)
+	for (unsigned int i=0;i<arr_allData->i;i++){
 		delete_item(arr_allData->value[i].type,arr_allData->value[i].value);
+	}
 	
 	//Liberamos el array y ponemos todo en NULL
 	free(arr_allData->value);
@@ -96,9 +101,6 @@ struct Array* copy_array(const struct Array* arr_allData){
 	return arr_out;
 }
 void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_indexSet, const enum TYPE typ_data, void* v_data){
-	struct type_value tv_nowItem,
-	  tv_afterItem;
-	U_INT i=i_indexSet+1;
 	// Modo modificar
 	if (!b_isAppend){
 		unsigned int i_index=(i_indexSet!=-1)?i_indexSet:arr_allData->i-1;
@@ -116,6 +118,8 @@ void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_
 			"\nIndice pasado: %d  -  Indice maximo a modificar: %d.\n",i_indexSet,arr_allData->i);
 		return;
 	}
+	struct type_value tv_nowItem,
+	  tv_afterItem;
 	//Modo Append:
 	//Aumentamos el array
 	add_array(arr_allData,PCHAR,NULL);
@@ -127,7 +131,7 @@ void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_
 
 	// Hacemos que todos los elementos sean
 	// Corridos
-	for (;i<arr_allData->i;i++){
+	for (U_INT i=i_indexSet+1;i<arr_allData->i;i++){
 		//Intercambiamos:
 		tv_nowItem.type=arr_allData->value[i].type;
 		tv_nowItem.value=arr_allData->value[i].value;
@@ -261,11 +265,12 @@ char* interpret(struct Array* arr_allData,struct Array* arr_allVars,struct Var* 
 	return NULL;
 }
 char* printf_stack(struct Array* arr_allData){
-	char* s_out=(char*)malloc(sizeof(char)*2);
+	char* s_out=(char*)malloc(sizeof(char)*2);// Iniciamos para despues agregarle.
 	char* s_generic;//Uso general.
 	*s_out='\0';
+	char* s_format;
 	unsigned int len=1;
-
+	mp_exp_t mp_exponent;
 	for(unsigned int i=0;i<arr_allData->i;i++){
 		switch(arr_allData->value[i].type){
 			case INT:
@@ -274,7 +279,7 @@ char* printf_stack(struct Array* arr_allData){
 				sprintf(s_generic,"%d ",*(int*)arr_allData->value[i].value);
 
 				// Concatenamos el entero con la cadena final.
-				len+=strlen(s_generic)+1;
+				len+=strlen(s_generic);
 				s_out=(char*)realloc(s_out,len);
 				strcat(s_out,s_generic);
 				break;
@@ -284,7 +289,7 @@ char* printf_stack(struct Array* arr_allData){
 				sprintf(s_generic,"%f ",*(double*)arr_allData->value[i].value);
 
 				// Concatenamos el flotante con la cadena final.
-				len+=strlen(s_generic)+1;
+				len+=strlen(s_generic);
 				s_out=(char*)realloc(s_out,len);
 				strcat(s_out, s_generic);
 				break;
@@ -312,18 +317,30 @@ char* printf_stack(struct Array* arr_allData){
 				sprintf(s_out,"%s\"%s\" ",s_out,s_generic);
 				break;
 			case LONGINT:
-			case LONGFLOAT:
-			  // Aprovechamos que gmp ofrece funciones para 
 				// Obtener la cadena.
-				s_generic=(arr_allData->value[i].type==LONGINT)?
-				mpz_get_str(NULL,0,*(mpz_t*)arr_allData->value[i].value)
-				:mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)arr_allData->value[i].value);
+				s_generic=mpz_get_str(NULL,0,*(mpz_t*)arr_allData->value[i].value);
 				
 				// 1 por: " "
-				s_out=(char*)realloc(s_out,len+=strlen(s_generic)+1);
+				s_out=(char*)realloc(s_out,len+=strlen(s_generic)+2);
 				sprintf(s_out,"%s%s ",s_out,s_generic);
 				free(s_generic);
 				break;
+			case LONGFLOAT:
+			  // Aprovechamos que gmp ofrece funciones para 
+				// Obtener la cadena.
+				s_generic=mpf_get_str(NULL, &mp_exponent, 10, 16, *(mpf_t*)arr_allData->value[i].value);
+				
+				// 2 por: ' ' y ','
+				s_out=(char*)realloc(s_out,len+=strlen(s_generic)+2);
+				
+				// 9+10+1 por 9 de "%s%.s,%s " + 2147483648 que serian 10 caracteres y 1 por \0.
+				s_format=alloca(sizeof(char)*20);
+				sprintf(s_format,"%s%d%s ","%s%.",(int)mp_exponent,"s,%s");// s_format = "%s%.{mp_exponent}s,%s " -> 9caracteres
+				
+				sprintf(s_out,s_format,s_out,s_generic,s_generic+(int)mp_exponent);
+				free(s_generic);
+				break;
+
 		}
 	}
 	return s_out;
@@ -357,20 +374,27 @@ void add_var(struct Array* arr_var,const char* s_name,enum TYPE typ_data,void* v
 	add_array(arr_var,VAR,vr_now);
 }
 char* to_string_value(const enum TYPE typ_data,void* v_data){
+	/**
+	 * @todo Hacer que prinft_stack use esta funcion, tambien 
+	 * hacer que la funcion reciba un int* para enseñar la longitud de la cadena.
+	 * Tambien cambiar los nombres: to_string_value -> toStringValue
+	 */
 	char* s_out=NULL,
 	*s_generic=NULL;
 	unsigned int i_len;
+	mp_exp_t mp_exponent;
+	void* vTmp;
 	switch(typ_data){
 		case INT:
 			s_generic=(char*)alloca(30);
-			itoa(*(int*)v_data,(char*)s_generic,10);
+			itoa(*(int*)v_data,(char*)s_generic,10); 
 			
 			s_out=(char*)malloc(sizeof(char)*(strlen(s_generic)+1));
 			strcpy(s_out,s_generic);
 			break;
 		case FLOAT:
 			s_generic=(char*)alloca(30);
-			sprintf(s_generic, "%.*lf", CLIMIT_FLOAT-1,*(double*)v_data);
+			sprintf(s_generic, "%.*lf", CLIMIT_FLOAT-2,*(double*)v_data);
 			
 			s_out=(char*)malloc(sizeof(char)*(strlen(s_generic)+1));
 			strcpy(s_out,s_generic);
@@ -379,7 +403,18 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 			s_out=mpz_get_str(NULL,0,*(mpz_t*)v_data);
 			break;
 		case LONGFLOAT:
-			s_out=mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)v_data);
+			s_generic=mpf_get_str(NULL, &mp_exponent, 10, 0, *(mpf_t*)v_data);
+
+			// 2 por: '\0' y ','
+			s_out=(char*)malloc(strlen(s_generic)+2);
+
+			// 9+10+1 por 9 de "%s%.s,%s " + 2147483648 que serian 10 caracteres y 1 por \0.
+			vTmp=alloca(sizeof(char)*20);
+			sprintf(vTmp,"%s%d%s ","%.",(int)mp_exponent,"s,%s");// s_format = "%s%.{mp_exponent}s,%s " -> 9caracteres
+			
+			puts(vTmp);
+			sprintf(s_out,vTmp,s_generic,s_generic+(int)mp_exponent);
+			free(s_generic);
 		break;
 		case CODES_BLOCKS:
 		case STRING:

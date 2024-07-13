@@ -51,18 +51,19 @@ define append_log
 endef
 
 ifeq ($(TEST),1)
-	CXXFLAG:=$(CXXFLAG) "-D TEST_=1"
-	CFLAG:=$(CFLAG) "-D TEST_=1"
+	CXXFLAG:=$(CXXFLAG) -g "-D TEST_=1" -static-libgcc -static-libstdc++ -ggdb
+	CFLAG:=$(CFLAG) -g "-D TEST_=1" -static-libgcc -static-libstdc++ -ggdb
 	BIN_O:=$(BIN_O)/test
 	LOG_APP:=$(LOG_APP)/test
 	O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
 	O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
+	STACK_TEST=stack.exe
 endif
 
 ifneq ($(TEST),1)
 all: $(APP)
 else
-all: $(APPTEST)
+all: $(APPTEST) $(STACK_TEST)
 include ./test/makefile.mk
 endif
 

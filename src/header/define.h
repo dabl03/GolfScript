@@ -11,6 +11,9 @@
 	#else
 		#include <alloca.h>     // alloca
 	#endif
+	#ifdef TEST_
+		#include "../../test/include/memory.h"
+	#endif
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
 	#define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
 	#define ERROR_DEFICCION_NO_VALIDA -30
@@ -50,8 +53,8 @@
 		FLOAT, // double
 		LONGFLOAT, // Big float of gmp
 		STRING, // string
-		PCHAR,
-		CHAR, // char*
+		PCHAR,// Elominar y cambiar por None
+		CHAR, // char* // Eliminar.
 		VALUE_TYPE,
 
 		FUNCTION, // Función estandar del programa. Nota: No debe ser liberado.

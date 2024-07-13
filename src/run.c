@@ -24,11 +24,9 @@
 	int run(struct Array* lines,struct Array* stack,struct Array* vars){
 		U_INT tmp_istr=0;
 		char* tmp_str=NULL;
-		/*Aqui debemos analizar para saber si hay un simbolo diferente, leer el readme o el ejemplo para mas informacion.*/
 		for (U_INT i_line=0;i_line<lines->i && !quit;i_line++){
-			if(lines->value[i_line].type!=STRING){
-				return -1;
-			}
+			if(lines->value[i_line].type!=STRING)
+				continue;
 			const char* l=(char*)lines->value[i_line].value;
 			U_INT i_end=strlen(l);
 			for(U_INT i=0;i<i_end;i++){

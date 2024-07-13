@@ -1,0 +1,40 @@
+#ifndef MEMORY_H_
+  #define MEMORY_H_ 1
+  #include <stdlib.h>
+  /**
+   * @brief Asignamos memoria dinamica.
+   * 
+   * @param size Cuanto asignar.
+   * @param file Archivo desde donde se asigna.
+   * @param line Linea desde donde se asigna.
+   * @param func Función desde donde se asigna.
+   * @return void* Memoria asignada.
+   */
+  void* test_malloc(size_t size, const char *file, int line, const char *func);
+  /**
+   * @brief Usamos realloc para aumentar o disminuir la memoria.
+   *  Si no existe ptr se crea uno con malloc.
+   * 
+   * @param ptr Memoria anterior.
+   * @param size Tamaño a cambiar.
+   * @param file Desde donde se llamo
+   * @param line Desde donde se llamo
+   * @param func Desde donde se llamo
+   * @return void* Memoria asignada. 
+   */
+  void* test_realloc(void* ptr,size_t size, const char *file, int line, const char *func);
+  /**
+   * @brief Liberamos la memoria asignada.
+   * 
+   * @param ptr Memoria a liberar.
+   * @param file Cadena donde se llamo a la función.
+   * @param line Linea donde se llamo.
+   * @param func Función desde donde se llamo.
+   */
+  void test_free(void* ptr, const char *file, int line, const char *func);
+  /** @brief Muestra la memoria dinamica todavia asignada y donde se asigno. */
+  void viewStack();
+  #define malloc(size) test_malloc( size, __FILE__, __LINE__, __FUNCTION__)
+  #define realloc(ptr,size) test_realloc( ptr,size, __FILE__, __LINE__, __FUNCTION__)
+  #define free(ptr) test_free( ptr, __FILE__, __LINE__, __FUNCTION__)
+#endif
