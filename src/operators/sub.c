@@ -4,15 +4,7 @@
 /**
  * @todo Investigar mpf_cmp. Hacer que se vea si esta en el rango y no en solo menor o maximo.
  * */
-/**
- * @brief subtract an integer from a data
- *
- * @param num      The number
- * @param type_n2  The type n 2
- * @param num_2    The number 2
- *
- * @return tatic struct type_valur* - The result is no need to release the structure.
- */
+
 struct type_value* sub_int(int num,enum TYPE type_n2,void* num_2){
 	static struct type_value out;
 	int* copy_n=NULL;
@@ -117,13 +109,6 @@ struct type_value* sub_int(int num,enum TYPE type_n2,void* num_2){
 	}
 	return &out;
 }
-/**
- * Agrega algo al bloque de codigo
- * @param codes    Bloque de codigo
- * @param t        Tipo de objeto agregar.
- * @param value    valor
- * @return Char*  - El resultado, recordar liberar.
- */
 char* sub_codes_block(char* codes,enum TYPE t, void* value){
 	char* out=NULL;
 	char* tmp;
@@ -154,16 +139,7 @@ char* sub_codes_block(char* codes,enum TYPE t, void* value){
 	}
 	return out;
 }
-/**
- * @brief      Concatena str con tipo de dato.
- *
- * @param str          The string
- * @param t        parameter_description
- * @param value        The value
- * @param is_right Es para saber si poner el resultado a la derecha.
- *
- * @return static struct type_value* -  El resultado, no se requiere liberar la estructura.
- */
+
 struct type_value* sub_str(char* str,enum TYPE t, void* value,bool is_right){
 	static struct type_value out;
 	struct String tmp_str={0,0,NULL};
@@ -229,14 +205,7 @@ struct type_value* sub_str(char* str,enum TYPE t, void* value,bool is_right){
 	}
 	return &out;
 }
-/***
- * @brief Sumas un LONGINT con un dato.
- * 
- * @param long_int - El LONGINT
- * @param t - El tipo del segundo dato
- * @param value - El segundo dato
- * @return static struct type_value - El resultado, no se requiere liberar la estructura. 
-*/
+
 struct type_value* sub_longint(mpz_t* long_int,enum TYPE t, void* value){
 	static struct type_value out;
 	mpz_t* copy_n=NULL;
@@ -301,14 +270,7 @@ struct type_value* sub_longint(mpz_t* long_int,enum TYPE t, void* value){
 	}
 	return &out;
 }
-/**
- * @param arr Array*, el array.
- * @param t TYPE, el tipo de dato a evaluar.
- * @param value void*, el dato.
- * @return &static struct type_value. Retorna type_value.type=none para indicar
- ** que no se debe liberar value porque se usa en el nuevo array.
- ** Ojo si se pasa array despues de copiar se hace free(((struct Array*)value)->value);
-*/
+
 struct type_value* op_sub_array(struct Array* arr,enum TYPE t, void* value){
 	static struct type_value out;
 	void* tmp=alloca(sizeof(int));

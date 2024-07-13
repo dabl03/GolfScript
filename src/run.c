@@ -9,25 +9,14 @@
 	#include "header/str.h"
 	#include "header/stack.h"
 	#include "header/run.h"
-	/**
-	 * @brief Función que analiza y ejecuta la instrucciones.
-	 * 
-	 * @param lines Lineas de codigo que interpretar. 
-	 * @param stack stack o pila en español.
-	 * @param vars Variables declaradas.
-	 * @return int error_codes.
-	*/
-   /****
-	* @todo Tambien falta colocar la biblioteca gmp flotante.
-	* @todo  Es muy lento el programa, sobretodo cuando el entero es muy grande, arreglar
-	*/
-	int run(struct Array* lines,struct Array* stack,struct Array* vars){
+	
+	int run(struct Array* arrLines,struct Array* stack,struct Array* vars){
 		U_INT tmp_istr=0;
 		char* tmp_str=NULL;
-		for (U_INT i_line=0;i_line<lines->i && !quit;i_line++){
-			if(lines->value[i_line].type!=STRING)
+		for (U_INT i_line=0;i_line<arrLines->i && !quit;i_line++){
+			if(arrLines->value[i_line].type!=STRING)
 				continue;
-			const char* l=(char*)lines->value[i_line].value;
+			const char* l=(char*)arrLines->value[i_line].value;
 			U_INT i_end=strlen(l);
 			for(U_INT i=0;i<i_end;i++){
 				//Primero definimos nuestros signos constantes:
@@ -125,14 +114,7 @@
 		}
 		return 0;
 	}
-	/**
-	 * @brief Obtiene el nombre de la variable o un numero y retorna la cadena, ojo hay que liberarla.
-	 * 
-	 * @param search Cadena a buscar.
-	 * @param i indice actual a buscar.
-	 * @param end Fin de la cadena.
-	 * @return char* malloc/calloc/readlloc
-	 */
+	
 	char* get_name_var(const char* search,unsigned int* i,unsigned int end){
 		struct String name = {3, 0, (char *)malloc(3)};
 		unsigned int i_2 = *i;
@@ -157,14 +139,7 @@
 		*i=i_2;
 		return (char*)realloc(name.str,name.count+1);
 	}
-	/**Elimina los excesivos espacio dejando solo uno para separar cada palabra.
-	 * Tambien combertimos los saltos de lineas en espacio y se hace lo mismo que el anterior.
-	 * Nota: Tomamos en cuenta las cadenas ignorando todo lo que este adentro.
-	 * @param str Cadena
-	 * @param init { comienzo de la cadena a revisar }
-	 * @param end Fin de la cadena. si es 0 se busca el final.
-	 * @return     Cadena tratada para prevenir los excesos de espacio y los saltos de linea. Retorna cadena dinamica, liberar.
-	 */
+	
 	char* get_str_token(char* str,U_INT init,U_INT end){
 		NEW_STRING(out,20);
 		bool space=false;
@@ -195,16 +170,7 @@
 		cadd_add_leftover(&out,'\0');
 		return (char*)realloc(out.str,out.count);
 	}
-	/**
-	 * get init end block. Obtiene un bloque buscando en la cadena, desde init hasta conseguirn end block.
-	 * Nota: El inicio del bloque se obtiene deacuerdo a init: char inicio=input[init];.
-	 * No sirve para obtener cadena, en su lugar use get_sub_str o get_end_str.
-	 * @param  input   Cadena a buscar
-	 * @param  init    Desde donde empezar
-	 * @param  end     El caracter a buscar para ver el final.
-	 * @param  out_end Aqui almacenaremos el indice final para que fuera de la funcion se sepa.
-	 * @return         retorna el bloque buscado sin el inicio y el final. Recordar liberar cadena.
-	 */
+	
 	char* get_ie_block(const char* input,const U_INT init, const char end, U_INT* out_end){
 		NEW_STRING(out,20);
 		char cinit=input[init];
