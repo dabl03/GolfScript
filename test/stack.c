@@ -37,7 +37,8 @@ void toStringValue_test_all(){
   toStringValue_test(FUNCTION,NULL);
 }
 int main(void){
-  struct Array arr_testArray={0,0,NULL};
+  struct Array arr_testArray={0,0,NULL},
+    *arrSecond=NULL;
   struct type_value* tv_data=NULL;
   char options='\n';
   char* sOut=NULL;
@@ -127,14 +128,31 @@ int main(void){
     *o=i;
     if (add_array((struct Array*)v_tmp,INT,o))
       printf("El valor \"%d\" no pudo guardarse.\n",*o);
+    if (i==10){
+      /// @todo : Fuga de memoria:
+      /// Aquí al eliminar arrays copiados hay fugas de memoriassss..........................................
+      puts("Aprovechamos y usamos el array anterior para testear \"copy_array\". \n"
+      "Ojo: Para no alargar tanto solo tendrá hasta 11 numeros del bucle actual.");
+      arrSecond=copy_array(&arr_testArray);
+      add_array(arrSecond,ARRAY,copy_array(arrSecond));
+      add_array(arrSecond,ARRAY,copy_array(arrSecond));
+    }
   }
   printf_stack_test(&arr_testArray,
     "El array vale:\n---------------------------------\n"
   );
+  printf_stack_test(arrSecond,
+    "-----------------------\nEl array copiado vale:\n---------------------------------\n"
+  );
   puts("---------------------------------");
-
+  
   puts("Testeamos \"delete_array\" con el doble de datos...");
   delete_array(&arr_testArray);
+  //Hay fuga de memoria:
+  delete_array(arrSecond);
+  puts("¿Hay fugas de memoria?:\n");
+  viewStack();
+
   printf("El puntero al array 2 tiene valor: %p\n",(struct Array*)v_tmp);
 
   v_tmp=malloc(sizeof(int));
@@ -168,6 +186,11 @@ int main(void){
   // copy_array
   // interpret
   // pop_array
-  puts("¿Hay fugas de memoria?:");
+  // add_var
+  // setValue_tv
+  // delete_var
+  // search_var_init
+  // search_var
+  puts("¿Hay fugas de memoria?:\n");
   viewStack();
 }

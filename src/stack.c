@@ -361,7 +361,10 @@ void add_var(struct Array* arr_var,const char* s_name,enum TYPE typ_data,void* v
 	const unsigned int LEN=strlen(s_name)+1;
 	//Aqui da error de memoria:
 	vr_now->name=(char*)malloc(sizeof(char)*(LEN+11111));
-	if (vr_now->name==NULL)printf("Error");
+	if (vr_now->name==NULL){
+		PRINTF_MEMORY_ERROR(s_name);
+		return;
+	}
 	vr_now->i_name=0;
 
 	for (unsigned int i=0;i<LEN;i++){
