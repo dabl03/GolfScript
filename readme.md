@@ -89,8 +89,8 @@ Creando funciones:
 - <a href="https://gmplib.org/manual/Headers-and-Libraries">GMP</a>: Biblioteca para hacer operaciones con numeros realmente largos.
 - GCC: Para compilarlo.
 - make: Para automatizar el compilado.
-## Como compilarlo:
-Si quiere compilar en linux, debes cambiar el valor de la variable `SYSTEM_OS` en el archivo makefile y listo. Tambien puedes pasar como parámetro `SYSTEM_OS=CualquierValor` para compilarlo para linux.
+<!--## Como compilarlo:
+Si quiere compilar en linux, debes cambiar el valor de la variable `SYSTEM_OS` en el archivo makefile y listo. Tambien puedes pasar como parámetro `SYSTEM_OS=CualquierValor` para compilarlo para linux.--><!--Ver si funciona para windows para eliminar esta linea. (Nota: Funciona en linux)-->
 <br/>
 Con solo ejecutar el archivo makefile compilarás toda la app. Si deseas hacerlo tu mismo debes hacer:
 ```Bash
@@ -98,8 +98,9 @@ gcc -Wall ./src/main.c {Pon aqui todos los archivos ./src/operators/*.c} {Pon aq
 ```
 Y listo:)
 
+Para testear la app solo debes pasar TEST=1 por parámetro al makefile
 ## ¿Como compilar los test?
-Si quieres compilar la app para hacer un test, debes pasar `TEST=1` como parámetro al makefile para hacer el test:
+Si quieres compilar la app para hacer un test, debes pasar -E `TEST=1` como parámetro al makefile para hacer el test
 ```Bash
 make TEST=1
 ```

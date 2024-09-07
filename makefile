@@ -9,8 +9,8 @@ IF_DEBUG=1
 APP=gsp
 APPTEST:=./test/$(APP)_test
 #Sistema Operativo. Otro valor para Linux.
-SYSTEM_OS:=$(SYSTEM_OS)WINDOWS
-
+SYSTEM_OS:=$(shell powershell -command "$PSVersionTable.OS")
+## Ver si usar: Platform - Platform that the operating system is running on. The value on Linux and macOS is Unix. See $IsMacOs and $IsLinux.
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators
 INCLUDE=$(SRC)/header
@@ -29,7 +29,7 @@ O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 #*.h
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 
-ifeq ($(SYSTEM_OS),WINDOWS)
+ifeq ($(SYSTEM_OS),Windows)
 APP:=$(APP).exe
 MAKE=Mingw32-make
 APPTEST:=$(APPTEST).exe
