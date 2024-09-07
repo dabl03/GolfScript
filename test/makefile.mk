@@ -5,11 +5,11 @@ TEST_MEMORY=$(BIN_O)/memory.o
 $(APPTEST): ./test/main.c $(MAIN_O) $(TEST_MEMORY)  $(O_FILES) $(O_OPERATOR)
 	@echo Dependencias compiladas...
 	@echo Compilamos el test...
-	$(GCC) $(CFLAG) ./test/main.c $(MAIN_O) $(O_FILES) $(O_OPERATOR) $(TEST_MEMORY) -o $(APPTEST) $(LINGC) 2> $(LOG_APP)/app.exe.mk
+	$(GCC) $(CFLAG) ./test/main.c $(MAIN_O) $(O_FILES) $(O_OPERATOR) $(TEST_MEMORY) -o $(APPTEST) $(LINGC) 2> $(LOG_APP)/test/app.exe.log
 
 $(STACK_TEST): test/stack.c $(O_FILES) $(O_OPERATOR) $(MAIN_O) $(TEST_MEMORY)
 	@echo Compilando el test de stack...
-	$(GCC) $(CFLAG) ./test/stack.c $(MAIN_O) $(O_FILES) $(O_OPERATOR) $(TEST_MEMORY) -o stack.exe $(LINGC)
+	$(GCC) $(CFLAG) ./test/stack.c $(MAIN_O) $(O_FILES) $(O_OPERATOR) $(TEST_MEMORY) -o stack_test$(BIN_EXT) $(LINGC)
 
 $(TEST_MEMORY): test/memory.c
 	echo $(TEST_MEMORY)

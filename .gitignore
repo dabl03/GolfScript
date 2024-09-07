@@ -1,11 +1,19 @@
 /.vscode/*
-/build/log/*
-/build/obj/*
-/logs.txt
-/logs_obj.txt
-/GolfScript_pirata.exe
-/gsp.exe
-/gsp
-/GolfScript_pirata
-/run.bat
-/todo.md
+
+*.log
+*.o
+*.exe
+# Ver si eliminar {
+/build/log/*.log
+/build/log/test/*.log
+/build/obj/test/*.o
+/build/obj/*.o
+# }
+logs.txt
+logs_obj.txt
+gsp.exe
+gsp
+*_test
+*_test.exe
+run.bat
+todo.md

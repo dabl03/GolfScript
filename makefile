@@ -6,7 +6,7 @@ CXXFLAG:=-std=c++20 -Wall
 LINGC=-lgmp
 CFLAG:=-Wall
 IF_DEBUG=1
-APP=gsp
+APP=./gsp
 APPTEST:=./test/$(APP)_test
 #Sistema Operativo. Otro valor para Linux.
 SYSTEM_OS:=$(shell powershell -command "$PSVersionTable.OS")
@@ -28,27 +28,18 @@ O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
 O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 #*.h
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
+# If windows then BIN_EXT=.exe
+BIN_EXT=
+DELETE=rm -f -d
+SHOW_LOG=cat -n
 
 ifeq ($(SYSTEM_OS),Windows)
 APP:=$(APP).exe
+BIN_EXT=.exe
 MAKE=Mingw32-make
 APPTEST:=$(APPTEST).exe
-define delete_obj
-	cd $(BIN_O) && del "*.o"
-	del "$(APP)"
-endef
-else
-define delete_obj
-	rm $(BIN_O)/*.o
-	rm -rf "$(APP)"
-endef
+DELETE=del
 endif
-
-define append_log
-//Leer los archivos logs y agregarlo en un archivo log final.
-//Borrar este archivo cuando se compile la app y crearlo cuando se compile.
-//Leerlo cuando se llame mingw32-make logs.
-endef
 
 ifeq ($(TEST),1)
 	CXXFLAG:=$(CXXFLAG) -g "-D TEST_=1" -static-libgcc -static-libstdc++ -ggdb
@@ -69,22 +60,28 @@ endif
 
 $(APP): $(O_FILES) $(O_OPERATOR) $(MAIN_O)
 	@echo compilando APP...
-	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) $(O_OPERATOR) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.mk
+	$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) $(O_OPERATOR) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.log
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
-	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG_APP)/main.c.mk
+	$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG_APP)/main.c.log
 
 $(BIN_O)/%.o:	$(SRC)/%.c
 	@echo Compilando el archivo objeto de $<...
-	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.mk)
+	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log)
 
 $(BIN_O)/%.o:	$(SRC_OPERATOR)/%.c
 	@echo Compilando el operador: $<...
-	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.mk)
+	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log)
 
 clean:
-	$(call delete_obj)
+	$(DELETE) $(BIN_O)/*.o
+	$(DELETE) $(BIN_O)/test/*.o
+	$(DELETE) $(LOG_APP)/*.log
+	$(DELETE) $(LOG_APP)/test/*.log
+	$(DELETE) ./*_test$(BIN_EXT)
+	$(DELETE) ./test/*_test$(BIN_EXT)
+	$(DELETE) "$(APP)"
 
 gdb:
 	gdb $(APP)
@@ -92,5 +89,3 @@ gdb:
 run:
 	$(APP)
 
-log:
-	$(call log)
