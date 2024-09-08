@@ -337,13 +337,14 @@ char* printf_stack(struct Array* arr_allData){
 			  // Aprovechamos que gmp ofrece funciones para 
 				// Obtener la cadena.
 				s_generic=mpf_get_str(NULL, &mp_exponent, 10, 16, *(mpf_t*)arr_allData->value[i].value);
-				
+				mp_exponent+=(*s_generic=='-')?1:0;//Si es negativo se necesita sumar 1.
+
 				// 2 -> ' ' and ','
 				len_str_return=strlen(s_generic)+2;
 				s_out=(char*)realloc(s_out,SIZE_CHAR(len+len_str_return));
-				
-				// 20: 7->"%.s,%s "+{s_generic 10 character}+1->\0.
-				s_format=(char*)malloc(SIZE_CHAR(19));
+
+				// 18: 7->"%.s,%s "+{s_generic 10 character}+1->\0.
+				s_format=(char*)alloca(SIZE_CHAR(18));
 				sprintf(s_format,"%%.%ds,%%s ",(int)mp_exponent);
 				//Out:
 				sprintf(
@@ -354,7 +355,6 @@ char* printf_stack(struct Array* arr_allData){
 				);
 				len+=len_str_return;
 				FREE__(s_generic);
-				free(s_format);
 				break;
 			default:
 				printf("Error: Tipo de dato \"%s\" no está tratado.",get_name_type(arr_allData->value[i].type));
@@ -421,7 +421,10 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 			strcpy(s_out,s_generic);
 			break;
 		case LONGINT:
-			s_out=mpz_get_str(NULL,0,*(mpz_t*)v_data);
+			//Evitamos warning con los tester al no hacer: s_out=mpz_get_str(...);
+			//2-> '-' is negative and '\0'
+			s_out=(char*)malloc( SIZE_CHAR(mpz_sizeinbase((mpz_t*)v_data, 10) + 2) );
+			mpz_get_str(s_out,10,*(mpz_t*)v_data);
 			break;
 		case LONGFLOAT:
 			s_generic=mpf_get_str(NULL, &mp_exponent, 10, 0, *(mpf_t*)v_data);
@@ -429,13 +432,12 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 			// 2 por: '\0' y ','
 			s_out=(char*)malloc(strlen(s_generic)+2);
 
-			// 9+10+1 por 9 de "%s%.s,%s " + 2147483648 que serian 10 caracteres y 1 por \0.
-			vTmp=alloca(sizeof(char)*20);
-			sprintf(vTmp,"%s%d%s ","%.",(int)mp_exponent,"s,%s");// s_format = "%s%.{mp_exponent}s,%s " -> 9caracteres
+			// 19 -> 7 de "%.s,%s " + 10->2147483648 (10 caracteres)+ 1 -> \0+ 1 -> '-'.
+			vTmp=alloca(sizeof(char)*19);
+			sprintf(vTmp,"%%.%ds,%%s ",(int)mp_exponent);
 			
-			puts(vTmp);
 			sprintf(s_out,vTmp,s_generic,s_generic+(int)mp_exponent);
-			free(s_generic);
+			FREE__(s_generic);
 		break;
 		case CODES_BLOCKS:
 		case STRING:

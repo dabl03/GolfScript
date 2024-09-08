@@ -6,9 +6,9 @@
 struct Stack{
   void* memory;
   size_t size;
-  char* file;
+  const char* file;
   unsigned int line;
-  char* func;
+  const char* func;
   struct Stack* next;
 };
 struct HeadStack{
