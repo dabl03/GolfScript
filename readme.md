@@ -106,7 +106,7 @@ make TEST=1
 ```
 
 ### Nota si deseas colaborar.
-Si deseas colaborar no guardes un archivo importante en el directorio raiz con un nombre que contenga `*_test` y `_test.exe` o `./test/*_test` y `./test/*_test.exe`. Esto porque serán eliminados al llamar "make clean", se colocó porque la salida de los testeos siguen ese patrón.
+Si deseas colaborar, no guardes un archivo importante en el directorio raiz con un nombre que contenga `*_test` y `_test.exe` o `./test/*_test` y `./test/*_test.exe`. Esto porque serán eliminados al llamar "make clean", se colocó porque la salida de los testeos siguen ese patrón.
 
 ## Creditos:
 -  Interprete basado en interprete GolfScript de: <a href="https://github.com/darrenks/golfscript">Darren Smith</a>. 

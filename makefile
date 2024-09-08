@@ -37,7 +37,6 @@ ifeq ($(SYSTEM_OS),Windows)
 APP:=$(APP).exe
 BIN_EXT=.exe
 MAKE=Mingw32-make
-APPTEST:=$(APPTEST).exe
 DELETE=del
 endif
 

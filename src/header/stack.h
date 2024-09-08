@@ -47,6 +47,18 @@ struct Array{
 	struct type_value* value;
 };
 /**
+ * @brief La pila donde se guardará todo.
+ * 
+ * @param item Item actual de la pila.
+ * @param next Siguiente Item.
+*/
+struct Stack_{
+	// Pasar de Array a esto.
+	struct type_value* item;
+	//Ver si agregar: struct Stack_* previous;
+	struct Stack_* next;
+};
+/**
  * @brief Agrega un elemento en el array.
  * 
  * @param[out] arr_allData El array a donde agregar los datos | 

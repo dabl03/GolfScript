@@ -90,7 +90,7 @@ unsigned short add_operator(struct Array* stack,...){
 		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
 		break;
 	case ARRAY:
-		tmp_tv=op_add_array((struct Array*)num_1->value,num_2->type,num_2->value);
+		tmp_tv=opr_add_array((struct Array*)num_1->value,num_2->type,num_2->value);
 		if (tmp_tv->type==NONE){
 			//No fue necesario liberar nada pues la misma funcion lo hizo, y se reuso lo que se pudo.
 			return 0;

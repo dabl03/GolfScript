@@ -30,11 +30,17 @@
    * @param file Cadena donde se llamo a la función.
    * @param line Linea donde se llamo.
    * @param func Función desde donde se llamo.
+   * @param is_normal Indica que solo se quiere liberar y no comprobar.
    */
-  void test_free(void* ptr, const char *file, int line, const char *func);
+  void test_free(void* ptr, const char *file, int line, const char *func,unsigned char is_normal);
   /** @brief Muestra la memoria dinamica todavia asignada y donde se asigno. */
   void viewStack();
   #define malloc(size) test_malloc( size, __FILE__, __LINE__, __FUNCTION__)
   #define realloc(ptr,size) test_realloc( ptr,size, __FILE__, __LINE__, __FUNCTION__)
-  #define free(ptr) test_free( ptr, __FILE__, __LINE__, __FUNCTION__)
+  #define free(ptr) test_free( ptr, __FILE__, __LINE__, __FUNCTION__,0)
+  // Evitamos los warning de los test
+  #ifdef FREE__
+    #undef FREE__
+  #endif
+  #define FREE__(ptr) test_free( ptr, __FILE__, __LINE__, __FUNCTION__,1)
 #endif

@@ -211,7 +211,8 @@ void delete_item(const enum TYPE t_typValue, void* v_data){
 			break;
 		case LONGFLOAT:
 			mpf_clear(*(mpf_t*)v_data);
-		//No hay forma diferente para liberar.
+			free(v_data);
+			break;
 		case INT:
 		case CODES_BLOCKS:
 		case STRING:
@@ -270,6 +271,7 @@ char* printf_stack(struct Array* arr_allData){
 	*s_out='\0';
 	char* s_format;
 	unsigned int len=1;
+	unsigned int len_str_return;
 	mp_exp_t mp_exponent;
 	for(unsigned int i=0;i<arr_allData->i;i++){
 		switch(arr_allData->value[i].type){
@@ -278,69 +280,85 @@ char* printf_stack(struct Array* arr_allData){
 				s_generic=(char*)alloca(50);
 				sprintf(s_generic,"%d ",*(int*)arr_allData->value[i].value);
 
-				// Concatenamos el entero con la cadena final.
-				len+=strlen(s_generic);
-				s_out=(char*)realloc(s_out,len);
-				strcat(s_out,s_generic);
+				len=append_strcpy(&s_out,len,s_generic);
 				break;
 			case FLOAT:
 				// Creamos una cadena temporal y guardamos el flotante.
 				s_generic=(char*)alloca(60);
 				sprintf(s_generic,"%f ",*(double*)arr_allData->value[i].value);
 
-				// Concatenamos el flotante con la cadena final.
-				len+=strlen(s_generic);
-				s_out=(char*)realloc(s_out,len);
-				strcat(s_out, s_generic);
+				len=append_strcpy(&s_out,len,s_generic);
 				break;
 			case ARRAY:
 				// Convertimos el array en cadena para despues concatenarlo
 				s_generic=printf_stack((struct Array*)arr_allData->value[i].value);
-				// 4 por: "[ ] "
-				len+=strlen(s_generic)+4;
-				s_out=(char*)realloc(s_out,len);
-
-				sprintf(s_out,"%s[ %s] ",s_out,s_generic);
+				len=append_sprintf(
+					&s_out,
+					len,
+					4,
+					"[ %s] ",// 4 -> "[ %s] "
+					s_generic
+				);
 				free(s_generic);
 				break;
 			case CODES_BLOCKS:
-				// 3 por: "{} "
-				len+=strlen((char*)arr_allData->value[i].value)+3;
-				s_out=(char*)realloc(s_out,sizeof(char)*len);
-				sprintf(s_out,"%s{%s} ",s_out,(char*)arr_allData->value[i].value);
+				len=append_sprintf(
+					&s_out,
+					len,
+					3,// 3 -> "{} "
+					"{%s} ",
+					(char*)arr_allData->value[i].value
+				);
 				break;
 			case STRING:
-				s_generic=(char*)arr_allData->value[i].value;
-				// 3 por: '"" '
-				len+=strlen(s_generic)+3;
-				s_out=(char*)realloc(s_out,sizeof(char)*len);
-				sprintf(s_out,"%s\"%s\" ",s_out,s_generic);
+				len=append_sprintf(
+					&s_out,
+					len,
+					3,// 3 -> '"" '
+					"\"%s\" ",
+					(char*)arr_allData->value[i].value
+				);
 				break;
 			case LONGINT:
 				// Obtener la cadena.
 				s_generic=mpz_get_str(NULL,0,*(mpz_t*)arr_allData->value[i].value);
 				
 				// 1 por: " "
-				s_out=(char*)realloc(s_out,len+=strlen(s_generic)+2);
-				sprintf(s_out,"%s%s ",s_out,s_generic);
-				free(s_generic);
+				len=append_sprintf(
+					&s_out,
+					len,
+					1,// 1 -> ' '
+					"%s ",
+					s_generic
+				);
+				FREE__(s_generic);
 				break;
 			case LONGFLOAT:
 			  // Aprovechamos que gmp ofrece funciones para 
 				// Obtener la cadena.
 				s_generic=mpf_get_str(NULL, &mp_exponent, 10, 16, *(mpf_t*)arr_allData->value[i].value);
 				
-				// 2 por: ' ' y ','
-				s_out=(char*)realloc(s_out,len+=strlen(s_generic)+2);
+				// 2 -> ' ' and ','
+				len_str_return=strlen(s_generic)+2;
+				s_out=(char*)realloc(s_out,SIZE_CHAR(len+len_str_return));
 				
-				// 9+10+1 por 9 de "%s%.s,%s " + 2147483648 que serian 10 caracteres y 1 por \0.
-				s_format=alloca(sizeof(char)*20);
-				sprintf(s_format,"%s%d%s ","%s%.",(int)mp_exponent,"s,%s");// s_format = "%s%.{mp_exponent}s,%s " -> 9caracteres
-				
-				sprintf(s_out,s_format,s_out,s_generic,s_generic+(int)mp_exponent);
-				free(s_generic);
+				// 20: 7->"%.s,%s "+{s_generic 10 character}+1->\0.
+				s_format=(char*)malloc(SIZE_CHAR(19));
+				sprintf(s_format,"%%.%ds,%%s ",(int)mp_exponent);
+				//Out:
+				sprintf(
+					s_out+SIZE_CHAR(len-1),
+					s_format,
+					s_generic,
+					s_generic+(int)mp_exponent
+				);
+				len+=len_str_return;
+				FREE__(s_generic);
+				free(s_format);
 				break;
-
+			default:
+				printf("Error: Tipo de dato \"%s\" no está tratado.",get_name_type(arr_allData->value[i].type));
+				break;
 		}
 	}
 	return s_out;
@@ -358,18 +376,18 @@ int64_t search_var_init(const char* s_name, unsigned const int i_initStr, struct
 }
 void add_var(struct Array* arr_var,const char* s_name,enum TYPE typ_data,void* v_data){
 	struct Var* vr_now=(struct Var*)malloc(sizeof(struct Var));
-	const unsigned int LEN=strlen(s_name)+1;
+	const unsigned int LEN=strlen(s_name);
 	//Aqui da error de memoria:
-	vr_now->name=(char*)malloc(sizeof(char)*(LEN+11111));
+	vr_now->name=(char*)malloc(sizeof(char)*(LEN+1));
 	if (vr_now->name==NULL){
 		PRINTF_MEMORY_ERROR(s_name);
 		return;
 	}
 	vr_now->i_name=0;
 
-	for (unsigned int i=0;i<LEN;i++){
-		vr_now->name=s_name[i];
-		vr_now->i_name+=s_name[i];
+	for (unsigned int i=0;s_name[i]!='\0';i++){
+		vr_now->name[i]=s_name[i];
+		vr_now->i_name+=s_name[i];// Para saber la sumatoria de carácteres.
 	}
 	vr_now->name[LEN]='\0';
 	vr_now->type=typ_data;
@@ -384,9 +402,9 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 	 */
 	char* s_out=NULL,
 	*s_generic=NULL;
-	unsigned int i_len;
 	mp_exp_t mp_exponent;
 	void* vTmp;
+
 	switch(typ_data){
 		case INT:
 			s_generic=(char*)alloca(30);

@@ -2,7 +2,9 @@
 #include <gmp.h>
 #include "header/stack.h"
 #include "include/memory.h"
-
+/***
+  * @todo: Ver en cada ejecución si hay fuga de memoria y localizar donde se inicializó y porque no murió para ver como solucionarlo.
+*/
 void printf_stack_test(struct Array* stack,char* sMsg){
   char* sOut=printf_stack(stack);
   printf("%s%s .\n",sMsg,sOut);

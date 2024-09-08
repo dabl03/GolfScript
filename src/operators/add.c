@@ -126,7 +126,11 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
 			out=(char*)malloc(strlen(tmp)+strlen(codes)+2);
 			sprintf(out,"%s %s",codes,tmp);
 
-			free(tmp);
+			// Para tester.
+			if (t==LONGFLOAT || t==LONGINT)
+				FREE__(tmp);
+			else
+				free(tmp);
 	}
 	return out;
 }
@@ -162,7 +166,11 @@ struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
 					default:
 						tmp=(void*)to_string_value(now->type,now->value);
 						str_add_str(&tmp_str,(char*)tmp);
-						free(tmp);
+						// Para tester.
+						if (t==LONGFLOAT || t==LONGINT)
+							FREE__(tmp);
+						else
+							free(tmp);
 				}
 			}
 			tmp=alloca(sizeof(int));//Recuerda que ya no es un entero:)
@@ -191,8 +199,11 @@ struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
 				sprintf(out.value,"%s%s",str,(char*)tmp)
 			:
 				sprintf(out.value,"%s%s",(char*)tmp,str);
-			
-			free(tmp);
+			// Para tester.
+			if (t==LONGFLOAT || t==LONGINT)
+				FREE__(tmp);
+			else
+				free(tmp);
 	}
 	return &out;
 }
@@ -233,7 +244,7 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			mpf_set_d(*(mpf_t*)tmp, *(double*)value);
 
 			mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-			mpz_clear(*(mpf_t*)tmp);
+			mpf_clear(*(mpf_t*)tmp);
 			break;
 		case LONGFLOAT:break;/** 
 		* @todo: Hacer...
@@ -243,7 +254,7 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 
 			out.value=malloc(strlen((char*)value)+strlen((char*)tmp)+2);
 			sprintf((char*)out.value,"%s%s",(char*)tmp,(char*)value);
-			free(tmp);
+			FREE__(tmp);
 			break;
 		case CODES_BLOCKS:
 			tmp=(void*)mpz_get_str(NULL,10, *long_int);
@@ -251,7 +262,7 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			out.value=malloc(strlen((char*)value)+strlen((char*)tmp)+2);
 			sprintf((char*)out.value,"%s %s",(char*)tmp,(char*)value);
 
-			free(tmp);
+			FREE__(tmp);
 			break;
 		case ARRAY:
 			out.value=copy_array(value);
@@ -268,18 +279,16 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 	}
 	return &out;
 }
-struct type_value* add_longfloat(void){
+struct type_value* add_longfloat(void);
 	/**
 	 * @todo ...
 	 * */
-}
-struct type_value* add_float(void){
+struct type_value* add_float(void);
 	/**
 	 * @todo ...
 	 * */
-}
 
-struct type_value* op_add_array(struct Array* arr,enum TYPE t, void* value){
+struct type_value* opr_add_array(struct Array* arr,enum TYPE t, void* value){
 	static struct type_value out;
 	void* tmp=alloca(sizeof(int));
 	out.type=NONE;

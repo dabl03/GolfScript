@@ -62,9 +62,14 @@ void* test_realloc(void* ptr,size_t size, const char *file, int line, const char
   }
   return test_malloc(size, file, line, func);
 }
-void test_free(void* ptr, const char *file, int line, const char *func){
+void test_free(void* ptr, const char *file, int line, const char *func,unsigned char is_normal){
   if (memory==NULL)
     return;
+  //Para evitar warning en bibliotecas de terceros ya compiladas.
+  if (is_normal){
+    free(ptr);
+    return;
+  }
   struct Stack* now=memory,
               * item_previous=now;
   bool isModific=false;
