@@ -3,17 +3,17 @@
 #include "header/stack.h"
 #include "header/str.h"
 #include "include/memory.h"
-/***
-  * @todo: Ver en cada ejecución si hay fuga de memoria y localizar donde se inicializó y porque no murió para ver como solucionarlo.
-*/
-char* static_string_to_dinamic_string(const char* str_io){
-  char* out=(char*)malloc( SIZE_CHAR(strlen(str_io)+1) );
-  strcpy(out,str_io);
-  return out;
+
+void printf_separator(const char separator,const char* msg){
+  for (unsigned short i=0;i<80;i++)
+    putchar(separator);
+  putchar('\n');
+  if (msg!=NULL)
+    puts(msg);
 }
 void printf_stack_test(struct Array* stack,char* sMsg){
   char* sOut=printf_stack(stack);
-  printf("%s%s .\n",sMsg,sOut);
+  printf("%s%s.\n",sMsg,sOut);
   free(sOut);
 }
 void toStringValue_test(enum TYPE typData,void* vData){
@@ -28,8 +28,8 @@ void toStringValue_test(enum TYPE typData,void* vData){
 void toStringValue_test_all(){
   void* v_tmp;
   struct Array arr={0,0,NULL};
+  printf_separator('=',"Testeamos toStringValue_test:");
   toStringValue_test(STRING,"\"Tres triste tigre, tragaban trigo en un trigal..\"");
-
   v_tmp=alloca(sizeof(int));
   *(int*)v_tmp=123;
   toStringValue_test(INT,v_tmp);
@@ -72,7 +72,17 @@ void toStringValue_test_all(){
   }
   toStringValue_test(ARRAY,&arr);
   delete_array(&arr);
-  printf("=============================================\n");
+  printf_separator('=',NULL);
+}
+struct Var* create_var(const char* name, enum TYPE tpy,void* value){
+  struct Var* out_var=(struct Var*)malloc(sizeof(struct Var));
+  out_var->name=convert_static_str_to_dynamic(name);
+  out_var->type=tpy;
+  out_var->value=value;
+  out_var->i_name=0;
+  for (unsigned int i=0;name[i]!='\0';i++)
+    out_var->i_name+=name[i];
+  return out_var;
 }
 int main(void){
   struct Array arr_testArray={0,0,NULL},
@@ -103,7 +113,7 @@ int main(void){
       exit(-1);
     }
   }
-  puts("Testeamos \"delete_item\"...");
+  printf_separator('=',"Testeamos \"delete_item\"...");
   iData=arr_testArray.i-1;
   tv_data=pop_array(&arr_testArray);
   printf("  ¿Es entero?: %s\n  Valor: %d\n",tv_data->type==INT?"True":"False",*(int*)tv_data->value);
@@ -113,21 +123,22 @@ int main(void){
     arr_testArray.value[iData].type==INT?"INT":"NOT-DEFINE",
     *(int*)arr_testArray.value[iData].value
   );
-  puts("Testeamos \"delete_array\"...");
+  printf_separator('-',"Testeamos \"delete_array\"...");
   delete_array(&arr_testArray);
-
+  puts("¿Hay fugas de memoria?:\n");
+  viewStack();
   // Testeamos printf_stack
-  puts("Testeamos \"printf_stack\"...");
+  printf_separator('-',"Testeamos \"printf_stack\"...");
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Cadena de Prueba\n")//Agregar los caracteres de escapes disponible
+    convert_static_str_to_dynamic("Cadena de Prueba\n")
   );
 
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Entero sin signo:")
+    convert_static_str_to_dynamic("Entero sin signo:")
   );
   v_tmp=malloc(sizeof(int));
   *(int*)v_tmp=1034;
@@ -136,7 +147,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Entero con signo:")
+    convert_static_str_to_dynamic("Entero con signo:")
   );
   v_tmp=malloc(sizeof(int));
   *(int*)v_tmp=-1034;
@@ -145,7 +156,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Flotante sin signo:")
+    convert_static_str_to_dynamic("Flotante sin signo:")
   );
   v_tmp=malloc(sizeof(double));
   *(double*)v_tmp=3203.234;
@@ -154,7 +165,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Flotante con signo:")
+    convert_static_str_to_dynamic("Flotante con signo:")
   );
   v_tmp=malloc(sizeof(double));
   *(double*)v_tmp=-3203.234;
@@ -163,7 +174,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Gran entero sin signo:")
+    convert_static_str_to_dynamic("Gran entero sin signo:")
   );
   v_tmp=malloc(sizeof(mpz_t));
   mpz_init (*(mpz_t*)v_tmp);
@@ -173,7 +184,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Gran entero con signo:")
+    convert_static_str_to_dynamic("Gran entero con signo:")
   );
   v_tmp=malloc(sizeof(mpz_t));
   mpz_init (*(mpz_t*)v_tmp);
@@ -183,7 +194,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Gran flotante sin signo:")
+    convert_static_str_to_dynamic("Gran flotante sin signo:")
   );
   v_tmp=malloc(sizeof(mpf_t));
   mpf_init (*(mpf_t*)v_tmp);
@@ -193,7 +204,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Gran flotante con signo:")
+    convert_static_str_to_dynamic("Gran flotante con signo:")
   );
   v_tmp=malloc(sizeof(mpf_t));
   mpf_init (*(mpf_t*)v_tmp);
@@ -203,12 +214,12 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Bloque de código:")
+    convert_static_str_to_dynamic("Bloque de código:")
   );
   add_array(
     &arr_testArray,
     CODES_BLOCKS,
-    static_string_to_dinamic_string("1-a43c13")
+    convert_static_str_to_dynamic("1-a43c13")
   );
   puts("");
   printf_stack_test(&arr_testArray,"Actualmente el array contiene: ");
@@ -216,7 +227,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Array de número entero:")
+    convert_static_str_to_dynamic("Array de número entero:")
   );
   v_tmp=malloc(sizeof(struct Array));
   ((struct Array*)v_tmp)->i=0;
@@ -227,7 +238,7 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("Array recursivo: < ")
+    convert_static_str_to_dynamic("Array recursivo: < ")
   );
   for (unsigned int i=0;i<100;i++){
     int* o=(int*)malloc(sizeof(int));
@@ -237,11 +248,9 @@ int main(void){
       return -1;
     }
     if (i==10){
-      /// @todo : Fuga de memoria:
-      /// Aquí al eliminar arrays copiados hay fugas de memoriassss..........................................
       puts("Aprovechamos y usamos el array anterior para testear \"copy_array\". \n"
       "Ojo: Para no alargar tanto solo tendrá hasta 11 numeros del bucle actual.");
-      arrSecond=copy_array(&arr_testArray);////////////////////////////Hay una fuga de memoria aquí.
+      arrSecond=copy_array(&arr_testArray);
       add_array(arrSecond,ARRAY,copy_array(arrSecond));
       add_array(arrSecond,ARRAY,copy_array(arrSecond));
     }
@@ -249,21 +258,20 @@ int main(void){
   add_array(
     &arr_testArray,
     STRING,
-    static_string_to_dinamic_string("End Array recursivo: > ")
+    convert_static_str_to_dynamic("End Array recursivo: > ")
   );
   printf_stack_test(
     &arr_testArray,
-    "El array vale:\n---------------------------------\n"
+    "El array vale:\n"
   );
+  printf_separator('-',NULL);
   printf_stack_test(
     arrSecond,
-    "-----------------------\nEl array copiado vale:\n---------------------------------\n"
+    "El array copiado vale:"
   );
-  puts("---------------------------------");
-  
-  puts("Testeamos \"delete_array\" con el doble de datos...");
+
+  printf_separator('=',"Testeamos \"delete_array\" con el doble de datos...");
   delete_array(&arr_testArray);
-  //Hay fuga de memoria:
   delete_array(arrSecond);
   free(arrSecond);
   puts("¿Hay fugas de memoria?:\n");
@@ -271,7 +279,7 @@ int main(void){
 
   printf("El puntero al array 2 tiene valor: %p\n",(struct Array*)v_tmp);
 
-  puts("========================================\nTesteamos array_set_item:");
+  printf_separator('=',"Testeamos array_set_item:");
   v_tmp=malloc(sizeof(int));
   *(int*)v_tmp=10;
   add_array(&arr_testArray,INT,v_tmp);
@@ -281,9 +289,9 @@ int main(void){
   array_set_item(&arr_testArray,true,-1,INT,v_tmp);
 
   printf_stack_test(&arr_testArray,
-    "El array vale:\n---------------------------------\n"
+    "El array vale:"
   );
-  puts("---------------------------------");
+  printf_separator('-',NULL);
 
   v_tmp=malloc(sizeof(int));
   *(int*)v_tmp=30;
@@ -293,22 +301,42 @@ int main(void){
   *(int*)v_tmp=40;
   array_set_item(&arr_testArray,false,0,INT,v_tmp);
   printf_stack_test(&arr_testArray,
-    "El array ahora vale:\n---------------------------------\n"
+    "El array ahora vale:"
   );
-  puts("---------------------------------");
+  printf_separator('-',NULL);
   delete_array(&arr_testArray);
-  printf("=============================================\nTesteamos to_string_value:\n");
+  puts("¿Hay fugas de memoria?:\n");
+  viewStack();
+
   toStringValue_test_all();
-  puts("===============================================");
-  
-  ///@todo: Hacer que el testeo anterior guarde todos los tipos de datos.
-  // interpret
-  // pop_array
-  // add_var
-  // setValue_tv
-  // delete_var
-  // search_var_init
-  // search_var
+
+  // pop_array // No creo que sea util testearlo.
+  printf_separator('=',"Testeamos add_var");
+  // No testeamos setValue_tv porque add_var lo usa.
+  v_tmp=convert_static_str_to_dynamic("Definida");
+  add_var(&arr_testArray,"variable",STRING,v_tmp);
+  free(v_tmp);
+
+  v_tmp=convert_static_str_to_dynamic("Michi");
+  add_var(&arr_testArray,"Gato",STRING,v_tmp);
+  free(v_tmp);
+
+  v_tmp=convert_static_str_to_dynamic("Firulai");
+  add_var(&arr_testArray,"Perro",STRING,v_tmp);
+  free(v_tmp);
+  printf_stack_test(&arr_testArray,"Las variables agregadas son: ");
+
+  printf_separator('-',"Testeamos search_var_init:");
+  printf("¿La variable \"Gato\" existe?: %s.\n",(search_var_init("Gato",0,&arr_testArray)!=-1)?"SI":"NO");
+  printf("¿La variable \"variable\" existe?: %s.\n",(search_var("variable",&arr_testArray)!=-1)?"SI":"NO");
+  printf("¿La variable \"Perro\" existe?: %s.\n",(search_var("Perro",&arr_testArray)!=-1)?"SI":"NO");
+  // delete_var->delete_array->delete_item ya lo llama.
+  delete_array(&arr_testArray);
+  puts("¿Hay fugas de memoria?:\n");
+  viewStack();
+
+  printf_separator('=',"Testeamos process_data:");
+  // process_data
   puts("¿Hay fugas de memoria?:\n");
   viewStack();
 }

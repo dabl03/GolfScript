@@ -71,7 +71,7 @@ long int parseLongInt(const char* str);
  * @param init Inicio de la cadena a copiar.
  * @param end Final de la cadena a copiar. Si es 0 se buscará el tamaño.
 */
-void str_add_str_init_end(struct String* str_d, char* str_copy, const unsigned int init, unsigned int end);
+void str_add_str_init_end(struct String* str_d, const char* str_copy, const unsigned int init, unsigned int end);
 #define str_add_str(x,y) str_add_str_init_end(x,y,0,0)
 /**
  * @brief Agrega un char al final de la cadena.
@@ -162,4 +162,9 @@ unsigned int append_sprintf(char** out,const unsigned int len_out,const unsigned
  * @return unsigned int The final size of the new string.
 */
 unsigned int append_strcpy(char** str_out,const unsigned int len,const char* str_io);
+/**Copies a string and returns one stored in dynamic memory.
+ * @param str_io String to copy
+ * @return Copy the string saved with malloc.
+*/
+char* convert_static_str_to_dynamic(const char* str_io);
 #endif

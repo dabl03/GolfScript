@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "./header/str.h"
+#include "./header/run.h"
 #include "./header/stack.h"
 #include "./header/define.h"
 
@@ -30,8 +31,10 @@ bool add_array(struct Array* arr_allData,const enum TYPE typ_data, void* v_data)
 struct type_value* pop_array(struct Array* arr_allData){
 	// Liberammos lo que no usaremos.
 	if (arr_allData->i<(arr_allData->max-10)){
-		arr_allData->max-=10;
-		arr_allData->value=(struct type_value*)realloc((void*)arr_allData->value,sizeof(struct type_value)*arr_allData->max);
+		arr_allData->value=(struct type_value*)realloc(
+			(void*)arr_allData->value,
+			sizeof(struct type_value)*(arr_allData->max-=10)
+		);
 	}
 	return &arr_allData->value[--arr_allData->i];//Quitamos un elemento de la pila y retornamos ese elemento.
 }
@@ -145,14 +148,22 @@ void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_
 }
 void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_setVar){
 	char* str;
-	// Ya estaba definida. Ahora liberamos
-	// para poder darle otro dato
-	if (!s_name){
+	// Var no defined
+	if (s_name==NULL){
 		delete_item(vr_now->type,vr_now->value);
-	// Nueva variable:
 	}else{
-		vr_now->name=(char*)malloc(sizeof(s_name));
-		strcpy(vr_now->name,s_name);
+		unsigned int len=strlen(s_name),i=0;
+		vr_now->name=(char*)malloc(SIZE_CHAR(len+1));
+		vr_now->i_name=0;
+		if (vr_now->name==NULL){
+			PRINTF_MEMORY_ERROR(s_name);
+			return;
+		}
+		for (;i<len;i++){
+			vr_now->i_name+=s_name[i];
+			vr_now->name[i]=s_name[i];
+		}
+		vr_now->name[i]='\0';
 	}
 
 	vr_now->type = tv_setVar->type;
@@ -183,10 +194,18 @@ void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_set
 			strcpy(str,(char*)tv_setVar->value);
 			vr_now->value=str;
 			break;
-		case FUNCTION:break;//¡No librerar!
+		case FUNCTION:
+			vr_now->value=tv_setVar->value;
+			break;
 		default:
-			printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(tv_setVar->type) );
-			exit(-3);
+			vr_now->value=tv_setVar->value;
+			// Si no está tratado, no se copiará.
+			#ifdef TEST
+				printf(
+					"Advertensia: No se puede copiar dato.\n  Function=setValue_tv\n  tipo=%s.\n",
+					vr_now->type
+				);
+			#endif
 	}
 }
 void delete_var(struct Var* vr_var){
@@ -225,7 +244,7 @@ void delete_item(const enum TYPE t_typValue, void* v_data){
 			exit(-130);
 	}
 }
-char* interpret(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data){
+void process_data(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data){
 	void* v_generic;
 	switch (vr_data->type){
 	case INT:
@@ -238,9 +257,19 @@ char* interpret(struct Array* arr_allData,struct Array* arr_allVars,struct Var* 
 		break;
 	case FUNCTION: //Usamos funciones dentro del mismo programa para esta.
 		((unsigned short (*)(struct Array* arr_allData,struct Array* vars,char* extend))vr_data->value)(arr_allData,arr_allVars,"");
-		return NULL;
+		return;
 	case CODES_BLOCKS://Interpretamos el bloque de código.
-		return (char*)vr_data->value;
+		v_generic=malloc(sizeof(struct Array));
+		((struct Array*)v_generic)->i=0;
+		((struct Array*)v_generic)->max=1;
+		((struct Array*)v_generic)->value=(struct type_value*)malloc(sizeof(struct type_value));
+		((struct Array*)v_generic)->value->type=STRING;
+		((struct Array*)v_generic)->value->value=vr_data->value;
+
+		run((struct Array*)v_generic,arr_allData,arr_allVars);
+		free(((struct Array*)v_generic)->value);
+		free(v_generic);
+		return;
 	case STRING:
 		v_generic=malloc(sizeof(char)*(strlen((char*)vr_data->value)+1));
 		strcpy((char*)v_generic,(char*)vr_data->value);
@@ -261,9 +290,8 @@ char* interpret(struct Array* arr_allData,struct Array* arr_allVars,struct Var* 
 		printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(vr_data->type) );
 		exit(-3);
 	}
-	// Agregamos el dato ya copiado
+	// Agregamos el dato procesado
 	add_array(arr_allData,vr_data->type,v_generic);
-	return NULL;
 }
 char* printf_stack(struct Array* arr_allData){
 	char* s_out=(char*)malloc(sizeof(char)*2);// Iniciamos para despues agregarle.
@@ -356,6 +384,23 @@ char* printf_stack(struct Array* arr_allData){
 				len+=len_str_return;
 				FREE__(s_generic);
 				break;
+			case VAR:
+				s_generic=to_string_value(
+					((struct Var*)arr_allData->value[i].value)->type,
+					((struct Var*)arr_allData->value[i].value)->value
+				);
+				// 4 -> "(=) "
+				len_str_return=strlen(((struct Var*)arr_allData->value[i].value)->name)+strlen(s_generic)+4;
+				s_out=(char*)realloc(s_out,SIZE_CHAR(len+len_str_return));
+				sprintf(
+					s_out+SIZE_CHAR(len-1),
+					"(%s=%s) ",
+					((struct Var*)arr_allData->value[i].value)->name,
+					s_generic
+				);
+				len+=len_str_return;
+				free(s_generic);
+				break;
 			default:
 				printf("Error: Tipo de dato \"%s\" no está tratado.",get_name_type(arr_allData->value[i].type));
 				break;
@@ -375,31 +420,19 @@ int64_t search_var_init(const char* s_name, unsigned const int i_initStr, struct
 	return -1;
 }
 void add_var(struct Array* arr_var,const char* s_name,enum TYPE typ_data,void* v_data){
+	struct type_value tv_out={
+		typ_data,
+		v_data
+	};
 	struct Var* vr_now=(struct Var*)malloc(sizeof(struct Var));
-	const unsigned int LEN=strlen(s_name);
-	//Aqui da error de memoria:
-	vr_now->name=(char*)malloc(sizeof(char)*(LEN+1));
-	if (vr_now->name==NULL){
-		PRINTF_MEMORY_ERROR(s_name);
-		return;
-	}
-	vr_now->i_name=0;
-
-	for (unsigned int i=0;s_name[i]!='\0';i++){
-		vr_now->name[i]=s_name[i];
-		vr_now->i_name+=s_name[i];// Para saber la sumatoria de carácteres.
-	}
-	vr_now->name[LEN]='\0';
-	vr_now->type=typ_data;
-	vr_now->value=v_data;
+	setValue_tv(
+		vr_now,
+		s_name,
+		&tv_out
+	);
 	add_array(arr_var,VAR,vr_now);
 }
 char* to_string_value(const enum TYPE typ_data,void* v_data){
-	/**
-	 * @todo Hacer que prinft_stack use esta funcion, tambien 
-	 * hacer que la funcion reciba un int* para enseñar la longitud de la cadena.
-	 * Tambien cambiar los nombres: to_string_value -> toStringValue
-	 */
 	char* s_out=NULL,
 	*s_generic=NULL;
 	mp_exp_t mp_exponent;
@@ -423,7 +456,7 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 		case LONGINT:
 			//Evitamos warning con los tester al no hacer: s_out=mpz_get_str(...);
 			//2-> '-' is negative and '\0'
-			s_out=(char*)malloc( SIZE_CHAR(mpz_sizeinbase((mpz_t*)v_data, 10) + 2) );
+			s_out=(char*)malloc( SIZE_CHAR(mpz_sizeinbase((mpz_srcptr)v_data, 10) + 2) );
 			mpz_get_str(s_out,10,*(mpz_t*)v_data);
 			break;
 		case LONGFLOAT:
@@ -451,6 +484,23 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 			s_generic="(Native-Function)";
 			s_out=(char*)malloc(sizeof(char)*(strlen(s_generic)+1));
 			strcpy(s_out,s_generic);
+			break;
+		case VAR:
+			s_generic=to_string_value(
+				((struct Var*)v_data)->type,
+				((struct Var*)v_data)->value
+			);
+			// 4 -> "(=)\0" 
+			s_out=(char*)realloc(s_out,SIZE_CHAR(
+				strlen( ((struct Var*)v_data)->name )+strlen(s_generic)+4)
+			);
+			sprintf(
+				s_out,
+				"(%s=%s)",
+				((struct Var*)v_data)->name,
+				s_generic
+			);
+			free(s_generic);
 			break;
 		default:
 			return NULL;

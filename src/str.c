@@ -57,14 +57,14 @@ long int parseLongInt(const char* str){
     return output;
 }
 
-void str_add_str_init_end(struct String* str_d, char* str_copy, const unsigned int init, unsigned int end){
+void str_add_str_init_end(struct String* str_d, const char* str_copy, const unsigned int init, unsigned int end){
   end=(end)?end:strlen(str_copy);
   unsigned int len=end-init;
     if (str_d->count+len+1>=str_d->max){
         str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=len+1));
     }
     unsigned int i=init;
-  char* c=&str_copy[i];
+  char* c=(char*)&str_copy[i];
     for (;i<end && *c!='\0';i++){
         str_d->str[str_d->count++]=*c;
     c++;
@@ -337,5 +337,10 @@ unsigned int append_strcpy(char** str_out,const unsigned int len,const char* str
   strncpy(*str_out+SIZE_CHAR(len-1),str_io,size_io+1);
   return len+size_io;
 
+}
+char* convert_static_str_to_dynamic(const char* str_io){
+  char* out=(char*)malloc( SIZE_CHAR(strlen(str_io)+1) );
+  strcpy(out,str_io);
+  return out;
 }
 #endif

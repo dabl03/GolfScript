@@ -5,10 +5,8 @@ GCC=gcc
 CXXFLAG:=-std=c++20 -Wall
 LINGC=-lgmp
 CFLAG:=-Wall
-IF_DEBUG=1
 APP=./gsp
 APPTEST:=./test/$(APP)_test
-#Sistema Operativo. Otro valor para Linux.
 SYSTEM_OS:=$(shell powershell -command "$PSVersionTable.OS")
 ## Ver si usar: Platform - Platform that the operating system is running on. The value on Linux and macOS is Unix. See $IsMacOs and $IsLinux.
 SRC=./src
@@ -32,6 +30,11 @@ FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 BIN_EXT=
 DELETE=rm -f -d
 SHOW_LOG=cat -n
+
+ifeq ($(DEBUG),1)
+	CXXFLAG:=$(CXXFLAG) -g
+	CFLAG:=$(CFLAG) -g
+endif
 
 ifeq ($(SYSTEM_OS),Windows)
 APP:=$(APP).exe

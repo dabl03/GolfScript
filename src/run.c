@@ -16,80 +16,77 @@
 		for (U_INT i_line=0;i_line<arrLines->i && !quit;i_line++){
 			if(arrLines->value[i_line].type!=STRING)
 				continue;
-			const char* l=(char*)arrLines->value[i_line].value;
-			U_INT i_end=strlen(l);
+			const char* line=(char*)arrLines->value[i_line].value;
+			U_INT i_end=strlen(line);
 			for(U_INT i=0;i<i_end;i++){
 				//Primero definimos nuestros signos constantes:
-				if(l[i]=='{'){
-					tmp_str=get_ie_block(l,i,'}',&tmp_istr);
+				if(line[i]=='{'){
+					tmp_str=get_ie_block(line,i,'}',&tmp_istr);
 					add_array(stack,CODES_BLOCKS,tmp_str);
 					//Terminamos.
 					i=tmp_istr;
-				}else if (IF_INIT_COMENT(l[i]))//Llegamos a un comentario.
+				}else if (IF_INIT_COMENT(line[i]))//Llegamos a un comentario.
 					break;
-				else if (l[i]==';'){
+				else if (line[i]==';'){
 					if (stack->i){
 						struct type_value* tv=pop_array(stack);
 						delete_item(tv->type,tv->value);
 					}else{
 						puts("Warnign: La pila esta vacia.");
 					}
-				}else if(l[i]==':'){//Para asignar una nueva variable.
-					//Si la cadena esta vacia significa que no es variable.
-					if (!stack->i){
-						printf("ERROR: La pila esta vacia.%s",ENDL);
-						break;
-					}
-					if(IF_ENDL(l[i+1]))//Por velocidad. Innoramos los saltos de lineas como el interprete original.
+				}else if(line[i]==':'){
+					// We assign a variable
+					if(IF_ENDL(line[i+1]))
 						continue;
 					i++;
-					char* name=get_name_var(l,&i,i_end);
-					int i_var=search_var(name,vars);
-					if(i_var!=-1){//Consiguio, se reemplaza.
-						struct Var* this_var=(struct Var*)vars->value[i_var].value;
-						setValue_tv(this_var,NULL,&stack->value[stack->i-1]);
+					char* name=get_name_var(line,&i,i_end);
+					if (!stack->i){
+						//It is placed here to ignore the name of the variable
 						free(name);
+						printf("ERROR: La pila esta vacia.%s",ENDL);
 						continue;
 					}
-					//No estubo definida antes.
-					struct Var* this_var=(struct Var*)malloc(sizeof(struct Var));
-					struct type_value* stack_var=&stack->value[stack->i-1];
-					setValue_tv(this_var,name,stack_var);
-					add_array(vars,VAR,(void*)this_var);
+					int i_var=search_var(name,vars);
+					if(i_var!=-1){
+						// We overwrite the variable
+						struct Var* this_var=(struct Var*)vars->value[i_var].value;
+						setValue_tv(this_var,NULL,&stack->value[stack->i-1]);
+					}else{
+						// We initialize the variable
+						struct Var* this_var=(struct Var*)malloc(sizeof(struct Var));
+						struct type_value* stack_var=&stack->value[stack->i-1];
+
+						setValue_tv(this_var,name,stack_var);
+						add_array(vars,VAR,(void*)this_var);
+					}
 					free(name);
-				}else if(IF_ENDL(l[i])){
+				}else if(IF_ENDL(line[i])){
 					continue;//Por velocidad. Ignoramos los saltos de lineas como el interprete original.
-				}else if(l[i]=='['){//Arrays:
-					tmp_str=get_ie_block(l,i,']',&tmp_istr);
+				}else if(line[i]=='['){//Arrays:
+					tmp_str=get_ie_block(line,i,']',&tmp_istr);
 					//Nueva linea y nuevo stack.
-					struct Array line={0,0,0};
+					struct Array line_arr2={0,0,0};
 					struct Array* sub_stack=(struct Array*)malloc(sizeof(struct Array));
 					sub_stack->i=0;
 					sub_stack->max=0;
 					sub_stack->value=NULL;
 					//Iniciamos la linea.
-					add_array(&line,STRING,tmp_str);
+					add_array(&line_arr2,STRING,tmp_str);
 					//Ejecutamos y agregamos al stack el array.
-					run(&line,sub_stack,vars);
+					run(&line_arr2,sub_stack,vars);
 					add_array(stack,ARRAY,(void*)sub_stack);
-					delete_array(&line);//Liberamos memoria
+					delete_array(&line_arr2);//Liberamos memoria
 					//Terminamos.
 					i=tmp_istr;
 				}else{
 					//Ahora vemos si existe la variable.
-					char* name=get_name_var(l,&i,0);
+					char* name=get_name_var(line,&i,0);
 					int i_var=search_var(name,vars);
-					if(i_var!=-1){//Variable exists
-						struct Var* v=vars->value[i_var].value;
-						if (v->type==CODES_BLOCKS){
-							struct Array arr={0,0,NULL};
-							add_array(&arr,STRING,(char*)v->value);
-							run(&arr,stack,vars);
-							free(arr.value);
-						}else{
-							interpret(stack,vars,v);
-						}
-					}else if(is_num(name[0]) || name[0]=='-'){//Sino se ejecuta la condicion anterior, significa que - es para un numero.
+					if(i_var>=0){
+						// The variable exists
+						process_data(stack,vars,vars->value[i_var].value);
+					}else if(is_num(name[0]) || name[0]=='-'){
+						// Variable not defined. We check if it is a number.
 						unsigned int len=strlen(name)-1;
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));
@@ -100,7 +97,8 @@
 							mpz_init_set_str(*n,name,0);
 							add_array(stack,LONGINT,n);
 						}
-					}else if (IF_INIT_STRING(l[i])){//Llegamos a " o
+					}else if (IF_INIT_STRING(line[i])){
+						// It's a string
 						unsigned int len=strlen(name);
 						char* scape_=(char*)malloc(len);
 						strncpy(scape_, name + 1, len-2);
@@ -115,28 +113,37 @@
 		return 0;
 	}
 	
-	char* get_name_var(const char* search,unsigned int* i,unsigned int end){
+	char* get_name_var(const char* search,unsigned int* index,unsigned int end){
 		struct String name = {3, 0, (char *)malloc(3)};
-		unsigned int i_2 = *i;
+		unsigned int i = *index;// It will be used outside of loops
 		end=(end)?end:strlen(search);
-		if (is_abc(search[*i])){ // Si es un nombre lo modificamos buscamos hasta fin de linea o espacio.
-			for (; i_2 < end && (is_abc(search[i_2]) || is_num(search[i_2])); i_2++);
-			str_add_str_init_end(&name, search, *i, i_2--);//Necesitamos disminuir para que el bucle vaja para el siguiente caracter.
-		}else if (is_num(search[*i]) || search[*i]=='-'){ // Si es un numero.
-			for (i_2+=(search[*i]=='-')?1:0;
-				i_2 < end && is_num(search[i_2]); i_2++);
-			str_add_str_init_end(&name, search, *i, i_2--);
-		}else if(IF_INIT_STRING(search[*i])){//Obtenemos la cadena.
-			*i=get_end_str(search,i_2,end);
-			*i=(*i)?*i:end;
+
+		if ( is_abc(search[*index]) ){
+			// If it's an alphabet character, then it's variable name.
+			for (;
+				i < end && (is_abc(search[i]) || is_num(search[i]));
+				i++
+			);
+			// i-1 per non-alphanumeric character
+			str_add_str_init_end(&name, search, *index, i--);
+		}else if (is_num(search[*index]) || search[*index]=='-'){ // Si es un numero.
+			for (
+				i+=(search[*index]=='-')?1:0;
+				i < end && is_num(search[i]);
+				i++
+			);
+			str_add_str_init_end(&name, search, *index, i--);
+		}else if(IF_INIT_STRING(search[*index])){//Obtenemos la cadena.
+			*index=get_end_str(search,i,end);
+			*index=(*index)?*index:end;
 			free(name.str);
-			return get_sub_str(search,i_2,*i);
+			return get_sub_str(search,i,*index);
 		}else{ // Espacio y otros simbolos.
-			name.str[0] = search[*i];
+			name.str[0] = search[*index];
 			name.str[1] = '\0';
 			name.count=2;
 		}
-		*i=i_2;
+		*index=i;
 		return (char*)realloc(name.str,name.count+1);
 	}
 	

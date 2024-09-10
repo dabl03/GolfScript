@@ -125,9 +125,8 @@ void delete_var(struct Var* vr_var);
  * @param[out] arr_allData El array de datos.
  * @param[in] arr_allVars Las variables.
  * @param[in] vr_data    El dato a interpretar.
- * @return string -- Retorna una cadena vacia si
  */
-char* interpret(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data);
+void process_data(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data);
 /**
  * @brief Creamos una cadena para mostrar todo
  * el contenido del array de datos.
@@ -147,7 +146,7 @@ char* printf_stack(struct Array* arr_allData);
  * @return Posición de la variable | -1 si no se consigue.
  */
 int64_t search_var_init(const char* s_name, unsigned const int i_initStr, struct Array* arr_var);
-#define search_var(name,var) search_var_init(name,0,var)
+#define search_var(name,arr_var) search_var_init(name,0,arr_var)
 /**
  * @brief Crea una nueva variable y la agrega en el array.
  * 
