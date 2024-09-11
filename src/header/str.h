@@ -3,6 +3,7 @@
 #include <string.h>
 #include <gmp.h>
 #include <limits.h>
+#include <stdio.h>
 #include "./define.h"
 /**
  * @param max Maximo caracteres a insertar.
@@ -70,7 +71,7 @@ long int parseLongInt(const char* str);
  * @param init Inicio de la cadena a copiar.
  * @param end Final de la cadena a copiar. Si es 0 se buscará el tamaño.
 */
-void str_add_str_init_end(struct String* str_d,const char* str_copy,unsigned int init,unsigned int end);
+void str_add_str_init_end(struct String* str_d, const char* str_copy, const unsigned int init, unsigned int end);
 #define str_add_str(x,y) str_add_str_init_end(x,y,0,0)
 /**
  * @brief Agrega un char al final de la cadena.
@@ -120,7 +121,7 @@ char* get_str_escp(char* old_str);
  * @param str_ Structura String.
  * @param c { char a agregar }
  */
-void cadd_add_leftover(struct String* str_,char c);//Nota: Nombre se repite add por error:)
+void cadd_leftover(struct String* str_,const char c);
 /**
  * Funcion que retorna una cadena hechas con comillas dobles.
  * Si fue comillas simple lo que hace es escapar todas las comillas
@@ -140,4 +141,30 @@ char* get_sub_str(const char* str,U_INT init, U_INT end);
  * @param base int. Que reprecentación queremos.
 */
 char* itoa(int value, char* result, int base);
+/**
+ * We take advantage of the fact that we know the end of the string
+ * so we don't have to copy and add the string
+ * with the desired format.
+ * @param out char*. String to append the string to.
+ * @param len_out int. Size of the original string (Note: The \0 is counted).
+ * @param len_add_format int. Extra size to add the substring to.
+ * @param format char*. Format to use in sprintf.
+ * @param str_add char*. String to add.
+ * @return unsigned int The final size of the new string.
+*/
+unsigned int append_sprintf(char** out,const unsigned int len_out,const unsigned int len_add_format,const char* format,const char* str_add);
+/**
+ * We take advantage of knowing the end of the string
+ * to add the substring at the end.
+ * @param str_out char*. Where to save the substring.
+ * @param len int. Size of the original string.
+ * @param str_io char*. String to add
+ * @return unsigned int The final size of the new string.
+*/
+unsigned int append_strcpy(char** str_out,const unsigned int len,const char* str_io);
+/**Copies a string and returns one stored in dynamic memory.
+ * @param str_io String to copy
+ * @return Copy the string saved with malloc.
+*/
+char* convert_static_str_to_dynamic(const char* str_io);
 #endif

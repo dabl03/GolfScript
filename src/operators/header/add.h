@@ -1,5 +1,5 @@
-#ifndef OPERATOR_H
-#define OPERATOR_H
+#ifndef ADD_H
+#define ADD_H
 #include "../../header/str.h"
 #include "../../header/stack.h"
 #include "../../header/global_vars.h"
@@ -41,7 +41,7 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value);
  * @return static struct type_value* -  El resultado, no se requiere liberar la estructura.
 */
 struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right);
-/**
+/**Operator add array: Suma un dato con un array
  * @param arr Array*, el array.
  * @param t TYPE, el tipo de dato a evaluar.
  * @param value void*, el dato.
@@ -49,5 +49,5 @@ struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right);
  ** que no se debe liberar value porque se usa en el nuevo array.
  ** Ojo si se pasa array despues de copiar se hace free(((struct Array*)value)->value);
 */
-struct type_value* op_add_array(struct Array* arr,enum TYPE t, void* value);
+struct type_value* opr_add_array(struct Array* arr,enum TYPE t, void* value);
 #endif

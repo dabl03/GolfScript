@@ -5,135 +5,165 @@
 #include <stdlib.h>
 #include "define.h"
 /**
- * @brief Estructura usada para guardar variables
- * @param name char* Nombre de la variable
- * @param type Tipo de variable.
- * @param value void* Valor de la variable.
+ * @brief Estructura de las variables
+ * @brief | Para la anotación Húngara,
+ * recomiendo usar vr como sufijo. 
+ * @param name Nombre usado para 
+ * identificar la variable.
+ * @param type  Tipo de variable.
+ * @param value Valor de la variable.
+ * @param i_name Sumatoria de todos los 
+ * caracteres de name.
 */
 struct Var{
-	char* name;//Nombre de la variable
-	enum TYPE type;//El tipo.
-	void* value;//Valor. Nota usare malloc/ calloc y readllock.
+	char*        name;
+	enum TYPE    type;
+	void*        value;
+	unsigned int i_name; // Se usará para comparación.
 };
 /**
- * @brief Estructura usada para guardar un valor de cualquier tipo
- * @param type enum TYPE
- * @param value Void*
+ * @brief Dato genérico | 
+ * para la anotación Húngara usar tv.
+ * @param type El tipo que este
+ * dato tendrá.
+ * @param value El dato a almacenar.
 */
 struct type_value{
 	enum TYPE type;
-	void* value;
+	void*     value;
 };
 /**
- * @brief Para crear array dinamicos de cualquier tipo.
+ * @brief Array para almacenar datos
+ * genéricos | Para notación Húngara usar arr
  * 
- * @param max Maximo que puedes almacenar en el Array, cuando se supera se reselva mas memoria.
+ * @param max Máximo número de elementos que se
+ * almacenarán en el array.
  * @param i El ultimo elemento almacenado.
- * @param value el Valor almacenado en el array.
+ * @param value Los datos almacenados en el array.
  */
 struct Array{
-	unsigned int max;//Para asignar mas memoria de lo que se necesita asegurando velocidad.
-	unsigned int i;//Contenido actual.
-	struct type_value* value;//Por cada valor necesitamos algo que nos diga que es.
+	unsigned int       max;
+	unsigned int       i;
+	struct type_value* value;
 };
 /**
- * @brief Ingresa un elemento en el array.
+ * @brief La pila donde se guardará todo.
  * 
- * @param arr Array- Recordar que tienes que llenar la estructuras aunque todos los valores sean 0 es necesario por un error que no entiendo.
- * @param type Tipo del elemento, determinado por el enum TYPE
- * @param value Cualquier clase de objeto que este definido en enum TYPE.
- * @return unsigned short 
+ * @param item Item actual de la pila.
+ * @param next Siguiente Item.
 */
-unsigned short add_array(struct Array* arr,enum TYPE type, void* value);
+struct Stack_{
+	// Pasar de Array a esto.
+	struct type_value* item;
+	//Ver si agregar: struct Stack_* previous;
+	struct Stack_* next;
+};
 /**
- * @brief Elimina la ultima posición del array y retorna una estructura si la cantidad total es menor al tamaño maximo que puede obtener entonces se reduce el tamaño que puede obtener.
+ * @brief Agrega un elemento en el array.
  * 
- * @param arr array.
- * @return struct type_value* Retornado el elemento sacado del array. Nota: No liberamos la memoria del elemento retornado.
- */
-struct type_value* pop_array(struct Array* arr);
+ * @param[out] arr_allData El array a donde agregar los datos | 
+ * si es la primera vez que usas "arr_allData" debes iniciar todo en NULL
+ * @param[in] typ_data El tipo de dato a agregar
+ * @param value El dato a agregar.
+ * @return Error?
+*/
+bool add_array(struct Array* arr_allData,const enum TYPE typ_data, void* value);
 /**
- * @brief Libera toda la memoria ocupada por este array y la structura Var que tenga.
+ * @brief Sacar un elemento de la pila.
  * 
- * @param arr 
- * @return unsigned short 
+ * @param[out] arr_allData Pila de elementos
+ * @return Elemento de la pila. Nota: Liberar el elemento.
  */
-unsigned short delete_array(struct Array* arr);
+struct type_value* pop_array(struct Array* arr_allData);
 /**
- * Elimina un item.
- * @param t     Tipo de dato del item
- * @param value Valor
+ * @brief Libera todos los datos y el array
+ * 
+ * @param arr_allData Array a liberar.
+ * @return error?
  */
-void delete_item(enum TYPE t, void* value);
+bool delete_array(struct Array* arr_allData);
 /**
- * Copiamos un array y retornamos uno nuevo con todo sus elementos.
- * @param  arr Array a copiar.
- * @return     Array destino.
+ * @brief Elimina un dato.
+ * 
+ * @param[in] t_typValue Tipo de dato del item
+ * @param[out] v_data     El dato a liberar
  */
-struct Array* copy_array(struct Array* arr);
-/**
- * @brief      Agrega un item en una posicion indicada a un array.
+void delete_item(const enum TYPE t_typValue, void* v_data);
+/** 
+ * @brief Copia los datos del array en un nuevo array.
+ * 
+ * @param[in]  arr_allData Array a copiar.
+ * @return Nuevo array
+ */
+struct Array* copy_array(const struct Array* arr_allData);
+/** Agrega un item en una posicion indicada a un array.
  *
- * @param arr        El array a modificar.
- * @param is_append  Indica si se agrega(true) o simpremente se modifica la posición del elemento(false)
- * @param index_set  El indice a modificar. Si es -1 entonces se agrega al final.
- * @param t_out      Tipo de dato
- * @param value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
- */
-void array_set_item(struct Array* arr,bool is_append,int index_set, enum TYPE t_out, void* value);
-/**
- * @brief Aqui configuramos y si ya estubo definida pase NULL en name
- ** para indicar que ya existe y hay que liberar su valor.
+ * @param[out] arr_allData El array a modificar.
+ * @param[in]  b_isAppend  modo agregar(true) o modificar la posición del elemento(false)
+ * @param[in]  i_indexSet  El indice. Si es -1. Se agregará al final.
+ * @param[in]  typ_data      Tipo de dato del item
+ * @param[in]  v_data      El valor del item (nota: Se usa el original sin crear uno nuevo)
+*/
+void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_indexSet, const enum TYPE typ_data, void* v_data);
+/** Da valor a una variable creando un nuevo valor.
  * 
- * @param v Variable a configurar.
- * @param name Nombre de la variable.
- * @param tv El tipo y el valor de la variable.
+ * @param[out] vr_now Variable a configurar.
+ * @param[in] s_name Nombre de la variable. Pasar NULL si ya estaba definida,
+ ** para liberar la memoria del valor anteior.
+ * @param[in] tv_setVar El tipo y el valor de la variable.
  */
-void setValue_tv(struct Var* v,char* name,struct type_value* tv);
+void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_setVar);
 /**
- * @brief Liberamos la memoria reserbada para almacenar una variable.
- * @param v Variable a eliminar.
+ * @brief Liberamos la variable y ponemos
+ * los punteros en NULL
+ * @param vr_var La Variable a liberar.
  */
-void delete_var(struct Var* v);
+void delete_var(struct Var* vr_var);
 /**
- * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
+ * @brief Interpreta el dato pasado y agrega o quita lo debido en la pila.
  *
- * @param stack pila.
- * @param vars variables.
- * @return string -- Retorna una cadena vacia si
-*/
-char* interpret(struct Array* stack,struct Array* var,struct Var* v);
+ * @param[out] arr_allData El array de datos.
+ * @param[in] arr_allVars Las variables.
+ * @param[in] vr_data    El dato a interpretar.
+ */
+void process_data(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data);
 /**
- * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
- * @param stack pila a mostrar.
- * @return char* output Recuerda liberar memoria. 
+ * @brief Creamos una cadena para mostrar todo
+ * el contenido del array de datos.
+ * @param arr_allData pila a mostrar.
+ * @return char* output Recuerda liberar memoria.
 */
-char* printf_stack(struct Array* stack);
+char* printf_stack(struct Array* arr_allData);
 
 /**
- * @brief Función que busca la variable dentro de una cadena.
+ * @brief Busca la variable deacuerdo al nombre y 
+ * retorna su posición en el array.
  *
- * @param name Nombre a buscar.
- * @param init_str_1 Donde se inicia en la cadena nombre.
- * @param var //Vector para ver las variables.
- * @return int Para saber si se encontró o no. si lo encontró se retorna el indice, sino -1
+ * @param[in] s_name Nombre de la variable a buscar.
+ * @param[in] i_initStr Posición inicial para comparar la cadena | 
+ * Pasar 0 para buscar la cadena completa.
+ * @param[out] arr_var El Array de las Variables.
+ * @return Posición de la variable | -1 si no se consigue.
  */
-int search_var_init(const char* name, unsigned const int init_str_1, struct Array* var);
-#define search_var(name,var) search_var_init(name,0,var)
+int64_t search_var_init(const char* s_name, unsigned const int i_initStr, struct Array* arr_var);
+#define search_var(name,arr_var) search_var_init(name,0,arr_var)
 /**
- * @brief Creamos dinamicamente una variable(Nota: debes liberar name y la variable actual).
+ * @brief Crea una nueva variable y la agrega en el array.
  * 
- * @param vars el array donde se guardará la variable.
- * @param name Nombre se creará una copia dinamica por lo que debes liberarla despues.
- * @param t 
- * @param value Se inserta el valor sin crear copia.
+ * @param[out] arr_var Array destino.
+ * @param[in] s_name   Nombre de la variable.
+ * @param[in] typ_data Tipo de variable.
+ * @param[in] v_data   Valor de la variable | 
+ * Recordar liberar.
  */
-void add_var(struct Array* vars,char* name,enum TYPE t,void* value);
+void add_var(struct Array* arr_var,const char* s_name,enum TYPE typ_data,void* v_data);
 /**
- * Combierte a cadena el elemento.
- * @param  t     Especifica el tipo del elemento
- * @param  value Elemento
- * @return       Cadena dinamica. Recuerda liberar.
+ * @brief Retorna equivalente cadena del elemento pasado.
+ * 
+ * @param[in]   typ_data Tipo del dato
+ * @param[out]  v_data   El dato.
+ * @return Equivalente string del dato pasado |
+ * Recordar liberar.
  */
-char* to_string_value(enum TYPE t,void* value);
+char* to_string_value(const enum TYPE typ_data,void* v_data);
 #endif

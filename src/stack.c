@@ -4,443 +4,507 @@
 #include <string.h>
 #include <stdio.h>
 #include "./header/str.h"
+#include "./header/run.h"
 #include "./header/stack.h"
 #include "./header/define.h"
-/**
- * @brief Ingresa un elemento en el array.
- * 
- * @param arr Array- Recordar que tienes que llenar la estructuras aunque todos los valores sean 0 es necesario por un error que no entiendo.
- * @param type Tipo del elemento, determinado por el enum TYPE
- * @param value Cualquier clase de objeto que este definido en enum TYPE.
- * @return unsigned short 
-*/
-unsigned short add_array(struct Array* arr,enum TYPE type, void* value){
-	if (arr->i==arr->max){//Si se necesita aumentar el espacio.
-		arr->value=(struct type_value*)realloc(
-			(void*)arr->value,
-			sizeof(struct type_value)*(arr->max+=10)
+
+bool add_array(struct Array* arr_allData,const enum TYPE typ_data, void* v_data){
+	// Si nos quedamos sin espacio:
+	if (arr_allData->i==arr_allData->max){
+		// Reservamos 10 espacios libres.
+		arr_allData->value=(struct type_value*)realloc(
+			(void*)arr_allData->value,
+			sizeof(struct type_value)*(arr_allData->max+=10)
 		);
-		if (arr->value==NULL)
-			return 1;//No hay mas RAN.
+		if (arr_allData->value==NULL)
+			return true;
+	}else if (arr_allData->value==NULL){
+	  arr_allData->i=0;
+		arr_allData->max=0;
+		return true;
 	}
-	arr->value[arr->i].type=type;
-	arr->value[arr->i++].value=value;//lo inicializamos y Apuntamos al siguiente elemento.
-	return 0;
+	
+	arr_allData->value[arr_allData->i].type=typ_data;
+	arr_allData->value[arr_allData->i++].value=v_data;
+	return false;
 }
-/**
- * @brief Elimina la ultima posición del array y retorna una estructura si la cantidad total es menor al tamaño maximo que puede obtener entonces se reduce el tamaño que puede obtener.
- * 
- * @param arr array.
- * @return struct type_value* Retornado el elemento sacado del array. Nota: No liberamos la memoria del elemento retornado.
- */
-struct type_value* pop_array(struct Array* arr){
-	if (arr->i<(arr->max-10)){//Para asegurar de que no se desperdicie demasiada memoria.
-		arr->max-=10;
-		arr->value=(struct type_value*)realloc((void*)arr->value,sizeof(struct type_value)*arr->max);
+struct type_value* pop_array(struct Array* arr_allData){
+	// Liberammos lo que no usaremos.
+	if (arr_allData->i<(arr_allData->max-10)){
+		arr_allData->value=(struct type_value*)realloc(
+			(void*)arr_allData->value,
+			sizeof(struct type_value)*(arr_allData->max-=10)
+		);
 	}
-	return &arr->value[--arr->i];//Quitamos un elemento de la pila y retornamos ese elemento.
+	return &arr_allData->value[--arr_allData->i];//Quitamos un elemento de la pila y retornamos ese elemento.
 }
-/**
- * @brief Libera toda la memoria ocupada por este array y la structura Var que tenga.
- * 
- * @param arr 
- * @return unsigned short 
- */
-unsigned short delete_array(struct Array* arr){
-	if(arr->value==NULL)
-		return 1;
-	for (unsigned int i=0;i<arr->i;i++){
-		delete_item(arr->value[i].type,arr->value[i].value);
+bool delete_array(struct Array* arr_allData){
+	if(arr_allData->value==NULL)
+		return true;
+	
+	for (unsigned int i=0;i<arr_allData->i;i++){
+		delete_item(arr_allData->value[i].type,arr_allData->value[i].value);
 	}
-	//Reiniciamos la estructura para que se pueda volver a usar.
-	free(arr->value);
-	arr->max=0;
-	arr->i=0;
-	arr->value=NULL;
-	return 0;
+	
+	//Liberamos el array y ponemos todo en NULL
+	free(arr_allData->value);
+	arr_allData->max=0;
+	arr_allData->i=0;
+	arr_allData->value=NULL;
+	return false;
 }
-/**
- * Copiamos un array y retornamos uno nuevo con todo sus elementos.
- * @param  arr Array a copiar.
- * @return     Array destino.
- */
-struct Array* copy_array(struct Array* arr){
-	struct Array* out=(struct Array*)malloc(sizeof(struct Array));
-	void* tmp;//Aqui almacenaremos los punteros para despues guardarlos.
-	out->i=0;
-	out->max=0;
-	out->value=NULL;
-	for (unsigned int i=0;i<arr->i;i++){
-		switch(arr->value[i].type){
-			case VAR:///Caracteristicas no disponible.
-				perror("Caracteristica no añadio la caracteristica. Dile al desarrollador o añadela.\n"
-				"En funcion copy_array->caso VAR.\nEnter para terminar.");
-				tmp=malloc(sizeof(int));
-				while((*(int*)tmp=getchar())!=EOF && *(int*)tmp!='\0');
-				free(tmp);
+struct Array* copy_array(const struct Array* arr_allData){
+	struct Array* arr_out=(struct Array*)malloc(sizeof(struct Array));
+	void* v_generic;// Dinamic vars.
+	
+	arr_out->i=0;
+	arr_out->max=0;
+	arr_out->value=NULL;
+	
+	for (unsigned int i=0;i<arr_allData->i;i++){
+		switch(arr_allData->value[i].type){
+			case VAR:
+				perror("No se añadio la caracteristica.\n"
+				  "En funcion copy_array->caso VAR.\n"
+			  );
 				exit(-4);
 				break;
 			case ARRAY:
-				tmp=copy_array((struct Array*)arr->value[i].value);
+				v_generic=copy_array((struct Array*)arr_allData->value[i].value);
 				break;
 			case INT:
-				tmp=malloc(sizeof(int));
-				*(int*)tmp=*(int*)arr->value[i].value;
+				v_generic=malloc(sizeof(int));
+				*(int*)v_generic=*(int*)arr_allData->value[i].value;
 				break;
 			case FLOAT:
-				tmp=malloc(sizeof(double));
-				*(double*)tmp=*(double*)arr->value[i].value;
+				v_generic=malloc(sizeof(double));
+				*(double*)v_generic=*(double*)arr_allData->value[i].value;
 				break;
 			case LONGINT:
-				tmp=malloc(sizeof(mpz_t));
-				mpz_init(*(mpz_t*)tmp);
-				mpz_set(*(mpz_t*)tmp,*(mpz_t*)arr->value[i].value);
+				v_generic=malloc(sizeof(mpz_t));
+				mpz_init(*(mpz_t*)v_generic);
+				mpz_set(*(mpz_t*)v_generic,*(mpz_t*)arr_allData->value[i].value);
 				break;
 			case LONGFLOAT:
-				tmp=malloc(sizeof(mpf_t));
-				mpf_init_set(*(mpf_t*)tmp,*(mpf_t*)arr->value[i].value);
+				v_generic=malloc(sizeof(mpf_t));
+				mpf_init_set(*(mpf_t*)v_generic,*(mpf_t*)arr_allData->value[i].value);
 				break;
 			case CODES_BLOCKS:
 			case STRING:
-				tmp=malloc(strlen((char*)arr->value[i].value)+1);
-				strcpy((char*)tmp,(char*)arr->value[i].value);
+				v_generic=malloc(strlen((char*)arr_allData->value[i].value)+1);
+				strcpy((char*)v_generic,(char*)arr_allData->value[i].value);
 				break;
 			default:
-				perror("Error interno de la app, me falto un tipo de dato por verificar en la funcion copy_array.");
-				printf("\nEl tipo se llama %s\n",get_name_type(arr->value[i].type) );
+				perror("Error interno de la app, en la funcion copy_array->default.\n");
+				printf("arr_allData->value[i].type= %s\n",get_name_type(arr_allData->value[i].type) );
 				exit(-2);
 		}
-		add_array(out,arr->value[i].type,tmp);
+		add_array(arr_out,arr_allData->value[i].type,v_generic);
 	}
-	return out;
+	return arr_out;
 }
-/**
- * @brief      Agrega un item en una posicion indicada a un array.
- *
- * @param      arr        El array a modificar.
- * @param[in]  is_append  Indica si se agrega(true) o simpremente se modifica la posición del elemento(false)
- * @param[in]  index_set  El indice a modificar. Si es -1 entonces se agrega al final.
- * @param[in]  t_out      Tipo de dato
- * @param      value      El valor(nota no se hace copia por lo que debe ser de memoria dinamica el valor)
- */
-void array_set_item(struct Array* arr,bool is_append,int index_set, enum TYPE t_out, void* value){
-	struct type_value cp,
-	cp_after;
-	U_INT i=index_set+1;
-	if (!is_append){//Si no es append item entonces modificamos el valor de ese espacio.
-		int index=(index_set!=-1)?index_set:arr->i-1;
-		delete_item(arr->value[index].type,arr->value[index].value);
-		arr->value[index].type=t_out;
-		arr->value[index].value=value;
-		return;
-	}else if (index_set==-1){//Aunque si es -1 significa agregar al final
-		add_array(arr,t_out,value);
-		return;
-	}else if(index_set>arr->i || index_set<0){//No queremos indices negativos.
-		//Prevenimos que el indice pasado sea mayor
-		//al ultimo objeto+1 para no dejar espacios vacios.
-		printf("Advertencia: se intenta acceder a una posición que no se puede."
-			"\nIndice pasado: %d  -  Indice maximo a modificar: %d.\n",index_set,arr->i);
-		return;
-	}
-	//Modo Append.
-	//Si no hay mas espacio se agregara 10 mas para almacenar todo
-	add_array(arr,PCHAR,NULL);
-	//Copiamos el primer elemento.
-	cp.type=arr->value[index_set].type;
-	cp.value=arr->value[index_set].value;
-	//Agregamos el elemento modificaco.
-	arr->value[index_set].type=t_out;
-	arr->value[index_set].value=value;
+void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_indexSet, const enum TYPE typ_data, void* v_data){
+	// Modo modificar
+	if (!b_isAppend){
+		unsigned int i_index=(i_indexSet!=-1)?i_indexSet:arr_allData->i-1;
 
-	for (;i<arr->i;i++){
-		//Copiamos el elemento actual para despues agregarlo.
-		cp_after.type=arr->value[i].type;
-		cp_after.value=arr->value[i].value;
-		//Agregamos el elemento anterior.
-		arr->value[i].type=cp.type;
-		arr->value[i].value=cp.value;
-		//Copiamos el elemento para el proximo ciclo.
-		cp.type=cp_after.type;
-		cp.value=cp_after.value;
+		delete_item(arr_allData->value[i_index].type,arr_allData->value[i_index].value);
+		arr_allData->value[i_index].type=typ_data;
+		arr_allData->value[i_index].value=v_data;
+		return;
+	// Agregar al final.
+	}else if (i_indexSet==-1){
+		add_array(arr_allData,typ_data,v_data);
+		return;
+	}else if(i_indexSet>arr_allData->i || i_indexSet<0){
+		printf("Error: se intenta acceder a una posición que no se puede.\n"
+			"\nIndice pasado: %d  -  Indice maximo a modificar: %d.\n",i_indexSet,arr_allData->i);
+		return;
+	}
+	struct type_value tv_nowItem,
+	  tv_afterItem;
+	//Modo Append:
+	//Aumentamos el array
+	add_array(arr_allData,PCHAR,NULL);
+	//Agregamos en el indice el dato y guardamos el dato anteior.
+	tv_afterItem.type=arr_allData->value[i_indexSet].type;
+	tv_afterItem.value=arr_allData->value[i_indexSet].value;
+	arr_allData->value[i_indexSet].type=typ_data;
+	arr_allData->value[i_indexSet].value=v_data;
+
+	// Hacemos que todos los elementos sean
+	// Corridos
+	for (U_INT i=i_indexSet+1;i<arr_allData->i;i++){
+		//Intercambiamos:
+		tv_nowItem.type=arr_allData->value[i].type;
+		tv_nowItem.value=arr_allData->value[i].value;
+
+		arr_allData->value[i].type=tv_afterItem.type;
+		arr_allData->value[i].value=tv_afterItem.value;
+
+		tv_afterItem.type=tv_nowItem.type;
+		tv_afterItem.value=tv_nowItem.value;
 	}
 }
-/**
- * @brief Aqui configuramos y si ya estubo definida pase NULL en name
- ** para indicar que ya existe y hay que liberar su valor.
- * 
- * @param v Variable a configurar.
- * @param name Nombre de la variable.
- * @param tv El tipo y el valor de la variable.
- */
-void setValue_tv(struct Var* v,char* name,struct type_value* tv){
+void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_setVar){
 	char* str;
-	//No estuvo definida antes
-	if (name==NULL){
-		delete_item(v->type,v->value);
+	// Var no defined
+	if (s_name==NULL){
+		delete_item(vr_now->type,vr_now->value);
 	}else{
-		v->name=(char*)malloc(sizeof(name));
-		strcpy(v->name,name);
+		unsigned int len=strlen(s_name),i=0;
+		vr_now->name=(char*)malloc(SIZE_CHAR(len+1));
+		vr_now->i_name=0;
+		if (vr_now->name==NULL){
+			PRINTF_MEMORY_ERROR(s_name);
+			return;
+		}
+		for (;i<len;i++){
+			vr_now->i_name+=s_name[i];
+			vr_now->name[i]=s_name[i];
+		}
+		vr_now->name[i]='\0';
 	}
-	v->type = tv->type;
-	switch(v->type){
+
+	vr_now->type = tv_setVar->type;
+	switch(vr_now->type){
 		case INT:
-			v->value=malloc(sizeof(int));
-			*(int*)v->value=*(int*)tv->value;
+			vr_now->value=malloc(sizeof(int));
+			*(int*)vr_now->value=*(int*)tv_setVar->value;
 			break;
 		case FLOAT:
-			v->value=malloc(sizeof(double));
-			*(double*)v->value=*(double*)tv->value;
+			vr_now->value=malloc(sizeof(double));
+			*(double*)vr_now->value=*(double*)tv_setVar->value;
 			break;
 		case LONGINT:
-			v->value=malloc(sizeof(mpz_t));
-			mpz_init(*(mpz_t*)v->value);//Importante.
-			mpz_set(*(mpz_t*)v->value,*(mpz_t*)tv->value);
+			vr_now->value=malloc(sizeof(mpz_t));
+			mpz_init(*(mpz_t*)vr_now->value);//Importante.
+			mpz_set(*(mpz_t*)vr_now->value,*(mpz_t*)tv_setVar->value);
 			break;
 		case LONGFLOAT:
-			v->value=malloc(sizeof(mpf_t));
-			mpf_init_set(*(mpf_t*)v->value,*(mpf_t*)tv->value);
+			vr_now->value=malloc(sizeof(mpf_t));
+			mpf_init_set(*(mpf_t*)vr_now->value,*(mpf_t*)tv_setVar->value);
 			break;
 		case ARRAY:
-			v->value=copy_array((struct Array*)tv->value);
+			vr_now->value=copy_array((struct Array*)tv_setVar->value);
 			break;
 		case STRING:
 		case CODES_BLOCKS:
-			str=(char*)malloc(sizeof(char)*(strlen((char*)tv->value)+1));
-			strcpy(str,(char*)tv->value);
-			v->value=str;
+			str=(char*)malloc(sizeof(char)*(strlen((char*)tv_setVar->value)+1));
+			strcpy(str,(char*)tv_setVar->value);
+			vr_now->value=str;
 			break;
-		case FUNCTION:break;//No es necesario porque este nunca estará en la pila.
+		case FUNCTION:
+			vr_now->value=tv_setVar->value;
+			break;
 		default:
-			printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(tv->type) );
-			exit(-3);
+			vr_now->value=tv_setVar->value;
+			// Si no está tratado, no se copiará.
+			#ifdef TEST
+				printf(
+					"Advertensia: No se puede copiar dato.\n  Function=setValue_tv\n  tipo=%s.\n",
+					vr_now->type
+				);
+			#endif
 	}
 }
-/**
- * @brief Liberamos la memoria reserbada para almacenar una variable.
- * @param v Variable a eliminar.
- */
-void delete_var(struct Var* v){
-	delete_item(v->type,v->value);
-	free(v->name);
-	v->value=NULL;
+void delete_var(struct Var* vr_var){
+	delete_item(vr_var->type,vr_var->value);
+	free(vr_var->name);
+	vr_var->value=NULL;
 }
-/**
- * Elimina un item.
- * @param t     Tipo de dato del item
- * @param value Valor
- */
-void delete_item(enum TYPE t, void* value){
-	switch(t){
+void delete_item(const enum TYPE t_typValue, void* v_data){
+	switch(t_typValue){
 		case VAR:
-			delete_var((struct Var*)value);
-			free(value);
+			delete_var((struct Var*)v_data);
+			free(v_data);
 			break;
-		case FUNCTION:break;//Las funciones no son necesario liberar.
+		case FUNCTION:break;// ¡No liberar!
 		case ARRAY:
-			delete_array((struct Array*)value);
-			free(value);
+			delete_array((struct Array*)v_data);
+			free(v_data);
 		break;
 		case LONGINT:
-			mpz_clear(*(mpz_t*)value);
-			free(value);
+			mpz_clear(*(mpz_t*)v_data);
+			free(v_data);
 			break;
 		case LONGFLOAT:
-			mpf_clear(*(mpf_t*)value);
-		//No hay forma diferente para liberar.
+			mpf_clear(*(mpf_t*)v_data);
+			free(v_data);
+			break;
 		case INT:
 		case CODES_BLOCKS:
 		case STRING:
 		case FLOAT:
-			free(value);
+			free(v_data);
 			break;
 		default:
-			perror("Error: Se intenta liberar un tipo de dato no tratado. \nFuncion \"delete_item\" ");
-			printf("Type: %s",get_name_type(t));
-			exit(-111111);
+			perror("Error: Se intenta liberar un tipo de dato no tratado. \nFunción \"delete_item\" ");
+			printf("Type: %s",get_name_type(t_typValue));
+			exit(-130);
 	}
 }
-/**
- * @brief Función que ingresa el valor en la pila, o ejecuta una función en especifico.
- *
- * @param stack pila.
- * @param vars variables.
- * @return string -- Retorna una cadena vacia si
- */
-char* interpret(struct Array* stack,struct Array* var,struct Var* v){
-	void* value;
-	switch (v->type){
+void process_data(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data){
+	void* v_generic;
+	switch (vr_data->type){
 	case INT:
-		value=malloc(sizeof(int));
-		*(int*)value=*(int*)v->value;
+		v_generic=malloc(sizeof(int));
+		*(int*)v_generic=*(int*)vr_data->value;
 		break;
 	case FLOAT:
-		value=malloc(sizeof(double));
-		*(double*)value=*(double*)v->value;
+		v_generic=malloc(sizeof(double));
+		*(double*)v_generic=*(double*)vr_data->value;
 		break;
 	case FUNCTION: //Usamos funciones dentro del mismo programa para esta.
-		((unsigned short (*)(struct Array* stack,struct Array* vars,char* extend))v->value)(stack,var,"");
-		return NULL;
+		((unsigned short (*)(struct Array* arr_allData,struct Array* vars,char* extend))vr_data->value)(arr_allData,arr_allVars,"");
+		return;
 	case CODES_BLOCKS://Interpretamos el bloque de código.
-		return (char*)v->value;
+		v_generic=malloc(sizeof(struct Array));
+		((struct Array*)v_generic)->i=0;
+		((struct Array*)v_generic)->max=0;
+		((struct Array*)v_generic)->value=NULL;
+		add_array((struct Array*)v_generic,STRING,vr_data->value);
+		run((struct Array*)v_generic,arr_allData,arr_allVars);
+		free(((struct Array*)v_generic)->value);
+		free(v_generic);
+		return;
 	case STRING:
-		value=malloc(sizeof(char)*(strlen((char*)v->value)+1));
-		strcpy((char*)value,(char*)v->value);
+		v_generic=malloc(sizeof(char)*(strlen((char*)vr_data->value)+1));
+		strcpy((char*)v_generic,(char*)vr_data->value);
 		break;
 	case ARRAY:
-		value=copy_array((struct Array*)v->value);
+		v_generic=copy_array((struct Array*)vr_data->value);
 		break;
-	case LONGINT://Copiamos el entero largo a otro.
-		value=malloc(sizeof(mpz_t));
-		mpz_init(*(mpz_t*)value);//Importante.
-		mpz_set(*(mpz_t*)value, *(mpz_t*)v->value);
+	case LONGINT:
+		v_generic=malloc(sizeof(mpz_t));
+		mpz_init(*(mpz_t*)v_generic);
+		mpz_set(*(mpz_t*)v_generic, *(mpz_t*)vr_data->value);
 		break;
 	case LONGFLOAT:
-		value=malloc(sizeof(mpf_t));
-		mpf_init_set(*(mpf_t*)value, *(mpf_t*)v->value);
+		v_generic=malloc(sizeof(mpf_t));
+		mpf_init_set(*(mpf_t*)v_generic, *(mpf_t*)vr_data->value);
 		break;
 	default:
-		printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(v->type) );
+		printf("Error tipo %s no tratado en la función setValue_tv\n",get_name_type(vr_data->type) );
 		exit(-3);
 	}
-	add_array(stack,v->type,value);
-	return NULL;
+	// Agregamos el dato procesado
+	add_array(arr_allData,vr_data->type,v_generic);
 }
-/**
- * @brief Enseñamos todo el contenido de la pila en [ elemento_1 elemento_2 elemento_3 ]
- * @param stack pila a mostrar.
- * @return char* output Recuerda liberar memoria.
-*/
-char* printf_stack(struct Array* stack){
-	char* output=(char*)malloc(sizeof(char)*2);
-	char* a_out=NULL;//Cuando necesitemos una cadena secundarias.
-	void* tmp=NULL;//Para un uso general.
-	output[0]='\0';
+char* printf_stack(struct Array* arr_allData){
+	char* s_out=(char*)malloc(sizeof(char)*2);// Iniciamos para despues agregarle.
+	char* s_generic;//Uso general.
+	*s_out='\0';
+	char* s_format;
 	unsigned int len=1;
-	for(unsigned int i=0;i<stack->i;i++){
-		switch(stack->value[i].type){
+	unsigned int len_str_return;
+	mp_exp_t mp_exponent;
+	for(unsigned int i=0;i<arr_allData->i;i++){
+		switch(arr_allData->value[i].type){
 			case INT:
-				tmp=alloca(50);
-				itoa(*(int*)stack->value[i].value,(char*)tmp,10);
-				len+=strlen((char*)tmp)+1;
-				output=(char*)realloc(output,len);
-				sprintf(output,"%s%s ",output,(char*)tmp);
+				// Creamos una cadena temporal y guardamos el antero
+				s_generic=(char*)alloca(50);
+				sprintf(s_generic,"%d ",*(int*)arr_allData->value[i].value);
+
+				len=append_strcpy(&s_out,len,s_generic);
 				break;
 			case FLOAT:
-				tmp=alloca(60);
-				sprintf((char*)tmp,"%f",*(double*)stack->value[i].value);
-				len+=strlen((char*)tmp)+1;
-				output=(char*)realloc(output,len);
-				sprintf(output,"%s%s ",output,(char*)tmp);
+				// Creamos una cadena temporal y guardamos el flotante.
+				s_generic=(char*)alloca(60);
+				sprintf(s_generic,"%f ",*(double*)arr_allData->value[i].value);
+
+				len=append_strcpy(&s_out,len,s_generic);
 				break;
 			case ARRAY:
-				a_out=printf_stack((struct Array*)stack->value[i].value);
-				len+=strlen(a_out)+6;
-				output=(char*)realloc(output,len);
-				sprintf(output,"%s[ %s] ",output,a_out);
-				free(a_out);
+				// Convertimos el array en cadena para despues concatenarlo
+				s_generic=printf_stack((struct Array*)arr_allData->value[i].value);
+				len=append_sprintf(
+					&s_out,
+					len,
+					4,
+					"[ %s] ",// 4 -> "[ %s] "
+					s_generic
+				);
+				free(s_generic);
 				break;
-			case CODES_BLOCKS://Recuerda todo despues de esto es string.
-				len+=strlen((char*)stack->value[i].value)+7;
-				output=(char*)realloc(output,sizeof(char)*len);
-				sprintf(output,"%s{%s} ",output,(char*)stack->value[i].value);
+			case CODES_BLOCKS:
+				len=append_sprintf(
+					&s_out,
+					len,
+					3,// 3 -> "{} "
+					"{%s} ",
+					(char*)arr_allData->value[i].value
+				);
 				break;
 			case STRING:
-				a_out=(char*)stack->value[i].value;
-				len+=strlen(a_out)+3;
-				output=(char*)realloc(output,sizeof(char)*len);
-				sprintf(output,"%s\"%s\" ",output,a_out);
+				len=append_sprintf(
+					&s_out,
+					len,
+					3,// 3 -> '"" '
+					"\"%s\" ",
+					(char*)arr_allData->value[i].value
+				);
 				break;
 			case LONGINT:
-			case LONGFLOAT:
-				a_out=(stack->value[i].type==LONGINT)?
-				mpz_get_str(NULL,0,*(mpz_t*)stack->value[i].value)
-				:mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)stack->value[i].value);
+				// Obtener la cadena.
+				s_generic=mpz_get_str(NULL,0,*(mpz_t*)arr_allData->value[i].value);
 				
-				output=(char*)realloc(output,len+=strlen(a_out)+1);
-				sprintf(output,"%s%s ",output,a_out);
-				free(a_out);
+				// 1 por: " "
+				len=append_sprintf(
+					&s_out,
+					len,
+					1,// 1 -> ' '
+					"%s ",
+					s_generic
+				);
+				FREE__(s_generic);
+				break;
+			case LONGFLOAT:
+			  // Aprovechamos que gmp ofrece funciones para 
+				// Obtener la cadena.
+				s_generic=mpf_get_str(NULL, &mp_exponent, 10, 16, *(mpf_t*)arr_allData->value[i].value);
+				mp_exponent+=(*s_generic=='-')?1:0;//Si es negativo se necesita sumar 1.
+
+				// 2 -> ' ' and ','
+				len_str_return=strlen(s_generic)+2;
+				s_out=(char*)realloc(s_out,SIZE_CHAR(len+len_str_return));
+
+				// 18: 7->"%.s,%s "+{s_generic 10 character}+1->\0.
+				s_format=(char*)alloca(SIZE_CHAR(18));
+				sprintf(s_format,"%%.%ds,%%s ",(int)mp_exponent);
+				//Out:
+				sprintf(
+					s_out+SIZE_CHAR(len-1),
+					s_format,
+					s_generic,
+					s_generic+(int)mp_exponent
+				);
+				len+=len_str_return;
+				FREE__(s_generic);
+				break;
+			case VAR:
+				s_generic=to_string_value(
+					((struct Var*)arr_allData->value[i].value)->type,
+					((struct Var*)arr_allData->value[i].value)->value
+				);
+				// 4 -> "(=) "
+				len_str_return=strlen(((struct Var*)arr_allData->value[i].value)->name)+strlen(s_generic)+4;
+				s_out=(char*)realloc(s_out,SIZE_CHAR(len+len_str_return));
+				sprintf(
+					s_out+SIZE_CHAR(len-1),
+					"(%s=%s) ",
+					((struct Var*)arr_allData->value[i].value)->name,
+					s_generic
+				);
+				len+=len_str_return;
+				free(s_generic);
+				break;
+			default:
+				printf("Error: Tipo de dato \"%s\" no está tratado.",get_name_type(arr_allData->value[i].type));
 				break;
 		}
 	}
-	return output;
+	return s_out;
 }
-/**
- * @brief Función que busca la variable dentro de una cadena.
- *
- * @param name Nombre a buscar.
- * @param init_str_1 Donde se inicia en la cadena nombre.
- * @param var //Vector para ver las variables.
- * @return int Para saber si se encontró o no. si lo encontró se retorna el indice, sino -1
- */
-int search_var_init(const char* name, unsigned const int init_str_1, struct Array* var){
-	for (unsigned int i=0;i<var->i;i++){
-		struct Var* v_2=(struct Var*)var->value[i].value;//Variable actual.
-		if (!strcmp(&name[init_str_1],v_2->name))//Es igual y retornamos.
+int64_t search_var_init(const char* s_name, unsigned const int i_initStr, struct Array* arr_var){
+	unsigned int i_name=0;
+	for (long int i=strlen(s_name)-1;i>-1;i--)
+		i_name+=s_name[i];
+	for (int64_t i=0;i<arr_var->i;i++){
+		const struct Var* vr_varNow=(struct Var*)arr_var->value[i].value;//Variable actual.
+		if (i_name==vr_varNow->i_name && !strcmp(&s_name[i_initStr],vr_varNow->name))//Es igual y retornamos.
 			return i;
 	}
-	//No hay coincidencia, por lo que retorno -1.
 	return -1;
 }
-/**
- * @brief Creamos dinamicamente una variable(Nota: debes liberar name y la variable actual).
- * 
- * @param vars el array donde se guardará la variable.
- * @param name Nombre se creará una copia dinamica por lo que debes liberarla despues.
- * @param t 
- * @param value Se inserta el valor sin crear copia dinamica.
- */
-void add_var(struct Array* vars,char* name,enum TYPE t,void* value){
-	struct Var* this=(struct Var*)malloc(sizeof(struct Var));
-	this->name=(char*)malloc(sizeof(char)*(strlen(name)+1));
-	strcpy(this->name,name);
-	this->type=t;
-	this->value=value;
-	add_array(vars,VAR,this);
+void add_var(struct Array* arr_var,const char* s_name,enum TYPE typ_data,void* v_data){
+	struct type_value tv_out={
+		typ_data,
+		v_data
+	};
+	struct Var* vr_now=(struct Var*)malloc(sizeof(struct Var));
+	setValue_tv(
+		vr_now,
+		s_name,
+		&tv_out
+	);
+	add_array(arr_var,VAR,vr_now);
 }
-/**
- * Combierte a cadena el elemento.
- * @param  t     Especifica el tipo del elemento
- * @param  value Elemento
- * @return       Cadena dinamica. Recuerda liberar.
- */
-char* to_string_value(enum TYPE t,void* value){
-	char* out=NULL,
-	*tmp=NULL;
-	switch(t){
+char* to_string_value(const enum TYPE typ_data,void* v_data){
+	char* s_out=NULL,
+	*s_generic=NULL;
+	mp_exp_t mp_exponent;
+	void* vTmp;
+
+	switch(typ_data){
 		case INT:
-			tmp=(char*)alloca(30);
-			itoa(*(int*)value,(char*)tmp,10);
+			s_generic=(char*)alloca(30);
+			itoa(*(int*)v_data,(char*)s_generic,10); 
 			
-			out=(char*)malloc(strlen((char*)tmp)+1);
-			itoa(*(int*)value,out,10);
+			s_out=(char*)malloc(sizeof(char)*(strlen(s_generic)+1));
+			strcpy(s_out,s_generic);
 			break;
 		case FLOAT:
-			out=(char*)malloc(CLIMIT_FLOAT+1);
-			sprintf(out, "%.*lf", CLIMIT_FLOAT-1,*(double*)value);
+			s_generic=(char*)alloca(30);
+			sprintf(s_generic, "%.*lf", CLIMIT_FLOAT-2,*(double*)v_data);
+			
+			s_out=(char*)malloc(sizeof(char)*(strlen(s_generic)+1));
+			strcpy(s_out,s_generic);
 			break;
 		case LONGINT:
-			out=mpz_get_str(NULL,0,*(mpz_t*)value);
+			//Evitamos warning con los tester al no hacer: s_out=mpz_get_str(...);
+			//2-> '-' is negative and '\0'
+			s_out=(char*)malloc( SIZE_CHAR(mpz_sizeinbase((mpz_srcptr)v_data, 10) + 2) );
+			mpz_get_str(s_out,10,*(mpz_t*)v_data);
 			break;
 		case LONGFLOAT:
-			out=mpf_get_str(NULL, NULL, 10, 0, *(mpf_t*)value);
+			s_generic=mpf_get_str(NULL, &mp_exponent, 10, 0, *(mpf_t*)v_data);
+
+			// 2 por: '\0' y ','
+			s_out=(char*)malloc(strlen(s_generic)+2);
+
+			// 19 -> 7 de "%.s,%s " + 10->2147483648 (10 caracteres)+ 1 -> \0+ 1 -> '-'.
+			vTmp=alloca(sizeof(char)*19);
+			sprintf(vTmp,"%%.%ds,%%s ",(int)mp_exponent);
+			
+			sprintf(s_out,vTmp,s_generic,s_generic+(int)mp_exponent);
+			FREE__(s_generic);
 		break;
 		case CODES_BLOCKS:
 		case STRING:
-			out=(char*)malloc(strlen((char*)value)+1);
-			strcpy(out,(char*)value);
+			s_out=(char*)malloc(
+				SIZE_CHAR(strlen((char*)v_data)+1)
+			);
+			strcpy(s_out,v_data);
 			break;
 		case ARRAY:
-			out=printf_stack((struct Array*)value);
+			s_out=printf_stack((struct Array*)v_data);
 			break;
 		case FUNCTION:
-			tmp="(Native-Function)";
-			out=(char*)malloc(strlen((char*)tmp)+1);
-			strcpy(out,tmp);
+			s_generic="(Native-Function)";
+			s_out=(char*)malloc(sizeof(char)*(strlen(s_generic)+1));
+			strcpy(s_out,s_generic);
+			break;
+		case VAR:
+			s_generic=to_string_value(
+				((struct Var*)v_data)->type,
+				((struct Var*)v_data)->value
+			);
+			// 4 -> "(=)\0" 
+			s_out=(char*)realloc(s_out,SIZE_CHAR(
+				strlen( ((struct Var*)v_data)->name )+strlen(s_generic)+4)
+			);
+			sprintf(
+				s_out,
+				"(%s=%s)",
+				((struct Var*)v_data)->name,
+				s_generic
+			);
+			free(s_generic);
 			break;
 		default:
 			return NULL;
 	}
-	return out;
+	return s_out;
 }
 #endif
