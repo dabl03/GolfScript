@@ -92,21 +92,31 @@ Creando funciones:
 <!--## Como compilarlo:
 Si quiere compilar en linux, debes cambiar el valor de la variable `SYSTEM_OS` en el archivo makefile y listo. Tambien puedes pasar como parámetro `SYSTEM_OS=CualquierValor` para compilarlo para linux.--><!--Ver si funciona para windows para eliminar esta linea. (Nota: Funciona en linux)-->
 <br/>
-Con solo ejecutar el archivo makefile compilarás toda la app. Si deseas hacerlo tu mismo debes hacer:
+
+## Como compilarlo
+Con solo ejecutar el archivo makefile compilarás toda la app:
+```Bash
+make
+```
+Y para debuggear solo debes pasar DEBUG=1, aconsejo limpiar los compilados si ya lo has compilado:
+```Bash
+make clean
+make DEBUG=1
+```
+Pero si deseas hacerlo tu mismo, debes hacer:
 ```Bash
 gcc -Wall ./src/main.c {Pon aqui todos los archivos ./src/operators/*.c} {Pon aqui todos los archivos ./src/*.c} -o ./gsp -lgmp
 ```
-Y listo:)
+Y para debugear aconsejo pasarle al `gcc` el paratmetro `-D DEBUG`, y compilar con el archivo `./test/memory.c`. Esto trae como agregado que puedes saber si hay fuga de memoria al final de `main`.
 
-Para testear la app solo debes pasar TEST=1 por parámetro al makefile
 ## ¿Como compilar los test?
-Si quieres compilar la app para hacer un test, debes pasar -E `TEST=1` como parámetro al makefile para hacer el test
+Si quieres testear los códigos fuente por separado solo debes pasar -E `TEST=1`  al makefile para hacer el test
 ```Bash
 make TEST=1
 ```
+Esto generará los test para cada archivo por separado, y binarios independientes de la app principal.
 
-### Nota si deseas colaborar.
-Si deseas colaborar, no guardes un archivo importante en el directorio raiz con un nombre que contenga `*_test` y `_test.exe` o `./test/*_test` y `./test/*_test.exe`. Esto porque serán eliminados al llamar "make clean", se colocó porque la salida de los testeos siguen ese patrón.
+>> Nota: Si deseas colaborar, no guardes un archivo importante en el directorio raiz con un nombre que contenga `*_test` y `_test.exe` o `./test/*_test` y `./test/*_test.exe`. Esto porque serán eliminados al llamar "make clean", se colocó porque la salida de los testeos siguen ese patrón.
 
 ## Creditos:
 -  Interprete basado en interprete GolfScript de: <a href="https://github.com/darrenks/golfscript">Darren Smith</a>. 

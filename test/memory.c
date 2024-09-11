@@ -1,3 +1,5 @@
+#ifndef MEMORY_C
+#define MEMORY_C 1
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -39,7 +41,7 @@ void* test_malloc(size_t size, const char *file, int line, const char *func){
   stack->line=line;
   stack->func=func;
   if (stack->memory==NULL){
-    printf("Error: No se ha podido asignar %d de memoria.\nEsta es la memoria reservada:\n",size);
+    printf("Error: No se ha podido asignar %ld de memoria.\nEsta es la memoria reservada:\n",size);
     viewStack();
     exit(-0xfff);
   }
@@ -72,7 +74,6 @@ void test_free(void* ptr, const char *file, int line, const char *func,unsigned 
   }
   struct Stack* now=memory,
               * item_previous=now;
-  bool isModific=false;
   if (now->memory==ptr){
     //Para alterar la variable memory
     memory=now->next;
@@ -120,3 +121,4 @@ int MAIN(void){
   viewStack();
   return 0;
 }
+#endif

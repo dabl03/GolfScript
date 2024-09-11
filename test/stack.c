@@ -267,7 +267,7 @@ int main(void){
   printf_separator('-',NULL);
   printf_stack_test(
     arrSecond,
-    "El array copiado vale:"
+    "El array copiado vale: "
   );
 
   printf_separator('=',"Testeamos \"delete_array\" con el doble de datos...");
@@ -289,7 +289,7 @@ int main(void){
   array_set_item(&arr_testArray,true,-1,INT,v_tmp);
 
   printf_stack_test(&arr_testArray,
-    "El array vale:"
+    "El array vale: "
   );
   printf_separator('-',NULL);
 
@@ -301,7 +301,7 @@ int main(void){
   *(int*)v_tmp=40;
   array_set_item(&arr_testArray,false,0,INT,v_tmp);
   printf_stack_test(&arr_testArray,
-    "El array ahora vale:"
+    "El array ahora vale: "
   );
   printf_separator('-',NULL);
   delete_array(&arr_testArray);

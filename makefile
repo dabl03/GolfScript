@@ -32,8 +32,10 @@ DELETE=rm -f -d
 SHOW_LOG=cat -n
 
 ifeq ($(DEBUG),1)
-	CXXFLAG:=$(CXXFLAG) -g
-	CFLAG:=$(CFLAG) -g
+	CXXFLAG:=-D DEBUG $(CXXFLAG) -g
+	CFLAG:=-D DEBUG $(CFLAG) -g
+	O_FILES:=$(O_FILES) $(BIN_O)/memory.o
+	FILE_H:=$(FILE_H) ./test/include/memory.h
 endif
 
 ifeq ($(SYSTEM_OS),Windows)
@@ -75,6 +77,9 @@ $(BIN_O)/%.o:	$(SRC)/%.c
 $(BIN_O)/%.o:	$(SRC_OPERATOR)/%.c
 	@echo Compilando el operador: $<...
 	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log)
+
+$(BIN_O)/memory.o:./test/memory.c
+	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/memory.log
 
 clean:
 	$(DELETE) $(BIN_O)/*.o

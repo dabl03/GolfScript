@@ -12,10 +12,12 @@
 		#include <alloca.h>     // alloca
 	#endif
 	#define FREE__(x) free(x)
-	#ifdef TEST_
+	#if defined(DEBUG) || defined(TEST_)
 		#include "../../test/include/memory.h"
 	#endif
-
+	#ifdef DEBUG
+		
+	#endif
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
 	#define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
 	#define ERROR_DEFICCION_NO_VALIDA -30

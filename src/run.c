@@ -157,10 +157,10 @@
 				space=true;
 			else{
 				if (space){
-					cadd_add_leftover(&out,' ');
+					cadd_leftover(&out,' ');
 					space=false;
 				}
-				cadd_add_leftover(&out,str[i]);
+				cadd_leftover(&out,str[i]);
 				if (IF_INIT_STRING(str[i])){
 					tmp_i=get_end_str(str,i,end);
 					tmp_i=(tmp_i)?tmp_i:end;
@@ -174,7 +174,7 @@
 				}
 			}
 		}
-		cadd_add_leftover(&out,'\0');
+		cadd_leftover(&out,'\0');
 		return (char*)realloc(out.str,out.count);
 	}
 	
@@ -203,20 +203,20 @@
 					i=(tmp_i)?tmp_i:iend;
 					free(tmp_str);
 					if (i+1<iend AND input[i+1]!=' ')
-						cadd_add_leftover(&out,' ');
+						cadd_leftover(&out,' ');
 					break;
 				case COMMENT:
 					for (;input[i]!='\n' AND input[i]!='\0';i++);//Se ignora todo
 				case '\n':
 					if (input[i-1]!=' ')
-						cadd_add_leftover(&out,' ');
+						cadd_leftover(&out,' ');
 					break;
 				default:
-					cadd_add_leftover(&out,input[i]);
+					cadd_leftover(&out,input[i]);
 			}
 			
 		}
-		//Para mas velocidad no llamamos a cadd_add_leftover.
+		//Para mas velocidad no llamamos a cadd_leftover.
 		if (out.count+sub+1>out.max){//Ya no necesitamos la variable max de la estructura.
 			out.str=(char*)realloc(out.str,out.count+sub+2);
 		}

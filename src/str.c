@@ -267,7 +267,7 @@ char* get_str_escp(char* old_str){
   return new_str;
 }
 
-void cadd_add_leftover(struct String* str_,char c){
+void cadd_leftover(struct String* str_,const char c){
   if (str_->count+3>=str_->max){
     str_->str=(char*)realloc(str_->str,str_->max+=20);
   }
@@ -284,12 +284,12 @@ char* get_sub_str(const char* str,U_INT init, U_INT end){
     if (str[i]==type AND !is_scape)//Si es termino y no es un escape.
       break;//Conseguimos el final de la cadena por lo que terminamos.
     if (type=='\'' && str[i]=='"')
-      cadd_add_leftover(&out,'\\');
-    cadd_add_leftover(&out,str[i]);
+      cadd_leftover(&out,'\\');
+    cadd_leftover(&out,str[i]);
     is_scape=(str[i]=='\\' && !is_scape);
   }
-  cadd_add_leftover(&out,'"');
-  cadd_add_leftover(&out,'\0');
+  cadd_leftover(&out,'"');
+  cadd_leftover(&out,'\0');
   return (char*)realloc(out.str,out.count);
 }
 

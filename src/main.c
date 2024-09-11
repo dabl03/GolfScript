@@ -9,15 +9,6 @@
 #include "header/define.h"
 #include "header/stack.h"
 #include "header/global_vars.h"
-/**
- * @todo: Arreglar todos los warning.
- * @todo: Agregar un tester.
- * 
- * Agregar una forma de acceder a los elementos del array.
- * TODO agregar una opcion para que se importe archivos.
- * Investigar esta conversación: https://chat.stackexchange.com/transcript/message/62670441#62670441
- * @todo Termine el interprete, solo falta modificar la ejecucion y los operadores para terminar"
-*/
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="  Interprete: Daniel Briceño.\n  Sintaxis: Darren Smith.";
 const char* LICENSE_URL="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";
@@ -58,6 +49,7 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 int main(int argc, char *argv[]){
 	struct Array stack={0,0,NULL},//Nuestra pila.
 	vars={0,0,NULL};//Nuestra variables
+	int i_return_code=0;
 	init_gvars(&vars);
 	if (argc > 1){//Vemos que parametros se paso.
 		struct Array params={0,0,NULL}, path_files={0,0,NULL};
@@ -78,7 +70,7 @@ int main(int argc, char *argv[]){
 			delete_array(&params);
 		}
 		if (!path_files.i){
-			return interprete(&stack,&vars);
+			i_return_code=interprete(&stack,&vars);
 		}else{
 			FILE* file=fopen((char*)path_files.value[0].value,"r");
 			struct Array lineas={1,0,malloc(sizeof(struct type_value))};
@@ -102,17 +94,21 @@ int main(int argc, char *argv[]){
 			fclose(file);
 			//Ejecutamos:
 			add_array(&lineas,STRING,str);
-			run(&lineas,&stack,&vars);
+			i_return_code=run(&lineas,&stack,&vars);
 			//Liberamos todo.
 			delete_array(&lineas);
-			delete_array(&stack);
-			delete_array(&vars);
 			delete_array(&path_files);
 		}
 	}else{//Interpretamos.
-		return interprete(&stack,&vars);
+		i_return_code=interprete(&stack,&vars);
 	}
-	return 0;
+	delete_array(&stack);
+	delete_array(&vars);
+	#ifdef DEBUG
+		puts("\n¿Hay fuga de memoria?:");
+  	viewStack();
+	#endif
+	return i_return_code;
 }
 #endif
 void config_all(struct Array* opciones){
@@ -132,33 +128,30 @@ int interprete(struct Array* stack,struct Array* vars){
 	char *tmp_out=NULL;//Puntero de uso temporal.
 	U_INT tmp_len=0;
 	struct Array lineas={0,0,NULL};
-	struct String c_linea={20,0,(char*)malloc(20)};
+	struct String c_linea={0,0,NULL};
+	char c='\0';
 	printf("Golfscript Interactive Mode%s",ENDL);
-	while (!quit)
-	{
-		if (sub){// Esta anidando algo.
-			char *space = (char *)malloc(sizeof(char) * (sub + 1));
-			U_INT i=0;
-			for (; i < sub; i++)
-				space[i] = ' ';
-			space[i] = '\0';
-			printf(space);
-			free(space);
-		}
+	while (!quit){
+		if (sub)
+			for (unsigned int i=0; i < sub; i++)
+				putchar(' ');
 		printf("> ");
 		while(true){
-			char c=getchar();
-			cadd_add_leftover(&c_linea,c);
+			c=getchar();
+			cadd_leftover(&c_linea,c);
 			if (IF_ENDL(c))//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
 				break;
-			if (IF_INIT_STRING(c)){//Si es el comienzo de una cadena entonces pedimos hasta que el usuario ya no quiera mas string.
+			if (IF_INIT_STRING(c)){
+				//" and '
 				tmp_out=get_input_str(c);
 				tmp_len=strlen(tmp_out);
+				// If breakline.
 				char is_new_line_tmp=tmp_out[tmp_len-1]=='\n';
 				c_linea.str[--c_linea.count]='\0';
 				str_add_str_init_end(&c_linea,tmp_out,0,tmp_len);
 				free(tmp_out);
-				if (is_new_line_tmp) break;
+				if (is_new_line_tmp)
+					break;
 				continue;
 			}else if(IF_INIT_COMENT(c)){//Innoramos todo despues del comentario.
 				while ((c=getchar())!='\n' && c!='\0');
@@ -168,37 +161,36 @@ int interprete(struct Array* stack,struct Array* vars){
 				c_linea.str[--c_linea.count]='\0';
 				str_add_str_init_end(&c_linea,tmp_out,0,0);
 				free(tmp_out);
-				if (c_linea.str[c_linea.count-1]=='\n')break;
+				if (c_linea.str[c_linea.count-1]=='\n')
+					break;
 				continue;
 			}else if(c=='['){///@TODO: Usarlo input_block.
 				tmp_out=input_block('[',']',"-- ",sub);
 				c_linea.str[--c_linea.count]='\0';
 				str_add_str_init_end(&c_linea,tmp_out,0,0);
 				free(tmp_out);
-				if (c_linea.str[c_linea.count-1]=='\n')break;
+				if (c_linea.str[c_linea.count-1]=='\n')
+					break;
 				continue;
 			}
 		}
 		c_linea.str[c_linea.count]='\0';
-		add_array(&lineas,STRING,(char*)realloc(c_linea.str,c_linea.count+1));
-		INIT_STRING(c_linea,20);
-		if (sub == 0)
-		{ // Podemos interpretar linea a linea.
+		add_array(&lineas,STRING,c_linea.str);
+		INIT_STRING(c_linea,80);
+
+		if (sub == 0){ // Podemos interpretar linea a linea.
 			run(&lineas, stack, vars);
 			delete_array(&lineas);
 			//Mostramos la variable n.
 			struct Var* this_var=(struct Var*)vars->value[search_var("n",vars)].value;
 			char* extend=to_string_value(this_var->type,this_var->value);
 			char* output = printf_stack(stack);//Obtenemos la pila.
-			if (extend==NULL)
-				printf("[ %s]",output);
-			else{
-				printf("[ %s]%s",output,extend);
-				free(extend);
-			}
+			printf("[ %s]%s",output,extend);
+			free(extend);
 			free(output);
 		}
 	}
+	free(c_linea.str);
 	return 0;
 }
 char* get_input_str(char type_string){
@@ -208,7 +200,7 @@ char* get_input_str(char type_string){
 	str_.str[0]=type_string;
 	while(true){
 		input=getchar();
-		cadd_add_leftover(&str_,input);
+		cadd_leftover(&str_,input);
 		if (str_.str[str_.count-1]==type_string AND !is_scape){//Si es termino y no es un escape.
 			str_.str[str_.count-1]=type_string;
 			break;
@@ -219,7 +211,7 @@ char* get_input_str(char type_string){
 		}
 		is_scape=(str_.str[str_.count-1]=='\\' && !is_scape);
 	}
-	cadd_add_leftover(&str_,'\0');
+	cadd_leftover(&str_,'\0');
 	return (char*)realloc(str_.str,str_.count);
 }
 char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub){
@@ -236,7 +228,7 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 			sub++;
 		else if (c==cEnd){
 			sub--;
-			cadd_add_leftover(&out,c);
+			cadd_leftover(&out,c);
 			break;
 		// Get string of console.
 		}else if (IF_INIT_STRING(c)){
@@ -257,7 +249,7 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 			continue;
 		}else if(IF_ENDL(c))
 			is_nline=true;
-		cadd_add_leftover(&out,c);
+		cadd_leftover(&out,c);
 
 		// Nueva linea. ¡Identamos!.
 		if (is_nline){
@@ -269,6 +261,6 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 			continue;
 		}
 	}
-	cadd_add_leftover(&out,'\0');
+	cadd_leftover(&out,'\0');
 	return (char*)realloc(out.str,out.count);
 }

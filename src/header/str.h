@@ -121,7 +121,7 @@ char* get_str_escp(char* old_str);
  * @param str_ Structura String.
  * @param c { char a agregar }
  */
-void cadd_add_leftover(struct String* str_,char c);//Nota: Nombre se repite add por error:)
+void cadd_leftover(struct String* str_,const char c);
 /**
  * Funcion que retorna una cadena hechas con comillas dobles.
  * Si fue comillas simple lo que hace es escapar todas las comillas

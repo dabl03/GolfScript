@@ -261,11 +261,9 @@ void process_data(struct Array* arr_allData,struct Array* arr_allVars,struct Var
 	case CODES_BLOCKS://Interpretamos el bloque de código.
 		v_generic=malloc(sizeof(struct Array));
 		((struct Array*)v_generic)->i=0;
-		((struct Array*)v_generic)->max=1;
-		((struct Array*)v_generic)->value=(struct type_value*)malloc(sizeof(struct type_value));
-		((struct Array*)v_generic)->value->type=STRING;
-		((struct Array*)v_generic)->value->value=vr_data->value;
-
+		((struct Array*)v_generic)->max=0;
+		((struct Array*)v_generic)->value=NULL;
+		add_array((struct Array*)v_generic,STRING,vr_data->value);
 		run((struct Array*)v_generic,arr_allData,arr_allVars);
 		free(((struct Array*)v_generic)->value);
 		free(v_generic);
@@ -474,7 +472,9 @@ char* to_string_value(const enum TYPE typ_data,void* v_data){
 		break;
 		case CODES_BLOCKS:
 		case STRING:
-			s_out=(char*)malloc(sizeof(char)*(strlen((char*)v_data)+1));
+			s_out=(char*)malloc(
+				SIZE_CHAR(strlen((char*)v_data)+1)
+			);
 			strcpy(s_out,v_data);
 			break;
 		case ARRAY:
