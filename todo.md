@@ -7,7 +7,8 @@
 - Permitir ejecutar otro programas y pasarle un array como parametros.
 - Corregir los errores ortográficos que haya pasado por alto.
 - Agregar una función para que se importe archivos externos.
-- Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [6]
+- Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [[6]]
+- 
 
 - Terminar los operadores.
 
