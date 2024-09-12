@@ -7,7 +7,7 @@ LINGC=-lgmp
 CFLAG:=-Wall
 APP=./gsp
 APPTEST:=./test/$(APP)_test
-SYSTEM_OS:=$(shell powershell -command "$PSVersionTable.OS")
+SYSTEM_OS:=$(shell cmd /C "echo Windows")
 ## Ver si usar: Platform - Platform that the operating system is running on. The value on Linux and macOS is Unix. See $IsMacOs and $IsLinux.
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators
@@ -28,7 +28,7 @@ O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 # If windows then BIN_EXT=.exe
 BIN_EXT=
-DELETE=rm -f -d
+DELETE_FUNC=DELETE
 SHOW_LOG=cat -n
 
 ifeq ($(DEBUG),1)
@@ -39,10 +39,10 @@ ifeq ($(DEBUG),1)
 endif
 
 ifeq ($(SYSTEM_OS),Windows)
-APP:=$(APP).exe
-BIN_EXT=.exe
-MAKE=Mingw32-make
-DELETE=del
+	APP:=$(APP).exe
+	BIN_EXT=.exe
+	MAKE=Mingw32-make
+	DELETE_FUNC=DELETE_WINDOWS
 endif
 
 ifeq ($(TEST),1)
@@ -54,6 +54,23 @@ ifeq ($(TEST),1)
 	O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 	STACK_TEST=stack.exe
 endif
+
+define DELETE_WINDOWS
+del /s *.o
+del /s *.log
+del /s *_test.exe
+del /s *.exe
+endef
+
+define DELETE
+rn -f -d $(BIN_O)/*.o
+rm -f -d $(BIN_O)/test/*.o
+rm -f -d $(LOG_APP)/*.log
+rm -f -d $(LOG_APP)/test/*.log
+rm -f -d ./*_test
+rm -f -d ./test/*_test
+rm -f -d "$(APP)"
+endef
 
 ifneq ($(TEST),1)
 all: $(APP)
@@ -82,13 +99,8 @@ $(BIN_O)/memory.o:./test/memory.c
 	$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/memory.log
 
 clean:
-	$(DELETE) $(BIN_O)/*.o
-	$(DELETE) $(BIN_O)/test/*.o
-	$(DELETE) $(LOG_APP)/*.log
-	$(DELETE) $(LOG_APP)/test/*.log
-	$(DELETE) ./*_test$(BIN_EXT)
-	$(DELETE) ./test/*_test$(BIN_EXT)
-	$(DELETE) "$(APP)"
+	echo "Eliminando archivos..."
+	$(call $(DELETE_FUNC))
 
 gdb:
 	gdb $(APP)
