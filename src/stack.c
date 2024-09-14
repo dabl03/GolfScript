@@ -8,143 +8,243 @@
 #include "./header/stack.h"
 #include "./header/define.h"
 
-bool add_array(struct Array* arr_allData,const enum TYPE typ_data, void* v_data){
-	// Si nos quedamos sin espacio:
-	if (arr_allData->i==arr_allData->max){
-		// Reservamos 10 espacios libres.
-		arr_allData->value=(struct type_value*)realloc(
-			(void*)arr_allData->value,
-			sizeof(struct type_value)*(arr_allData->max+=10)
-		);
-		if (arr_allData->value==NULL)
-			return true;
-	}else if (arr_allData->value==NULL){
-	  arr_allData->i=0;
-		arr_allData->max=0;
+bool add_stack(struct Header_Stack* stc_out,const enum TYPE typ_data, void* value){
+	struct Stack_* new_stack=(struct Stack_*)malloc(sizeof(struct Stack_));
+	if (new_stack==NULL)
 		return true;
+	//Enlazamos la cima con el suelo.
+	// Para previous usar next como final, 
+	// si usas previous terminaras en un bucle infinito.
+	// do{}while(p_stack->next==NULL);
+	if (stc_out->stack!=NULL){
+		new_stack->previous=(stc_out->stack->next==NULL)?
+			stc_out->stack
+		:
+			stc_out->stack->previous
+		;
+		stc_out->stack->previous=new_stack;
+	}else{
+		new_stack->previous=NULL;
 	}
-	
-	arr_allData->value[arr_allData->i].type=typ_data;
-	arr_allData->value[arr_allData->i++].value=v_data;
+	// Importante.
+	new_stack->item.type=typ_data;
+	new_stack->item.value=value;
+	new_stack->next=stc_out->stack;
+	stc_out->stack=new_stack;
 	return false;
 }
-struct type_value* pop_array(struct Array* arr_allData){
-	// Liberammos lo que no usaremos.
-	if (arr_allData->i<(arr_allData->max-10)){
-		arr_allData->value=(struct type_value*)realloc(
-			(void*)arr_allData->value,
-			sizeof(struct type_value)*(arr_allData->max-=10)
-		);
-	}
-	return &arr_allData->value[--arr_allData->i];//Quitamos un elemento de la pila y retornamos ese elemento.
+struct type_value* pop_stack(struct Header_Stack* stc_){
+	if (stc_->stack==NULL)
+		return NULL;
+	struct type_value* typ_out=(struct type_value*)malloc(sizeof(struct type_value));
+	struct Stack_* stack_temp=stc_->stack;
+	stc_->stack=stack_temp->next;
+	typ_out->type=stack_temp->item.type;
+	typ_out->value=stack_temp->item.value;
+	free(stack_temp);
+	return typ_out;
 }
-bool delete_array(struct Array* arr_allData){
-	if(arr_allData->value==NULL)
-		return true;
-	
-	for (unsigned int i=0;i<arr_allData->i;i++){
-		delete_item(arr_allData->value[i].type,arr_allData->value[i].value);
+void delete_item(const enum TYPE t_typValue, void* v_data){
+	switch(t_typValue){
+		case VAR:
+			delete_var((struct Var*)v_data);
+			free(v_data);
+			break;
+		case FUNCTION:break;// ¡No liberar!
+		case STACK:
+			delete_stack((struct Header_Stack*)v_data);
+			free(v_data);
+		break;
+		case LONGINT:
+			mpz_clear(*(mpz_t*)v_data);
+			free(v_data);
+			break;
+		case LONGFLOAT:
+			mpf_clear(*(mpf_t*)v_data);
+			free(v_data);
+			break;
+		case INT:
+		case CODES_BLOCKS:
+		case STRING:
+		case FLOAT:
+			free(v_data);
+			break;
+		default:
+			perror("Error: Se intenta liberar un tipo de dato no tratado. \nFunción \"delete_item\" ");
+			printf("Type: %s",get_name_type(t_typValue));
+			exit(-130);
 	}
-	
-	//Liberamos el array y ponemos todo en NULL
-	free(arr_allData->value);
-	arr_allData->max=0;
-	arr_allData->i=0;
-	arr_allData->value=NULL;
-	return false;
 }
-struct Array* copy_array(const struct Array* arr_allData){
-	struct Array* arr_out=(struct Array*)malloc(sizeof(struct Array));
+void delete_stack(struct Header_Stack* stc_data){
+	if (stc_data->stack==NULL)
+		return;
+	struct Stack_* stc_now=stc_data->stack;
+	struct Stack_* stc_for_free=NULL;
+	while (stc_now!=NULL){
+		delete_item(stc_now->item.type,stc_now->item.value);
+		stc_for_free=stc_now;
+		stc_now=stc_now->next;
+		free(stc_for_free);
+	}
+	stc_data->stack=NULL;
+	//stc_data->father=NULL;//No se si liberar al padre tambien.
+}
+struct Header_Stack* copy_stack(const struct Header_Stack* stc_io){
+	struct Header_Stack* stc_out=(struct Header_Stack*)malloc(sizeof(struct Header_Stack));
+	struct Stack_* stack_now=stc_io->stack;
 	void* v_generic;// Dinamic vars.
 	
-	arr_out->i=0;
-	arr_out->max=0;
-	arr_out->value=NULL;
+	stc_out->stack=NULL;
+	stc_out->father=stc_io->father;// No se si copiamos los mismos padres.
 	
-	for (unsigned int i=0;i<arr_allData->i;i++){
-		switch(arr_allData->value[i].type){
-			case VAR:
+	while (stack_now!=NULL){
+		switch(stack_now->item.type){
+			case VAR:// No se si agregarlo.
 				perror("No se añadio la caracteristica.\n"
 				  "En funcion copy_array->caso VAR.\n"
 			  );
 				exit(-4);
 				break;
-			case ARRAY:
-				v_generic=copy_array((struct Array*)arr_allData->value[i].value);
+			case STACK:
+				v_generic=copy_stack((struct Header_Stack*)stack_now->item.value);
 				break;
 			case INT:
 				v_generic=malloc(sizeof(int));
-				*(int*)v_generic=*(int*)arr_allData->value[i].value;
+				*(int*)v_generic=*(int*)stack_now->item.value;
 				break;
 			case FLOAT:
 				v_generic=malloc(sizeof(double));
-				*(double*)v_generic=*(double*)arr_allData->value[i].value;
+				*(double*)v_generic=*(double*)stack_now->item.value;
 				break;
 			case LONGINT:
 				v_generic=malloc(sizeof(mpz_t));
 				mpz_init(*(mpz_t*)v_generic);
-				mpz_set(*(mpz_t*)v_generic,*(mpz_t*)arr_allData->value[i].value);
+				mpz_set(*(mpz_t*)v_generic,*(mpz_t*)stack_now->item.value);
 				break;
 			case LONGFLOAT:
 				v_generic=malloc(sizeof(mpf_t));
-				mpf_init_set(*(mpf_t*)v_generic,*(mpf_t*)arr_allData->value[i].value);
+				mpf_init_set(*(mpf_t*)v_generic,*(mpf_t*)stack_now->item.value);
 				break;
 			case CODES_BLOCKS:
 			case STRING:
-				v_generic=malloc(strlen((char*)arr_allData->value[i].value)+1);
-				strcpy((char*)v_generic,(char*)arr_allData->value[i].value);
+				v_generic=malloc(SIZE_CHAR(
+					strlen((char*)stack_now->item.value)+1
+				));
+				strcpy((char*)v_generic,(char*)stack_now->item.value);
 				break;
 			default:
 				perror("Error interno de la app, en la funcion copy_array->default.\n");
-				printf("arr_allData->value[i].type= %s\n",get_name_type(arr_allData->value[i].type) );
+				printf("arr_allData->value[i].type= %s\n",get_name_type(stack_now->item.value) );
 				exit(-2);
 		}
-		add_array(arr_out,arr_allData->value[i].type,v_generic);
+		add_stack(stc_out,stack_now->item.type,v_generic);
+		stack_now=stack_now->next;
 	}
-	return arr_out;
+	return stc_out;
 }
-void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_indexSet, const enum TYPE typ_data, void* v_data){
-	// Modo modificar
-	if (!b_isAppend){
-		unsigned int i_index=(i_indexSet!=-1)?i_indexSet:arr_allData->i-1;
+void set_item(
+	struct Header_Stack* header,
+	struct Stack_* next,
+	struct Stack_* previous,
+	struct Stack_* new_item,
+	bool is_append
+) {
+	if (is_append){
+		// Alteramos el nuevo elemento.
+		new_item->next=previous;
+		new_item->previous=previous->previous;
+		// Alteramos los vecinos.
+		previous->previous=new_item;
+		if (new_item->previous->next!=NULL)
+			new_item->previous->next=new_item;
+		else
+			header->stack=previous;
+	}else{
 
-		delete_item(arr_allData->value[i_index].type,arr_allData->value[i_index].value);
-		arr_allData->value[i_index].type=typ_data;
-		arr_allData->value[i_index].value=v_data;
-		return;
-	// Agregar al final.
-	}else if (i_indexSet==-1){
-		add_array(arr_allData,typ_data,v_data);
-		return;
-	}else if(i_indexSet>arr_allData->i || i_indexSet<0){
-		printf("Error: se intenta acceder a una posición que no se puede.\n"
-			"\nIndice pasado: %d  -  Indice maximo a modificar: %d.\n",i_indexSet,arr_allData->i);
-		return;
 	}
-	struct type_value tv_nowItem,
-	  tv_afterItem;
-	//Modo Append:
-	//Aumentamos el array
-	add_array(arr_allData,PCHAR,NULL);
-	//Agregamos en el indice el dato y guardamos el dato anteior.
-	tv_afterItem.type=arr_allData->value[i_indexSet].type;
-	tv_afterItem.value=arr_allData->value[i_indexSet].value;
-	arr_allData->value[i_indexSet].type=typ_data;
-	arr_allData->value[i_indexSet].value=v_data;
+}
+bool stack_setItem(
+	struct Header_Stack* stc_out,
+	const bool b_isAppend,
+	const int i_indexSet,
+	const enum TYPE typ_data,
+	void* v_data
+){
+	struct Stack_* new_item=(struct Stack_*)malloc(sizeof(struct Stack_));
+	struct Stack_* next=stc_out->stack;
+	struct Stack_* previous_stack=NULL;
+	U_INT i=i_indexSet;
+	new_item->item.type=typ_data;
+	new_item->item.value=v_data;
+	if (i_indexSet>=0){
+		if (i==0){
+			//La cima.
+			if (b_isAppend){
+				add_stack(stc_out,typ_data,v_data);
+			}else{
+				delete_item(stc_out->stack->item.type,stc_out->stack->item.value);
+				stc_out->stack->item.type=typ_data;
+				stc_out->stack->item.value=v_data;
+			}
+			free(new_item);
+			return false;
+		}
+		for (;next!=NULL;i--){
+			if (i==0){
+				if (b_isAppend){
 
-	// Hacemos que todos los elementos sean
-	// Corridos
-	for (U_INT i=i_indexSet+1;i<arr_allData->i;i++){
-		//Intercambiamos:
-		tv_nowItem.type=arr_allData->value[i].type;
-		tv_nowItem.value=arr_allData->value[i].value;
-
-		arr_allData->value[i].type=tv_afterItem.type;
-		arr_allData->value[i].value=tv_afterItem.value;
-
-		tv_afterItem.type=tv_nowItem.type;
-		tv_afterItem.value=tv_nowItem.value;
+					new_item->next=next;
+				}else{
+					new_item->next=next->next;
+					new_item->previous=next-previous_stack;
+					delete_item(next->item.type,next->item.value);
+					free(next);
+				}
+				return false;
+			}
+			previous_stack=next;
+			next=next->next;
+		}
+	}else{
+		// modificar el final-i_indexSet.
+		previous_stack=stc_out->stack;
+		do{
+			i++;
+			next=previous_stack;
+			previous_stack=previous_stack->previous;
+			if (i==0){//LLegamos al destino
+				if (b_isAppend){
+					// Modificamos el actual.
+					new_item->next=previous_stack;
+					new_item->previous=previous_stack->previous;
+					// Modificamos los vecinos.
+					previous_stack->previous=new_item;
+					if (new_item->previous->next!=NULL){
+						new_item->previous->next=new_item;
+					}else{
+						//Alteramos stc_out
+						stc_out->stack=new_item;
+					}
+				}else{
+					delete_item(previous_stack->item.type,previous_stack->item.value);
+					// Modificamos el actual.
+					new_item->previous=previous_stack->previous;
+					new_item->next=previous_stack->next;
+					// Modificamos los vecinos:
+					new_item->next->previous=new_item;
+					if (new_item->previous->next!=NULL)//Si no es el suelo:
+						new_item->previous->next=new_item;
+					else{
+						//Alteramos stc_out
+						stc_out->stack=new_item;
+					}
+					free(previous_stack);
+				}
+				return false;
+			}
+		}while(next->next!=NULL);
 	}
+	return true;
 }
 void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_setVar){
 	char* str;
@@ -212,37 +312,6 @@ void delete_var(struct Var* vr_var){
 	delete_item(vr_var->type,vr_var->value);
 	free(vr_var->name);
 	vr_var->value=NULL;
-}
-void delete_item(const enum TYPE t_typValue, void* v_data){
-	switch(t_typValue){
-		case VAR:
-			delete_var((struct Var*)v_data);
-			free(v_data);
-			break;
-		case FUNCTION:break;// ¡No liberar!
-		case ARRAY:
-			delete_array((struct Array*)v_data);
-			free(v_data);
-		break;
-		case LONGINT:
-			mpz_clear(*(mpz_t*)v_data);
-			free(v_data);
-			break;
-		case LONGFLOAT:
-			mpf_clear(*(mpf_t*)v_data);
-			free(v_data);
-			break;
-		case INT:
-		case CODES_BLOCKS:
-		case STRING:
-		case FLOAT:
-			free(v_data);
-			break;
-		default:
-			perror("Error: Se intenta liberar un tipo de dato no tratado. \nFunción \"delete_item\" ");
-			printf("Type: %s",get_name_type(t_typValue));
-			exit(-130);
-	}
 }
 void process_data(struct Array* arr_allData,struct Array* arr_allVars,struct Var* vr_data){
 	void* v_generic;

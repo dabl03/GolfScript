@@ -53,35 +53,30 @@ struct Array{
  * @param next Siguiente Item.
 */
 struct Stack_{
-	// Pasar de Array a esto.
-	struct type_value* item;
-	//Ver si agregar: struct Stack_* previous;
+	struct type_value item;
 	struct Stack_* next;
+	struct Stack_* previous;
 };
+struct Header_Stack{
+	struct Stack_* stack;
+	struct Stack_* father;// Si está vacia llamar al padre.
+}
 /**
- * @brief Agrega un elemento en el array.
+ * @brief Agrega un elemento a la pila.
  * 
- * @param[out] arr_allData El array a donde agregar los datos | 
- * si es la primera vez que usas "arr_allData" debes iniciar todo en NULL
- * @param[in] typ_data El tipo de dato a agregar
- * @param value El dato a agregar.
- * @return Error?
-*/
-bool add_array(struct Array* arr_allData,const enum TYPE typ_data, void* value);
-/**
- * @brief Sacar un elemento de la pila.
- * 
- * @param[out] arr_allData Pila de elementos
- * @return Elemento de la pila. Nota: Liberar el elemento.
+ * @param stc_out Donde guardar la nueva pila.
+ * @param typ_data Tipo de dato del item
+ * @param value Valor del item.
+ * @return bool ¿Memoria insuficiente?.
  */
-struct type_value* pop_array(struct Array* arr_allData);
+bool add_stack(struct Header_Stack* stc_out,const enum TYPE typ_data, void* value);
 /**
- * @brief Libera todos los datos y el array
+ * @brief Saca un elemento de la pila.
  * 
- * @param arr_allData Array a liberar.
- * @return error?
+ * @param stc_ Encabezado de la pila.
+ * @return struct type_value* El item. (Recordar liberar)
  */
-bool delete_array(struct Array* arr_allData);
+struct type_value* pop_stack(struct Header_Stack* stc_);
 /**
  * @brief Elimina un dato.
  * 
@@ -89,13 +84,20 @@ bool delete_array(struct Array* arr_allData);
  * @param[out] v_data     El dato a liberar
  */
 void delete_item(const enum TYPE t_typValue, void* v_data);
-/** 
- * @brief Copia los datos del array en un nuevo array.
+/**
+ * @brief Vacia toda la pila.
  * 
- * @param[in]  arr_allData Array a copiar.
- * @return Nuevo array
+ * @param stc_data Pila a vaciar. (Nota: No se libera stc_data, solo su contenido)
  */
-struct Array* copy_array(const struct Array* arr_allData);
+void delete_stack(struct Header_Stack* stc_data);
+
+/** 
+ * @brief Una pila en otra.
+ * 
+ * @param[in]  stc_io Pila a copiar.
+ * @return Nueva pila. (Recordar liberar).
+ */
+struct Header_Stack* copy_stack(const struct Header_Stack* stc_io);
 /** Agrega un item en una posicion indicada a un array.
  *
  * @param[out] arr_allData El array a modificar.
@@ -104,14 +106,38 @@ struct Array* copy_array(const struct Array* arr_allData);
  * @param[in]  typ_data      Tipo de dato del item
  * @param[in]  v_data      El valor del item (nota: Se usa el original sin crear uno nuevo)
 */
-void array_set_item(struct Array* arr_allData,const bool b_isAppend,const int i_indexSet, const enum TYPE typ_data, void* v_data);
+void array_set_item(
+	struct Array* arr_allData,
+	const bool b_isAppend,
+	const int i_indexSet,
+	const enum TYPE typ_data,
+	void* v_data
+);
+/**
+ * @brief Modifica o agrega un item en una posición especifica en la pila.
+ * 
+ * @param stc_out Pila a modificar
+ * @param b_isAppend Indica si se modifica el elemento o se mueve los demas.
+ * @param i_indexSet Indice a modificar.
+ * @param typ_data Tipo de dato.
+ * @param v_data Dato.
+ * @return true Hubo un error.
+ * @return false 
+ */
+bool stack_setItem(
+	struct Header_Stack* stc_out,
+	const bool b_isAppend,
+	const int i_indexSet,
+	const enum TYPE typ_data,
+	void* v_data
+);
 /** Da valor a una variable creando un nuevo valor.
  * 
  * @param[out] vr_now Variable a configurar.
  * @param[in] s_name Nombre de la variable. Pasar NULL si ya estaba definida,
  ** para liberar la memoria del valor anteior.
  * @param[in] tv_setVar El tipo y el valor de la variable.
- */
+*/
 void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_setVar);
 /**
  * @brief Liberamos la variable y ponemos

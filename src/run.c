@@ -28,11 +28,12 @@
 				}else if (IF_INIT_COMENT(line[i]))//Llegamos a un comentario.
 					break;
 				else if (line[i]==';'){
-					if (stack->i){
-						struct type_value* tv=pop_array(stack);
-						delete_item(tv->type,tv->value);
-					}else{
+					struct type_value* typ_temp=pop_stack(stack);
+					if (typ_temp==NULL){
 						puts("Warnign: La pila esta vacia.");
+					}else{
+						delete_item(typ_temp->type,typ_temp->value);
+						free(typ_temp);
 					}
 				}else if(line[i]==':'){
 					// We assign a variable

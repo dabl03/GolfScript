@@ -67,6 +67,6 @@
 		FUNCTION, // Función estandar del programa. Nota: No debe ser liberado.
 		VAR, // Variable o estructura Var
 		CODES_BLOCKS, // string que representa un código golfscript
-		ARRAY // Array de datos
+		STACK
 	};
 #endif
