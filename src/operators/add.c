@@ -288,7 +288,7 @@ struct type_value* add_float(void);
 	 * @todo ...
 	 * */
 
-struct type_value* opr_add_array(struct Array* arr,enum TYPE t, void* value){
+struct type_value* opr_add_stack(struct Array* arr,enum TYPE t, void* value){
 	static struct type_value out;
 	void* tmp=alloca(sizeof(int));
 	out.type=NONE;
@@ -308,16 +308,16 @@ struct type_value* opr_add_array(struct Array* arr,enum TYPE t, void* value){
 
 			free(tmp);
 			break;
-		case ARRAY:
+		case STACK:
 			for (U_INT i=0;i<((struct Array*)value)->i;i++){
 				tmp=(void*)&(((struct Array*)value)->value[i]);
-				add_array(arr,((struct type_value*)tmp)->type,((struct type_value*)tmp)->value);
+				add_stack(arr,((struct type_value*)tmp)->type,((struct type_value*)tmp)->value);
 			}
 			free(((struct Array*)value)->value);
 			((struct Array*)value)->value=NULL;
 			((struct Array*)value)->i=0;
 			((struct Array*)value)->max=0;
-			break;
+			return NULL;
 		default:
 			add_array(arr,t,value);
 	}

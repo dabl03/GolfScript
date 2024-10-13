@@ -10,106 +10,111 @@
 	#include "header/stack.h"
 	#include "header/run.h"
 	
-	int run(struct Array* arrLines,struct Array* stack,struct Array* vars){
+	int run(struct Header_Stack* lines, struct Header_Stack* stack, struct Header_Stack* vars){
 		U_INT tmp_istr=0;
 		char* tmp_str=NULL;
-		for (U_INT i_line=0;i_line<arrLines->i && !quit;i_line++){
-			if(arrLines->value[i_line].type!=STRING)
-				continue;
-			const char* line=(char*)arrLines->value[i_line].value;
-			U_INT i_end=strlen(line);
+		struct Stack_* stc_line=stack->stack;
+		bool show_msg;
+		
+		while (stc_line!=NULL && !quit){
+			if(stc_line->item.type!=STRING)continue;
+			const char* s_line=stc_line->item.value;
+			show_msg=true;
+			U_INT i_end=strlen(s_line);
+
 			for(U_INT i=0;i<i_end;i++){
 				//Primero definimos nuestros signos constantes:
-				if(line[i]=='{'){
-					tmp_str=get_ie_block(line,i,'}',&tmp_istr);
-					add_array(stack,CODES_BLOCKS,tmp_str);
+				if(s_line[i]=='{'){
+					tmp_str=get_ie_block(s_line,i,'}',&tmp_istr);
+					add_stack(stack,CODES_BLOCKS,tmp_str);
 					//Terminamos.
 					i=tmp_istr;
-				}else if (IF_INIT_COMENT(line[i]))//Llegamos a un comentario.
+				}else if (IF_INIT_COMENT(s_line[i]))//Llegamos a un comentario.
 					break;
-				else if (line[i]==';'){
+				else if (s_line[i]==';'){
 					struct type_value* typ_temp=pop_stack(stack);
 					if (typ_temp==NULL){
-						puts("Warnign: La pila esta vacia.");
+						if (show_msg){
+							puts("Warnign: La pila esta vacia.");
+							show_msg=false;
+						}
 					}else{
 						delete_item(typ_temp->type,typ_temp->value);
 						free(typ_temp);
 					}
-				}else if(line[i]==':'){
+				}else if(s_line[i]==':'){
 					// We assign a variable
-					if(IF_ENDL(line[i+1]))
+					if(IF_ENDL(s_line[i+1]))
 						continue;
 					i++;
-					char* name=get_name_var(line,&i,i_end);
+					char* name=get_name_var(s_line,&i,i_end);
 					if (!stack->i){
 						//It is placed here to ignore the name of the variable
 						free(name);
 						printf("ERROR: La pila esta vacia.%s",ENDL);
 						continue;
 					}
-					int i_var=search_var(name,vars);
-					if(i_var!=-1){
+					struct Var* vr_now=search_var(name,vars);
+					if(vr_now!=NULL){
 						// We overwrite the variable
-						struct Var* this_var=(struct Var*)vars->value[i_var].value;
-						setValue_tv(this_var,NULL,&stack->value[stack->i-1]);
+						setValue_tv(vr_now,NULL,&stack->value[stack->i-1]);
 					}else{
 						// We initialize the variable
-						struct Var* this_var=(struct Var*)malloc(sizeof(struct Var));
 						struct type_value* stack_var=&stack->value[stack->i-1];
 
-						setValue_tv(this_var,name,stack_var);
-						add_array(vars,VAR,(void*)this_var);
+						setValue_tv(vr_now,name,stack_var);
+						add_stack(vars,VAR,(void*)vr_now);
 					}
 					free(name);
-				}else if(IF_ENDL(line[i])){
+				}else if(IF_ENDL(s_line[i])){
 					continue;//Por velocidad. Ignoramos los saltos de lineas como el interprete original.
-				}else if(line[i]=='['){//Arrays:
-					tmp_str=get_ie_block(line,i,']',&tmp_istr);
+				}else if(s_line[i]=='['){//Arrays:
+					tmp_str=get_ie_block(s_line,i,']',&tmp_istr);
 					//Nueva linea y nuevo stack.
-					struct Array line_arr2={0,0,0};
-					struct Array* sub_stack=(struct Array*)malloc(sizeof(struct Array));
-					sub_stack->i=0;
-					sub_stack->max=0;
-					sub_stack->value=NULL;
+					struct Header_Stack hstc_line={NULL,NULL};
+					struct Header_Stack* hstc_sub=(struct Header_Stack*)malloc(sizeof(struct Header_Stack));
+					hstc_sub->stack=NULL;
+					hstc_sub->father=stack;
 					//Iniciamos la linea.
-					add_array(&line_arr2,STRING,tmp_str);
+					add_stack(&hstc_line,STRING,tmp_str);
 					//Ejecutamos y agregamos al stack el array.
-					run(&line_arr2,sub_stack,vars);
-					add_array(stack,ARRAY,(void*)sub_stack);
-					delete_array(&line_arr2);//Liberamos memoria
+					run(&hstc_line,sub_stack,vars);
+					add_stack(stack,STACK,(void*)hstc_sub);
+					delete_stack(&hstc_line);//Liberamos memoria
 					//Terminamos.
 					i=tmp_istr;
 				}else{
 					//Ahora vemos si existe la variable.
-					char* name=get_name_var(line,&i,0);
-					int i_var=search_var(name,vars);
-					if(i_var>=0){
+					char* name=get_name_var(s_line,&i,0);
+					Var* vr_now=search_var(name,vars);
+					if(vr_now!=NULL){
 						// The variable exists
-						process_data(stack,vars,vars->value[i_var].value);
-					}else if(is_num(name[0]) || name[0]=='-'){
+						process_data(stack,vars,vr_now);
+					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
 						unsigned int len=strlen(name)-1;
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));
-							*v=(int)atoi(name);//parseInt(name);
-							add_array(stack,INT,(void*)v);
+							*v=(int)atoi(name);
+							add_stack(stack,INT,(void*)v);
 						}else{
 							mpz_t* n=(mpz_t*)malloc(sizeof(mpz_t));
 							mpz_init_set_str(*n,name,0);
-							add_array(stack,LONGINT,n);
+							add_stack(stack,LONGINT,n);
 						}
-					}else if (IF_INIT_STRING(line[i])){
+					}else if (IF_INIT_STRING(s_line[i])){
 						// It's a string
 						unsigned int len=strlen(name);
 						char* scape_=(char*)malloc(len);
 						strncpy(scape_, name + 1, len-2);
             scape_[len-2]='\0';
 
-						add_array(stack,STRING,scape_);
+						add_stack(stack,STRING,scape_);
 					}
 					free(name);
 				}
 			}
+			stc_line=stc_line->next;
 		}
 		return 0;
 	}
@@ -127,7 +132,7 @@
 			);
 			// i-1 per non-alphanumeric character
 			str_add_str_init_end(&name, search, *index, i--);
-		}else if (is_num(search[*index]) || search[*index]=='-'){ // Si es un numero.
+		}else if (is_num(search[*index]) || (search[*index]=='-' && is_num(search[*index+1])) ){ // Si es un numero.
 			for (
 				i+=(search[*index]=='-')?1:0;
 				i < end && is_num(search[i]);

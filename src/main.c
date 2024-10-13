@@ -20,15 +20,15 @@ int quit=0;
 /** Interpreta golfscript desde la consola
  * 
  * @param stack Pila donde se almacenara todos los datos. 
- * @param vars Array que contendrá las variables.
+ * @param vars Pila que contendrá las variables.
  * @return int Error codes.
 */
-int interprete(struct Array* stack,struct Array* vars);
+int interprete(struct Header_Stack* stack,struct Header_Stack* vars);
 /** Trata los flags por consola.
  * 
- * @param opciones Array de string que representa los flags.
+ * @param opciones Pila de string que representa los flags.
 */
-void config_all(struct Array* opciones);
+void config_all(struct Header_Stack* opciones);
 /** Pide al usuario una cadena con terminando si hay salto de linea o fin del buffer.
  * | Si consigue una comilla doble o simple, seguirá pidiendo hasta su termino.
  * @param  type_string El tipo de cadena.
@@ -47,12 +47,12 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 //Para testear todo
 #ifndef TEST_
 int main(int argc, char *argv[]){
-	struct Array stack={0,0,NULL},//Nuestra pila.
-	vars={0,0,NULL};//Nuestra variables
+	struct Header_Stack stack={NULL,NULL},//Nuestra pila.
+	vars={NULL,NULL};//Nuestra variables
 	int i_return_code=0;
 	init_gvars(&vars);
 	if (argc > 1){//Vemos que parametros se paso.
-		struct Array params={0,0,NULL}, path_files={0,0,NULL};
+		struct Header_Stack params={NULL,NULL}, path_files={NULL,NULL};
 
 		for (int i = 1; i < argc; i++)
 		{
@@ -60,14 +60,14 @@ int main(int argc, char *argv[]){
 			strcpy(opcion,argv[i]);
 			if (opcion[0]=='-')
 			{
-				add_array(&params,STRING,opcion);
+				add_stack(&params,STRING,opcion);
 				continue;
 			}
-			add_array(&path_files,STRING,opcion);
+			add_stack(&path_files,STRING,opcion);
 		}
 		if (params.i){
 			config_all(&params);
-			delete_array(&params);
+			delete_stack(&params);
 		}
 		if (!path_files.i){
 			i_return_code=interprete(&stack,&vars);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]){
 			//No existe.
 			if (file==NULL){
 				printf("El archivo \"%s\" no existe, revise la ruta.%s",(char*)path_files.value[0].value,ENDL);
-				delete_array(&path_files);
+				delete_stack(&path_files);
 				exit(EXIT_FAILURE);
 			}
 			//Movemos al final del archivo para ver donde termina su contenido.
@@ -93,17 +93,17 @@ int main(int argc, char *argv[]){
 			str[size_file]='\0';//Seguridad.
 			fclose(file);
 			//Ejecutamos:
-			add_array(&lineas,STRING,str);
+			add_stack(&lineas,STRING,str);
 			i_return_code=run(&lineas,&stack,&vars);
 			//Liberamos todo.
-			delete_array(&lineas);
-			delete_array(&path_files);
+			delete_stack(&lineas);
+			delete_stack(&path_files);
 		}
 	}else{//Interpretamos.
 		i_return_code=interprete(&stack,&vars);
 	}
-	delete_array(&stack);
-	delete_array(&vars);
+	delete_stack(&stack);
+	delete_stack(&vars);
 	#ifdef DEBUG
 		puts("\n¿Hay fuga de memoria?:");
   	viewStack();
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
 	return i_return_code;
 }
 #endif
-void config_all(struct Array* opciones){
+void config_all(struct Header_Stack* opciones){
 	for(unsigned int i=0;i<opciones->i;i++){
 		/****
 		 * @todo Hacer opciones de configuracion para configurarlas aqui.
@@ -123,11 +123,11 @@ void config_all(struct Array* opciones){
 		*/
 	}
 }
-int interprete(struct Array* stack,struct Array* vars){
+int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 	int sub = 0;	//para cambiar de >> a .. cuando hay una condición.
 	char *tmp_out=NULL;//Puntero de uso temporal.
 	U_INT tmp_len=0;
-	struct Array lineas={0,0,NULL};
+	struct Header_Stack lineas={NULL,NULL};
 	struct String c_linea={0,0,NULL};
 	char c='\0';
 	printf("Golfscript Interactive Mode%s",ENDL);
@@ -175,12 +175,12 @@ int interprete(struct Array* stack,struct Array* vars){
 			}
 		}
 		c_linea.str[c_linea.count]='\0';
-		add_array(&lineas,STRING,c_linea.str);
+		add_stack(&lineas,STRING,c_linea.str);
 		INIT_STRING(c_linea,80);
 
 		if (sub == 0){ // Podemos interpretar linea a linea.
 			run(&lineas, stack, vars);
-			delete_array(&lineas);
+			delete_stack(&lineas);
 			//Mostramos la variable n.
 			struct Var* this_var=(struct Var*)vars->value[search_var("n",vars)].value;
 			char* extend=to_string_value(this_var->type,this_var->value);

@@ -14,7 +14,7 @@
  * 
  * @return unsigned short 
  */
-unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend);
+unsigned short prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend);
 /**
  * @brief Lo mismo que printf_1_ pero con salto de linea de extensión.
  * 
@@ -22,7 +22,7 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend);
  * @param vars Para colocarle el salto de linea declarado en la variable n.
  * @return unsigned short 
  */
-unsigned short puts_operator(struct Array* stack,struct Array* vars);
+unsigned short puts_operator(struct Header_Stack* stack,struct Header_Stack* vars);
 /**
  * @brief El operador suma del interprete. Aqui analizaremos y realizamos la operaciones deacuerdo a su tipo.
  * 
@@ -30,7 +30,7 @@ unsigned short puts_operator(struct Array* stack,struct Array* vars);
  * @param ... No necesitamos los demas parámetros que serán pasados igualmente.
  * @return unsigned short 
  */
-unsigned short add_operator(struct Array* stack,...);
+unsigned short add_operator(struct Header_Stack* stack,...);
 /**
  * @brief      Operador de resta.
  * @param      stack      The stack es donde se saca los numeros
@@ -38,7 +38,7 @@ unsigned short add_operator(struct Array* stack,...);
  *
  * @return     is_error?
  */
-unsigned short sub_operator(struct Array* stack,...);
+unsigned short sub_operator(struct Header_Stack* stack,...);
 /***
  * Terminamos la app.
 */
@@ -51,13 +51,13 @@ unsigned short end_app(void);
  * @param ... siempre se pasarán tres argumento y el tercero no nos importa.
  * @return unsigned short 
  */
-unsigned short reset(struct Array* stack,struct Array* vars,...);
+unsigned short reset(struct Header_Stack* stack,struct Header_Stack* vars,...);
 /**
  * Copia el stack en un array la libera he ingresa ese array en la pila.
  * @param  stack stack of user
  * @return       unsigned short error(si es 1 hubo error)
  */
-unsigned short pack_stack(struct Array* stack,...);
+unsigned short pack_stack(struct Header_Stack* stack,...);
 /**
  * @brief      Muestra una descripción de las funciones predecterminadas.
  * @param[in]  stack -------------------@todo agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
@@ -65,11 +65,11 @@ unsigned short pack_stack(struct Array* stack,...);
  * @param[in]  ...
  * @return     0-Por copatibilidad.
  */
-unsigned short help(struct Array* stack,struct Array* vars,...);
+unsigned short help(struct Header_Stack* stack,struct Header_Stack* vars,...);
 /**
  * @brief Aqui iniciamos las variables globales. Tambien puede ser usada para reiniciar las variables globales.
  * 
  * @param vars Donde ingresar las variables globales.
  */
-void init_gvars(struct Array* vars);
+void init_gvars(struct Header_Stack* vars);
 #endif

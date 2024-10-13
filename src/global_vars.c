@@ -7,24 +7,24 @@
 #include "./header/global_vars.h"
 #include "./operators/header/add.h"
 
-unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
-	struct type_value* tv;
+unsigned short prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
+	struct type_value* tv_now;
 	//unsigned int len;//Para y out para array
 	char* out;
-	if (stack->i){
-		tv=pop_array(stack);
-		if (tv->type==STRING){//Escapamos la cadena si la hay.
-			out=get_str_escp(tv->value);
+	if (stack->stack){
+		tv_now=pop_array(stack);
+		if (tv_now->type==STRING){//Escapamos la cadena si la hay.
+			out=get_str_escp(tv_now->value);
 		}else
-			out=to_string_value(tv->type,tv->value);
+			out=to_string_value(tv_now->type,tv_now->value);
 		if (out==NULL){
-			puts("ERROR: Interno, el tipo de dato desconocido.");
-			delete_item(tv->type,tv->value);
+			puts("Error Interno: el tipo de dato es desconocido.");
+			delete_item(tv_now->type,tv_now->value);
 			return 2;
 		}
 		printf("%s%s",out,extend);
 		free(out);
-		delete_item(tv->type,tv->value);
+		delete_item(tv_now->type,tv_now->value);
 	}else{
 		puts("Warnign: La pila esta vacia.");
 		return 1;
@@ -32,23 +32,33 @@ unsigned short prinft_1_(struct Array* stack, struct Array* vars,char* extend){
 	return 0;
 }
 
-unsigned short puts_operator(struct Array* stack,struct Array* vars){
-	int i_var=search_var("n",vars);
-	struct Var* this_var=(struct Var*)vars->value[i_var].value;
-	char* extend=to_string_value(this_var->type,this_var->value);
-	i_var=prinft_1_(stack,NULL,(extend!=NULL)?extend:"");
+unsigned short puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
+	struct Var vr_line_breack=search_var("n",vars);
+	unsigned short out;
+	char* extend=to_string_value(vr_line_breack->type,vr_line_breack->value);
+
+	out=prinft_1_(stack,NULL,(extend!=NULL)?extend:"");
 	if (extend!=NULL)
 		free(extend);
-	return i_var;
+	return out;
 }
 
-unsigned short add_operator(struct Array* stack,...){
-	if (stack->i<2){
+unsigned short add_operator(struct Header_Stack* stack,...){
+	if (stack->stack==NULL && (stack->stack->next==NULL && (stack->father==NULL && stack->father->next==NULL)) ){
 		puts("Error: No hay suficientes elementos para hacer la suma");
 		return 1;
 	}
 	struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
-	struct type_value* num_1=&stack->value[stack->i-1],
+	struct type_value* num_1;
+	// Si no hay suficiente argumentos en este array
+	// Agarramos de su padre.
+	if (stack->stack==NULL){
+		struct type_value* this_stack=pop_array(stack->father);
+		num_1=pop_array(stack->father);
+		add_stack(stack->father,STACK,this_stack->value);
+		add_stack(stack,num_1->type,num_1->value);///@todo: Ver si se puede quitar y usar num_1 ya sacado y despues agregar el resultado al final.
+	}
+	num_1=stack->stack->item,
 	*tmp_tv=NULL;
 	//[num_1 num_2]
 	switch (num_1->type){
@@ -67,8 +77,8 @@ unsigned short add_operator(struct Array* stack,...){
 	case STRING:
 		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
 		break;
-	case ARRAY:
-		tmp_tv=opr_add_array((struct Array*)num_1->value,num_2->type,num_2->value);
+	case STACK:
+		tmp_tv=opr_add_stack((struct Header_Stack*)num_1->value,num_2->type,num_2->value);
 		if (tmp_tv->type==NONE){
 			//No fue necesario liberar nada pues la misma funcion lo hizo, y se reuso lo que se pudo.
 			return 0;
@@ -81,12 +91,12 @@ unsigned short add_operator(struct Array* stack,...){
 	}
 	delete_item(num_2->type,num_2->value);
 	delete_item(num_1->type,num_1->value);
-	stack->value[stack->i-1].type=tmp_tv->type;
-	stack->value[stack->i-1].value=tmp_tv->value;
+	stack->stack->item.type=tmp_tv->type;
+	stack->stack->item.value=tmp_tv->value;
 	return 0;
 }
 
-unsigned short sub_operator(struct Array* stack,...){
+unsigned short sub_operator(struct Header_Stack* stack,...){
 	perror("caracteristica no disponible.\nFuncion sub_operator sin terminar.");
 	exit(-7);
 	return 0;
@@ -97,30 +107,29 @@ unsigned short end_app(void){
 	return 0;
 }
 
-unsigned short reset(struct Array* stack,struct Array* vars,...){
+unsigned short reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	if (vars->i==0)
 		return 1;
-	delete_array(vars);
+	delete_stack(vars);
 	init_gvars(vars);
 	return 0;
 }
 
-unsigned short pack_stack(struct Array* stack,...){
-	struct Array* tmp=copy_array(stack);
-	delete_array(stack);
-	add_array(stack,ARRAY,tmp);
+unsigned short pack_stack(struct Header_Stack* stack,...){
+	struct Header_Stack* tmp=copy_stack(stack);
+	delete_stack(stack);
+	add_STACK(stack,STACK,tmp);
 	return 0;
 }
 
-unsigned short help(struct Array* stack,struct Array* vars,...){
+unsigned short help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	char* key_fun[]={
 			"reset",
 			"print",
 			"puts",
 			"quit",
 			"]",
-			"help",
-			"fin_cadena"//Marca un final este array.
+			"help"
 	};
 	char* value_fun[]={
 		"Reinicia las variables globales si se rescriben",
@@ -129,12 +138,11 @@ unsigned short help(struct Array* stack,struct Array* vars,...){
 		"Reempraza todos los elementos en la pila con un array con el contenido de esta",
 		"Muestra este menu de ayuda - Agrega una cadena en la pila con un operador y te muestra su descripción."
 	};
-	int i_var=search_var("n",vars);
-	struct Var* this_var=(struct Var*)vars->value[i_var].value;
-	char* extend=to_string_value(this_var->type,this_var->value);
+	struct Var* vr_breack_line=search_var("n",vars);
+	char* extend=to_string_value(vr_breack_line->type,vr_breack_line->value);
 
 	printf("%s%s %s%s  Version: %s",LICENSE,extend,AUTHOR,extend,VERSION);
-	for (U_INT i=0;strcmp(key_fun[i],"fin_cadena");i++){
+	for (U_INT i=0;i<sizeof(key_fun);i++){
 		printf("%s%s -- %s%s",extend,key_fun[i],value_fun[i],extend);
 	}
 	if (extend!=NULL)
@@ -142,7 +150,7 @@ unsigned short help(struct Array* stack,struct Array* vars,...){
 	return 0;
 }
 
-void init_gvars(struct Array* vars){
+void init_gvars(struct Header_Stack* vars){
 	add_var(vars,"reset",FUNCTION,(void*)reset);
 	add_var(vars,"print",FUNCTION,(void*)prinft_1_);
 	add_var(vars,"puts",FUNCTION,(void*)puts_operator);

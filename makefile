@@ -63,7 +63,7 @@ del /s *.exe
 endef
 
 define DELETE
-rn -f -d $(BIN_O)/*.o
+rm -f -d $(BIN_O)/*.o
 rm -f -d $(BIN_O)/test/*.o
 rm -f -d $(LOG_APP)/*.log
 rm -f -d $(LOG_APP)/test/*.log
