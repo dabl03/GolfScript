@@ -7,32 +7,29 @@
 #include "./header/global_vars.h"
 #include "./operators/header/add.h"
 
-unsigned short prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
+U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
 	struct type_value* tv_now;
-	//unsigned int len;//Para y out para array
 	char* out;
-	if (stack->stack){
-		tv_now=pop_array(stack);
-		if (tv_now->type==STRING){//Escapamos la cadena si la hay.
-			out=get_str_escp(tv_now->value);
-		}else
-			out=to_string_value(tv_now->type,tv_now->value);
-		if (out==NULL){
-			puts("Error Interno: el tipo de dato es desconocido.");
-			delete_item(tv_now->type,tv_now->value);
-			return 2;
-		}
-		printf("%s%s",out,extend);
-		free(out);
+	if (stack->stack)
+		return EMPTY_STACK;
+	tv_now=pop_stack(stack);
+	// Si es una cadena la escapamos.
+	out=(tv_now->type==STRING)?
+		get_str_escp(tv_now->value):
+		to_string_value(tv_now->type,tv_now->value);
+	if (out==NULL){
 		delete_item(tv_now->type,tv_now->value);
-	}else{
-		puts("Warnign: La pila esta vacia.");
-		return 1;
+		free(tv_now);
+		return APP_UNKNOWN_DATA;
 	}
-	return 0;
+	printf("%s%s",out,extend);
+	delete_item(tv_now->type,tv_now->value);
+	free(tv_now);
+	free(out);
+	return NORMAL;
 }
 
-unsigned short puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
+U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 	struct Var vr_line_breack=search_var("n",vars);
 	unsigned short out;
 	char* extend=to_string_value(vr_line_breack->type,vr_line_breack->value);
@@ -43,20 +40,23 @@ unsigned short puts_operator(struct Header_Stack* stack,struct Header_Stack* var
 	return out;
 }
 
-unsigned short add_operator(struct Header_Stack* stack,...){
+U_INT add_operator(struct Header_Stack* stack,...){
 	if (stack->stack==NULL && (stack->stack->next==NULL && (stack->father==NULL && stack->father->next==NULL)) ){
-		puts("Error: No hay suficientes elementos para hacer la suma");
-		return 1;
+		return INSUFFICIENT_ARGUMENTS;
 	}
-	struct type_value* num_2=pop_array(stack);//Dos se eliminará despues y uno quedará con los resultados.
+	// num_1=num_1+num_2
+	struct type_value* num_2=pop_stack(stack);
 	struct type_value* num_1;
-	// Si no hay suficiente argumentos en este array
+	// Si no hay suficiente argumentos en esta pila
 	// Agarramos de su padre.
+	// [ 1 [  1 ]  ] -> [  [ 2 ]  ]
 	if (stack->stack==NULL){
-		struct type_value* this_stack=pop_array(stack->father);
+		struct type_value* this_stack=pop_stack(stack->father);
 		num_1=pop_array(stack->father);
 		add_stack(stack->father,STACK,this_stack->value);
-		add_stack(stack,num_1->type,num_1->value);///@todo: Ver si se puede quitar y usar num_1 ya sacado y despues agregar el resultado al final.
+		add_stack(stack,num_1->type,num_1->value);
+		add_stack(stack,num_2->type,num_2->value);
+		return add_operator(stack);
 	}
 	num_1=stack->stack->item,
 	*tmp_tv=NULL;
@@ -78,7 +78,7 @@ unsigned short add_operator(struct Header_Stack* stack,...){
 		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
 		break;
 	case STACK:
-		tmp_tv=opr_add_stack((struct Header_Stack*)num_1->value,num_2->type,num_2->value);
+		tmp_tv=opr_add_serror_codeack((struct Header_Stack*)num_1->value,num_2->type,num_2->value);
 		if (tmp_tv->type==NONE){
 			//No fue necesario liberar nada pues la misma funcion lo hizo, y se reuso lo que se pudo.
 			return 0;
@@ -87,42 +87,41 @@ unsigned short add_operator(struct Header_Stack* stack,...){
 	default:
 		perror("Caracteristica no disponible en la funcion add_operator\n");
 		printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
-		exit(-8);
+		exit(APP_UNKNOWN_DATA);
 	}
 	delete_item(num_2->type,num_2->value);
 	delete_item(num_1->type,num_1->value);
-	stack->stack->item.type=tmp_tv->type;
-	stack->stack->item.value=tmp_tv->value;
-	return 0;
+	if (out->err==NORMAL){
+		stack->stack->item.type=tmp_tv->type;
+		stack->stack->item.value=tmp_tv->value;
+	}else{
+		delete_item(tmp_tv->type,tmp_tv->value);
+	}
+	return out->err;
 }
 
-unsigned short sub_operator(struct Header_Stack* stack,...){
-	perror("caracteristica no disponible.\nFuncion sub_operator sin terminar.");
-	exit(-7);
-	return 0;
+U_INT sub_operator(struct Header_Stack* stack,...){
+	return FEATURE_NOT_AVAILABLE;
 }
 
-unsigned short end_app(void){
+U_INT end_app(void){
 	quit=1;
-	return 0;
+	return error_code;
 }
 
-unsigned short reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
-	if (vars->i==0)
-		return 1;
+U_INT reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	delete_stack(vars);
-	init_gvars(vars);
-	return 0;
+	return init_gvars(vars);
 }
 
-unsigned short pack_stack(struct Header_Stack* stack,...){
+U_INT pack_stack(struct Header_Stack* stack,...){
 	struct Header_Stack* tmp=copy_stack(stack);
 	delete_stack(stack);
 	add_STACK(stack,STACK,tmp);
-	return 0;
+	return NORMAL;
 }
 
-unsigned short help(struct Header_Stack* stack,struct Header_Stack* vars,...){
+U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	char* key_fun[]={
 			"reset",
 			"print",
@@ -147,10 +146,10 @@ unsigned short help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	}
 	if (extend!=NULL)
 		free(extend);
-	return 0;
+	return NORMAL;
 }
 
-void init_gvars(struct Header_Stack* vars){
+U_INT init_gvars(struct Header_Stack* vars){
 	add_var(vars,"reset",FUNCTION,(void*)reset);
 	add_var(vars,"print",FUNCTION,(void*)prinft_1_);
 	add_var(vars,"puts",FUNCTION,(void*)puts_operator);
@@ -160,5 +159,6 @@ void init_gvars(struct Header_Stack* vars){
 	add_var(vars,"]",FUNCTION,(void*)pack_stack);
 	add_var(vars,"n",STRING,"\n");
 	add_var(vars,"help",FUNCTION,(void*)help);
+	return NORMAL;
 }
 #endif

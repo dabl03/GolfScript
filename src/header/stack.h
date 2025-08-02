@@ -58,7 +58,7 @@ struct Stack_{
 struct Header_Stack{
 	struct Stack_* stack;
 	struct Header_Stack* father;// Si está vacia llamar al padre.
-}
+};
 /**
  * @brief Agrega un elemento a la pila.
  * 
@@ -72,7 +72,7 @@ bool add_stack(struct Header_Stack* stc_out,const enum TYPE typ_data, void* valu
  * @brief Saca un elemento de la pila.
  * 
  * @param hstc_modific Pila a modificar.
- * @return struct type_value* El item. (Recordar liberar)
+ * @return new type_value(data_type,data_value)
  */
 struct type_value* pop_stack(struct Header_Stack* hstc_modific);
 /**
@@ -93,9 +93,9 @@ void delete_stack(struct Header_Stack* stc_data);
  * @param  tv_src  Por si se quiere iniciar la estructura, de lo contrario pasar NULL
  * @param  typ_io   Tipo de dato a copiar.
  * @param  value_io Valor de dato a copiar.
- * @return          ty
+ * @return          type_value*
  */
-struct type_value* copy_item(const type_value* tv_src,const TYPE typ_io,const void* value_io);
+struct type_value* copy_item(const struct type_value* tv_src,const enum TYPE typ_io,const void* value_io);
 /** 
  * @brief Una pila en otra.
  * 

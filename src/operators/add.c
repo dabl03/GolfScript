@@ -13,11 +13,12 @@
  * @TODO:Buscar la manera de mejorar la sintaxis.
 */
 struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
-	static struct type_value out;
+	static struct type_value_err out;
 	int* copy_n=NULL;
 	int64_t tmp_i;
 	void* tmp;
 	out.type=type_n2;
+	out.err=NORMAL;
 	switch(type_n2){
 		case INT:
 			tmp_i=num+*(int*)num_2;
@@ -86,16 +87,15 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 			out.value=malloc(strlen((char*)tmp)+strlen(num_2)+2);
 			sprintf(out.value,"%s %s",(char*)tmp,(char*)num_2);
 			break;
-		case ARRAY:
+		case STACK://///////////////////////////////////
 			out.value=copy_array(num_2);
 			copy_n=(int*)malloc(sizeof(int));
 			*copy_n=num;
 			array_set_item(out.value,true,0,INT,copy_n);
 			break;
 		default:
-			perror("Caracteristica no disponible en la funcion add_int\n");
-			printf("Type num_2{%s}",get_name_type(type_n2));
-			exit(-8);
+			perror("Error interno.");
+			out.err=APP_UNKNOWN_DATA;
 	}
 	return &out;
 }

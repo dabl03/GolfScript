@@ -8,10 +8,18 @@
 - Corregir los errores ortográficos que haya pasado por alto.
 - Agregar una función para que se importe archivos externos.
 - Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [6]
-
+- Cambiar los archivos de test para que cada cosa tenga su funcion test.
+- En los test necesitamos cambiarlo para que se puedan compilar por separado (su propio main) o puedan compilarlo como biblioteca.
+- NO_MAIN indica que no se va a definir otro main, dandole luz verde al archivo de definir el propio.
+- Tambien hacer los test mas silencioso.
 - Terminar los operadores.
 - Establecer un limite a los nombres de variables en longitud de caracteres.
 
+/**
+ * @TODO: Buscar y Arreglar un error que impide
+ *  que \xhex muestre los caracteres hexadecimales. 
+*/
+char* get_str_escp(char* old_str){
 ## Operadores faltantes:
   - `.` cualquier Duplicar en pila
   - `\` cualquiera, cualquier Intercambiar los dos elementos principales.

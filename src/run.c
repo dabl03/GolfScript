@@ -32,15 +32,16 @@
 				}else if (IF_INIT_COMENT(s_line[i]))//Llegamos a un comentario.
 					break;
 				else if (s_line[i]==';'){
-					struct type_value* typ_temp=pop_stack(stack);
-					if (typ_temp==NULL){
+					struct type_value* tv_temp=pop_stack(stack);
+					if (tv_temp!=NULL) {
+						delete_item(tv_temp->type,tv_temp->value);
+						free(tv_temp);
+					}
+					else{
 						if (show_msg){
 							puts("Warnign: La pila esta vacia.");
 							show_msg=false;
 						}
-					}else{
-						delete_item(typ_temp->type,typ_temp->value);
-						free(typ_temp);
 					}
 				}else if(s_line[i]==':'){
 					// We assign a variable
@@ -131,16 +132,16 @@
 				i++
 			);
 			// i-1 per non-alphanumeric character
-			str_add_str_init_end(&name, search, *index, i--);
+			str_add_str_end(&name, search+*index, i--);
 		}else if (is_num(search[*index]) || (search[*index]=='-' && is_num(search[*index+1])) ){ // Si es un numero.
 			for (
 				i+=(search[*index]=='-')?1:0;
 				i < end && is_num(search[i]);
 				i++
 			);
-			str_add_str_init_end(&name, search, *index, i--);
+			str_add_str_end(&name, search+*index, i--);
 		}else if(IF_INIT_STRING(search[*index])){//Obtenemos la cadena.
-			*index=get_end_str(search,i,end);
+			*index=get_end_str(search+i,end);
 			*index=(*index)?*index:end;
 			free(name.str);
 			return get_sub_str(search,i,*index);
@@ -168,10 +169,10 @@
 				}
 				cadd_leftover(&out,str[i]);
 				if (IF_INIT_STRING(str[i])){
-					tmp_i=get_end_str(str,i,end);
+					tmp_i=get_end_str(str+i,end);
 					tmp_i=(tmp_i)?tmp_i:end;
 					out.count--;//Porque necesitamos que ignore la entre comilla anterior.
-					str_add_str_init_end(&out,str, i,tmp_i);
+					str_add_str_end(&out,str+i,tmp_i);
 					i=tmp_i;
 				}else if (IF_INIT_COMENT(str[i])){
 					out.count--;
@@ -203,9 +204,9 @@
 			}
 			switch(input[i]){
 				case '"': /*OR*/ case '\'':
-					tmp_i=get_end_str(input,i,iend);
+					tmp_i=get_end_str(input+i,iend);
 					tmp_str=get_sub_str(input,i,tmp_i);
-					str_add_str_init_end(&out,tmp_str,0,0);
+					str_add_str(&out,tmp_str);
 					i=(tmp_i)?tmp_i:iend;
 					free(tmp_str);
 					if (i+1<iend AND input[i+1]!=' ')

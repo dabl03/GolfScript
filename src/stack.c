@@ -36,7 +36,8 @@ bool add_stack(struct Header_Stack* hstc_out,const enum TYPE typ_data, void* val
 struct type_value* pop_stack(struct Header_Stack* hstc_modific){
 	if (hstc_modific->stack==NULL)
 		return NULL;
-	struct type_value* tv_out=(struct type_value*)malloc(sizeof(struct type_value));
+	// Nota: No static porque apuntará a otro elemento al llamar dos veces.
+	struct type_value* tv_out=(struct type_value*)malloc(sizeof(type_value*));
 	struct Stack_* stc_temp=hstc_modific->stack;
 	hstc_modific->stack=stc_temp->next;
 	hstc_modific->stack->previous=stc_temp->previous;
@@ -194,11 +195,11 @@ void delete_var(struct Var* vr_var){
 void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data){
 	struct type_value tv_tmp;
 	void* v_generic;
-
+	U_INT err=0;// Solo para funciones.
 	switch (vr_data->type){
 		// Funciones nativas del lenguaje
 		case FUNCTION:
-			((unsigned short (*)(
+			err=((U_INT (*)(
 				struct Header_Stack*,
 				struct Header_Stack*,
 				char* extend
@@ -443,4 +444,5 @@ char* to_string_value(const enum TYPE typ_data, void* v_data){
 	}
 	return s_out;
 }
+// @todo: stack_setItem
 #endif

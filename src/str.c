@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <gmp.h>
+#include <stdbool.h>
 #include "./header/define.h"
 #include "./header/str.h"
 
@@ -22,54 +23,51 @@ unsigned short is_num(unsigned const char c){
   return (c>='0' && c<='9');
 }
 
-U_INT get_end_str(const char* str,unsigned const int init,unsigned int i_end){
-  U_INT i=init;
-  unsigned short is_scape=0;
-  unsigned const char type=str[i++];//Almacenamos el tipo de cadena para saber si hay un signo de escape+type, y si anida otro tipo de cadena lo tratamos como una subcadena.
-  i_end=(!i_end)?strlen(str):i_end;//Asi aprovechamos si se paso el limite de la cadena.
-  for(;i<i_end;i++){
-    if (str[i]==type AND !is_scape)//Si es termino y no es un escape.
-      return i;//Conseguimos el final de la cadena por lo que terminamos.
+U_INT get_end_str(const char* str, U_INT i_end){
+  bool is_scape=false;
+  unsigned const char CHAR_END=str[i++];// Is " or ' and no with \
+  i_end=(!i_end)?strlen(str):i_end;
+  for( U_INT i=0; i<i_end; i++ ){
+    if (str[i]==type AND !is_scape)
+      return i;
     is_scape=(str[i]=='\\' && !is_scape);
   }
-  return 0;//No hay fin, por lo que retornamos 0
+  return 0;// Not found
 }
 
 int parseInt(const char* str){
-    unsigned short is_negative=(str[0]=='-');
+    const bool IS_NEGATIVE=(str[0]=='-');
     int output=0;
-    for (int i=is_negative;str[i]!='\0';i++){
+    for (unsigned int i=IS_NEGATIVE;str[i]!='\0';i++){
         if (is_num(str[i])){
             output=(output*10)+CHAR_TO_NUM(str[i]);
         }
     }
-    return (is_negative)?-output:output;
+    return (IS_NEGATIVE)?-output:output;
 }
 
 long int parseLongInt(const char* str){
-    unsigned short is_negative=(str[0]=='-');
+    const bool IS_NEGATIVE=(str[0]=='-');
     long int output=0;
-    for (int i=is_negative;str[i]!='\0';i++){
+    for (int i=IS_NEGATIVE;str[i]!='\0';i++){
         if (is_num(str[i])){
             output=(output*10)+CHAR_TO_NUM(str[i]);
         }
     }
-    return output;
+    return (IS_NEGATIVE)?-output:output;
 }
 
-void str_add_str_init_end(struct String* str_d, const char* str_copy, const unsigned int init, unsigned int end){
+void str_add_str_end(struct String* str_d, const char* str_copy, unsigned int end){
   end=(end)?end:strlen(str_copy);
-  unsigned int len=end-init;
-    if (str_d->count+len+1>=str_d->max){
-        str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=len+1));
-    }
-    unsigned int i=init;
-  char* c=(char*)&str_copy[i];
-    for (;i<end && *c!='\0';i++){
-        str_d->str[str_d->count++]=*c;
-    c++;
-    }
-    str_d->str[str_d->count]='\0';
+  if ( str_d->count+end+1>=str_d->max ){
+    str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=end+1));
+  }
+  char* chr_now=(char*)&str_copy;
+  for (unsigned int i=0; i<end ; i++){
+    str_d->str[str_d->count++]=*chr_now;
+    chr_now++;
+  }
+  str_d->str[str_d->count]='\0';
 }
 
 void str_add_char(struct String* str_d,const char c){

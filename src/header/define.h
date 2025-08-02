@@ -18,6 +18,8 @@
 	#ifdef DEBUG
 		
 	#endif
+	#include "./errors.h"
+
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
 	#define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
 	#define ERROR_DEFICCION_NO_VALIDA -30
@@ -48,6 +50,7 @@
 	extern const char* AUTHOR;
 	extern const char* LICENSE_URL;
 	extern const char* LICENSE;
+	extern U_INT error_code;
 	/**
 	 * @brief Se usa para identificar los tipos 
 	 * de datos que se va a nanejar | 

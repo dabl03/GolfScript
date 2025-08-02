@@ -40,15 +40,15 @@ unsigned short is_abc(unsigned const char c);
  * @return bool
 **/
 unsigned short is_num(unsigned const char c);
-/**
- * @brief Get the end of str.
- * 
+/**Get the end of str.
+ *  
  * @param str cadena donde buscar.
- * @param init Posición del inicio de la subcadena.
- * @param i_end limite de la cadena. Si se coloca 0 se buscará hasta el final de la cadena.
+ * @param i_end limite de la cadena.
+ ** Si se coloca 0 se buscará hasta el final de la cadena.
+ *
  * @return unsigned int end si retorna 0 entonces no se consiguió el final.
  */
-unsigned int get_end_str(const char* str,unsigned const int init,unsigned int i_end);
+unsigned int get_end_str(const char* str, U_INT i_end);
 /**
  * @brief Funcion que transforma de string a entero.
  * 
@@ -68,11 +68,11 @@ long int parseLongInt(const char* str);
  *  
  * @param str_d Estructura con la cadena destino.
  * @param str_copy Cadena a copiar.
- * @param init Inicio de la cadena a copiar.
  * @param end Final de la cadena a copiar. Si es 0 se buscará el tamaño.
 */
-void str_add_str_init_end(struct String* str_d, const char* str_copy, const unsigned int init, unsigned int end);
-#define str_add_str(x,y) str_add_str_init_end(x,y,0,0)
+void str_add_str_end(struct String* str_d, const char* str_copy, unsigned int end);
+#define str_add_str(str_d, str_copy) str_add_str_end(str_d,str_copy,0)
+#define str_add_str_init_end(str_d,  str_copy, init,end) str_add_str_end(str_d,str_copy+init,end)
 /**
  * @brief Agrega un char al final de la cadena.
  * 

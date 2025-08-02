@@ -44,9 +44,12 @@ char* get_input_str(char type_string);
  * @return La entrada del usuario. Recordar liberar
  */
 char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub);
-//Para testear todo
-#ifndef TEST_
-int main(int argc, char *argv[]){
+//Por si se quiere testear.
+#ifdef __MAIN__
+	#define main main_c
+#endif
+//Use macro para que el ide no vea error.
+int main(int arc, char** argv){
 	struct Header_Stack stack={NULL,NULL},//Nuestra pila.
 	vars={NULL,NULL};//Nuestra variables
 	int i_return_code=0;
@@ -110,7 +113,6 @@ int main(int argc, char *argv[]){
 	#endif
 	return i_return_code;
 }
-#endif
 void config_all(struct Header_Stack* opciones){
 	for(unsigned int i=0;i<opciones->i;i++){
 		/****
@@ -148,7 +150,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 				// If breakline.
 				char is_new_line_tmp=tmp_out[tmp_len-1]=='\n';
 				c_linea.str[--c_linea.count]='\0';
-				str_add_str_init_end(&c_linea,tmp_out,0,tmp_len);
+				str_add_str_end(&c_linea,tmp_out,tmp_len);
 				free(tmp_out);
 				if (is_new_line_tmp)
 					break;
@@ -159,7 +161,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			}else if (c == '{'){ // Vemos si hay anidamiento. TODO: Usalo: input_block
 				tmp_out=input_block('{','}',">> ",sub);
 				c_linea.str[--c_linea.count]='\0';
-				str_add_str_init_end(&c_linea,tmp_out,0,0);
+				str_add_str(&c_linea,tmp_out);
 				free(tmp_out);
 				if (c_linea.str[c_linea.count-1]=='\n')
 					break;
@@ -167,7 +169,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			}else if(c=='['){///@TODO: Usarlo input_block.
 				tmp_out=input_block('[',']',"-- ",sub);
 				c_linea.str[--c_linea.count]='\0';
-				str_add_str_init_end(&c_linea,tmp_out,0,0);
+				str_add_str(&c_linea,tmp_out);
 				free(tmp_out);
 				if (c_linea.str[c_linea.count-1]=='\n')
 					break;
@@ -240,7 +242,7 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 				is_nline=true;
 			}
 
-			str_add_str_init_end(&out,str_,0,len_);
+			str_add_str_end(&out,str_,len_);
 			free(str_);
 			continue;
 		}else if (IF_INIT_COMENT(c)){
