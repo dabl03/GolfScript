@@ -1,15 +1,17 @@
 #ifndef ERROR_C
 #define ERROR_C 1
-  const char** RERR_STR_MSG={
+  #include "./header/define.h"
+  #include "./header/errors.h"
+  const char* RERR_STR_MSG[ERROR_MSG_LIMIT]={
     // R
     "Datos no tratados",
     "Caracteristica no disponible"
   };
-  const char** GERR_STR_MSG={
+  const char* GERR_STR_MSG[ERROR_MSG_LIMIT]={
     // G
     "Sintaxis incorrecta"
   };
-  const char** BERR_STR_MSG={
+  const char* BERR_STR_MSG[ERROR_MSG_LIMIT]={
     // B
     "Se han pasado insuficientes argumentos",
     "La pila está vacia"
@@ -22,15 +24,15 @@
     const short B_CODE=(CODES<<4)>>4;
     if (R_CODE){
       msg_color("Error interno: ",RED_COLOR,BLACK_COLOR);
-      puts(RERR_STR_MSG);
+      puts(RERR_STR_MSG[R_CODE]);
     }
     if (G_CODE){
       msg_color("Error: ",RED_COLOR,BLACK_COLOR);
-      puts(GERR_STR_MSG);
+      puts(GERR_STR_MSG[G_CODE]);
     }
     if (B_CODE){
       msg_color("Advertensia: ",ORANGE_COLOR,BLACK_COLOR);
-      puts(BERR_STR_MSG);
+      puts(BERR_STR_MSG[B_CODE]);
     }
   }
 #endif

@@ -11,8 +11,9 @@
 #include "./header/add.h"
 /**
  * @TODO:Buscar la manera de mejorar la sintaxis.
+ * @todo: Arreglar los errores cambiando ARRAy por stack y su uso. Tambien terminar la funcion problematica de stack.c stack_set_item
 */
-struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
+struct type_value_err* add_int(int num,enum TYPE type_n2,void* num_2){
 	static struct type_value_err out;
 	int* copy_n=NULL;
 	int64_t tmp_i;
@@ -50,7 +51,7 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 
 			//Si se desborda el double
 			if (isinf(*(double*)out.value)){
-				free(out.value);
+				FREE__(out.value);
 				//LONGFLOAT.
 				out.type=LONGFLOAT;
 				out.value=malloc(sizeof(mpf_t));
@@ -87,8 +88,8 @@ struct type_value* add_int(int num,enum TYPE type_n2,void* num_2){
 			out.value=malloc(strlen((char*)tmp)+strlen(num_2)+2);
 			sprintf(out.value,"%s %s",(char*)tmp,(char*)num_2);
 			break;
-		case STACK://///////////////////////////////////
-			out.value=copy_array(num_2);
+		case STACK:///@todo: Modificar el array original para no crear uno nuevo.///////////////////////////////
+			out.value=copy_stack((struct Header_Stack*)num_2);
 			copy_n=(int*)malloc(sizeof(int));
 			*copy_n=num;
 			array_set_item(out.value,true,0,INT,copy_n);
@@ -112,11 +113,11 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
 			out=(char*)malloc(strlen((char*)value)+strlen(codes)+2);
 			sprintf(out,"%s %s",codes,(char*)value);
 			break;
-		case ARRAY:
-			tmp=to_string_value(t,value);
+		case STACK:
+			tmp=to_string_value(STACK,value);
 
-			out=(char*)malloc(strlen(tmp)+strlen(codes)+5);
-			sprintf(out,"%s [ %s]",codes,tmp);
+			out=(char*)malloc(strlen(tmp)+strlen(codes)+2);//<+2 por ' ' y '\0'
+			sprintf(out,"%s %s",codes,tmp);
 
 			free(tmp);
 			break;
@@ -135,7 +136,7 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
 	return out;
 }
 
-struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
+struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right){
 	static struct type_value out;
 	struct String tmp_str={0,0,NULL};
 	struct type_value* now=NULL;
@@ -208,7 +209,7 @@ struct type_value* add_str(char* str,enum TYPE t, void* value,bool is_right){
 	return &out;
 }
 
-struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
+struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 	static struct type_value out;
 	mpz_t* copy_n=NULL;
 	void* tmp;
@@ -264,8 +265,8 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 
 			FREE__(tmp);
 			break;
-		case ARRAY:
-			out.value=copy_array(value);
+		case ARRAY:///@todo: Modificar el array original para no crear uno nuevo.///////////////////////////////
+			out.value=copy_stack(value);
 
 			copy_n=(mpz_t*)malloc(sizeof(mpz_t));
 			mpz_init_set(*copy_n,*long_int);
@@ -279,47 +280,50 @@ struct type_value* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 	}
 	return &out;
 }
-struct type_value* add_longfloat(void);
+struct type_value_err* add_longfloat(void);
 	/**
 	 * @todo ...
 	 * */
-struct type_value* add_float(void);
+struct type_value_err* add_float(void);
 	/**
 	 * @todo ...
 	 * */
 
-struct type_value* opr_add_stack(struct Array* arr,enum TYPE t, void* value){
-	static struct type_value out;
-	void* tmp=alloca(sizeof(int));
+struct type_value_err* opr_add_stack(struct Header_Stack* h_stack,enum TYPE t, void* value){
+	static struct type_value_err out;
+	void* tmp=NULL;
+	struct Stack_* stack_after=NULL;
 	out.type=NONE;
 	out.value=NULL;
 	switch (t){
 		case STRING:
 			out.type=STRING;
-			out.value=add_str((char*)value,ARRAY,(void*)arr,false)->value;
+			out.value=add_str((char*)value,STACK,(void*)h_stack,false)->value;
 			break;
 		case CODES_BLOCKS:
 			out.type=CODES_BLOCKS;
 			//Ponemos todo el array en una cadena.
-			tmp=to_string_value(ARRAY,arr);
+			tmp=to_string_value(STACK,h_stack);
 
 			out.value=malloc(strlen((char*)tmp)+strlen((char*)value)+5);
-			sprintf((char*)out.value,"[ %s] %s",(char*)tmp,(char*)value);
+			sprintf((char*)out.value,"%s %s",(char*)tmp,(char*)value);
 
-			free(tmp);
+			FREE__(tmp);
 			break;
 		case STACK:
-			for (U_INT i=0;i<((struct Array*)value)->i;i++){
-				tmp=(void*)&(((struct Array*)value)->value[i]);
-				add_stack(arr,((struct type_value*)tmp)->type,((struct type_value*)tmp)->value);
-			}
-			free(((struct Array*)value)->value);
-			((struct Array*)value)->value=NULL;
-			((struct Array*)value)->i=0;
-			((struct Array*)value)->max=0;
-			return NULL;
+			tmp=(void*)h_stack->stack->next;
+			// Next
+			h_stack->stack->next=(((struct Header_Stack*)value)->stack)->next;
+			(((struct Header_Stack*)value)->stack)->next=(struct Stack_*)tmp;
+			// Previous
+			h_stack->stack->next->previous=h_stack->stack;
+			((struct Stack_*)tmp)->previous=((struct Stack_*)value)->stack;
+			// Now stack is value->stack 
+			h_stack->stack=((struct Header_Stack*)value)->stack;
+			((struct Header_Stack*)value)->stack=NULL;
+			break;
 		default:
-			add_array(arr,t,value);
+			add_array(h_stack,t,value);
 	}
 	return &out;
 }

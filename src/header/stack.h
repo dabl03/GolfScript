@@ -90,12 +90,12 @@ void delete_item(const enum TYPE t_typValue, void* v_data);
 void delete_stack(struct Header_Stack* stc_data);
 /**
  * Copia un item y retorna un puntero de la copia.
- * @param  tv_src  Por si se quiere iniciar la estructura, de lo contrario pasar NULL
- * @param  typ_io   Tipo de dato a copiar.
- * @param  value_io Valor de dato a copiar.
+ * @param[out]  tv_src  Por si se quiere iniciar la estructura, de lo contrario pasar NULL
+ * @param[io]  typ_io   Tipo de dato a copiar.
+ * @param[io]  value_io Valor de dato a copiar.
  * @return          type_value*
  */
-struct type_value* copy_item(const struct type_value* tv_src,const enum TYPE typ_io,const void* value_io);
+struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, void* value_io);
 /** 
  * @brief Una pila en otra.
  * 

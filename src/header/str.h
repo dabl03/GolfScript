@@ -27,7 +27,7 @@ struct String{
  * @return true 
  * @return false 
  */
-unsigned short search_char(const char* str,unsigned const char c);
+unsigned short exist_char(const char* str,unsigned const char c);
 /**
  * @brief Vemos si el char es una letra(A-Z o a-z).
  * @param c char a comprobar

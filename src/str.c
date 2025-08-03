@@ -8,7 +8,7 @@
 #include "./header/define.h"
 #include "./header/str.h"
 
-unsigned short search_char(const char* str,unsigned const char c){
+unsigned short exist_char(const char* str,unsigned const char c){
   for (unsigned int i=0;str[i]!='\0';i++)
     if ((unsigned int)str[i]==c)
       return 1;//Se encontró:)
@@ -25,10 +25,10 @@ unsigned short is_num(unsigned const char c){
 
 U_INT get_end_str(const char* str, U_INT i_end){
   bool is_scape=false;
-  unsigned const char CHAR_END=str[i++];// Is " or ' and no with \
+  unsigned const char CHAR_END=str[0]; //< Is " or ' and no with "\"
   i_end=(!i_end)?strlen(str):i_end;
   for( U_INT i=0; i<i_end; i++ ){
-    if (str[i]==type AND !is_scape)
+    if (str[i]==CHAR_END AND !is_scape)
       return i;
     is_scape=(str[i]=='\\' && !is_scape);
   }
@@ -182,6 +182,8 @@ const char* get_name_type(enum TYPE t){
       return "(VAR)";
     case CODES_BLOCKS:
       return "(CODES BLOCKS)";
+    case STACK:
+      return "(STACK)";
     case ARRAY:
       return "(ARRAY)";
     default:

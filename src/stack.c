@@ -37,7 +37,7 @@ struct type_value* pop_stack(struct Header_Stack* hstc_modific){
 	if (hstc_modific->stack==NULL)
 		return NULL;
 	// Nota: No static porque apuntará a otro elemento al llamar dos veces.
-	struct type_value* tv_out=(struct type_value*)malloc(sizeof(type_value*));
+	struct type_value* tv_out=(struct type_value*)malloc(sizeof(struct type_value*));
 	struct Stack_* stc_temp=hstc_modific->stack;
 	hstc_modific->stack=stc_temp->next;
 	hstc_modific->stack->previous=stc_temp->previous;
@@ -81,7 +81,7 @@ void delete_item(const enum TYPE t_typValue, void* v_data){
 void delete_stack(struct Header_Stack* hstc_data){
 	if (hstc_data->stack==NULL)
 		return;
-	struct Stack_* stc_now=hstcdata->stack;
+	struct Stack_* stc_now=hstc_data->stack;
 	struct Stack_* stc_for_free=NULL;
 	while (stc_now!=NULL){
 		delete_item(stc_now->item.type,stc_now->item.value);
@@ -92,12 +92,9 @@ void delete_stack(struct Header_Stack* hstc_data){
 	hstc_data->stack=NULL;
 	//stc_data->father=NULL;//No se si liberar al padre tambien.
 }
-struct type_value* copy_item(const type_value* tv_src,const TYPE typ_io,const void* value_io){
-  struct type_value* tv_out=
-  	(tv_src==NULL)?malloc(sizeof(struct type_value))
-  		:
-  	tv_src
-  ;// Si pasa null creamos uno nuevo, de lo contrario usamos el que se paso.
+struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, void* value_io){
+  // Si pasa null creamos uno nuevo, de lo contrario usamos el que se paso.
+  struct type_value* tv_out=(tv_src)?tv_src:malloc(sizeof(struct type_value));
   tv_out->type=typ_io;
   char* str;
 	switch(typ_io){
@@ -142,7 +139,7 @@ struct type_value* copy_item(const type_value* tv_src,const TYPE typ_io,const vo
 			#if defined(DEBUG) || defined(TEST_)
 				printf(
 					"Advertensia: No se puede copiar dato.\n  Function=copy_item\n  tipo=%s.\n",
-					typ_io
+					get_name_type(typ_io)
 				);
 			#endif
 	}
@@ -151,7 +148,6 @@ struct type_value* copy_item(const type_value* tv_src,const TYPE typ_io,const vo
 struct Header_Stack* copy_stack(const struct Header_Stack* hstc_io){
 	struct Header_Stack* hstc_out=(struct Header_Stack*)malloc(sizeof(struct Header_Stack));
 	struct Stack_* stc_now=hstc_io->stack;
-	void* v_generic;// Dinamic vars.
 	struct type_value tv_tmp;
 	hstc_out->stack=NULL;
 	hstc_out->father=hstc_io->father;// No se si copiamos los mismos padres.
@@ -185,7 +181,10 @@ void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_set
 		}
 		vr_now->name[i]='\0';
 	}
-	copy_item(vr_now->type,tv_setVar->type,tv_setVar->value);
+	struct type_value tmp;
+	copy_item(&tmp, tv_setVar->type, tv_setVar->value);
+	vr_now->type=tmp.type;
+	vr_now->value=tmp.value;
 }
 void delete_var(struct Var* vr_var){
 	delete_item(vr_var->type,vr_var->value);
@@ -195,11 +194,12 @@ void delete_var(struct Var* vr_var){
 void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data){
 	struct type_value tv_tmp;
 	void* v_generic;
-	U_INT err=0;// Solo para funciones.
+	//U_INT err=0;// Solo para funciones. // Sin usar
 	switch (vr_data->type){
 		// Funciones nativas del lenguaje
 		case FUNCTION:
-			err=((U_INT (*)(
+			/*err=*/
+			((U_INT (*)(
 				struct Header_Stack*,
 				struct Header_Stack*,
 				char* extend
@@ -218,7 +218,7 @@ void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,
 			break;
 		default:
 			copy_item(&tv_tmp,vr_data->type,vr_data->value);
-			add_stack(arr_allData,tv_tmp->type,tv_tmp->value);
+			add_stack(hstc_stack,tv_tmp.type,tv_tmp.value);
 	}
 }
 char* printf_stack(const struct Header_Stack* hstc_io){
@@ -347,8 +347,8 @@ struct Var* search_var(const char* s_name, struct Header_Stack* hstc_var){
 		i_name+=s_name[i];
 
 	while (stc_var!=NULL){
-		const struct Var* vr_varNow=(struct Var*)stc_var->item.value;//Variable actual.
-		if (i_name==vr_varNow->i_name && !strcmp(&s_name[i_initStr],vr_varNow->name))//Es igual y retornamos.
+		struct Var* vr_varNow=(struct Var*)stc_var->item.value;//Variable actual.
+		if (i_name==vr_varNow->i_name && !strcmp(s_name,vr_varNow->name))//Es igual y retornamos.
 			return vr_varNow;
 		stc_var=stc_var->next;
 	}

@@ -39,6 +39,7 @@ char* get_str_escp(char* old_str){
     Agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
 }
 Para trabajar con flotante usa la varible globa climit_float
+- Agregar un Debug mode que ensena la linea+ la pila en ese momento. 
 
 ## Recordatorio:
 - Verificar si father se guarda bien en todos los archivos (debe ser Header_stack).

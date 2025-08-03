@@ -14,11 +14,16 @@
   //TODO: USAR HEXADECIMAL con formato rgb
   //El tipo 1-F(F mas grave) tiene subtipos... //Descartado por ahora..
   // Por ejemplo: 01 seria uno error grave lijero o algo asi. //Descartado por ahora..
+  // Color:
+  #define RED_COLOR 0xF00
+  #define ORANGE_COLOR 0xFF0
+  #define BLACK_COLOR 0x000
   #ifndef ANSI_COLOR
     #define msg_color printf
   #endif
+  #define ERROR_MSG_LIMIT 50
   // These are the errors menssage.
-  extern const char** RERR_STR_MSG;
-  extern const char** GERR_STR_MSG;
-  extern const char** BERR_STR_MSG;
+  extern const char* RERR_STR_MSG[ERROR_MSG_LIMIT];
+  extern const char* GERR_STR_MSG[ERROR_MSG_LIMIT];
+  extern const char* BERR_STR_MSG[ERROR_MSG_LIMIT];
 #endif

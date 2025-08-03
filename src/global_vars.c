@@ -30,7 +30,7 @@ U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* exte
 }
 
 U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
-	struct Var vr_line_breack=search_var("n",vars);
+	struct Var* vr_line_breack=search_var("n",vars);
 	unsigned short out;
 	char* extend=to_string_value(vr_line_breack->type,vr_line_breack->value);
 
@@ -40,26 +40,27 @@ U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 	return out;
 }
 
-U_INT add_operator(struct Header_Stack* stack,...){
-	if (stack->stack==NULL && (stack->stack->next==NULL && (stack->father==NULL && stack->father->next==NULL)) ){
+U_INT add_operator(struct Header_Stack* h_stack,...){
+	if (h_stack->stack==NULL && (h_stack->stack->next==NULL && (h_stack->father==NULL && h_stack->father->stack->next==NULL)) ){
 		return INSUFFICIENT_ARGUMENTS;
 	}
 	// num_1=num_1+num_2
-	struct type_value* num_2=pop_stack(stack);
+	struct type_value* num_2=pop_stack(h_stack);
 	struct type_value* num_1;
+	struct type_value_err* tmp_tv;
 	// Si no hay suficiente argumentos en esta pila
 	// Agarramos de su padre.
-	// [ 1 [  1 ]  ] -> [  [ 2 ]  ]
-	if (stack->stack==NULL){
-		struct type_value* this_stack=pop_stack(stack->father);
-		num_1=pop_array(stack->father);
-		add_stack(stack->father,STACK,this_stack->value);
-		add_stack(stack,num_1->type,num_1->value);
-		add_stack(stack,num_2->type,num_2->value);
-		return add_operator(stack);
+	// [ 1 [ 1 ]  ] -> [ [ 2 ]  ]
+	if (h_stack->stack==NULL){
+		struct type_value* this_stack=pop_stack(h_stack->father);
+		num_1=pop_stack(h_stack->father);
+		add_stack(h_stack->father,STACK,this_stack->value);
+		add_stack(h_stack,num_1->type,num_1->value);
+		add_stack(h_stack,num_2->type,num_2->value);
+		return add_operator(h_stack);
 	}
-	num_1=stack->stack->item,
-	*tmp_tv=NULL;
+	num_1=&h_stack->stack->item;
+	tmp_tv=NULL;
 	//[num_1 num_2]
 	switch (num_1->type){
 	case INT:
@@ -70,7 +71,7 @@ U_INT add_operator(struct Header_Stack* stack,...){
 		break;
 	case CODES_BLOCKS:
 		//Usamos alloca para no liberar este bloque:D
-		tmp_tv=(struct type_value*)alloca(sizeof(struct type_value*));
+		tmp_tv=(struct type_value_err*)alloca(sizeof(struct type_value_err*));
 		tmp_tv->type=CODES_BLOCKS;
 		tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
 		break;
@@ -78,9 +79,14 @@ U_INT add_operator(struct Header_Stack* stack,...){
 		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
 		break;
 	case STACK:
-		tmp_tv=opr_add_serror_codeack((struct Header_Stack*)num_1->value,num_2->type,num_2->value);
+		tmp_tv=opr_add_stack(
+			(struct Header_Stack*)num_1->value,
+			num_2->type,
+			num_2->value
+		);
 		if (tmp_tv->type==NONE){
-			//No fue necesario liberar nada pues la misma funcion lo hizo, y se reuso lo que se pudo.
+			free(num_2->value);// Header_Stack
+			free(num_2);
 			return 0;
 		}
 		break;
@@ -91,13 +97,13 @@ U_INT add_operator(struct Header_Stack* stack,...){
 	}
 	delete_item(num_2->type,num_2->value);
 	delete_item(num_1->type,num_1->value);
-	if (out->err==NORMAL){
-		stack->stack->item.type=tmp_tv->type;
-		stack->stack->item.value=tmp_tv->value;
+	if (tmp_tv->err==NORMAL){
+		h_stack->stack->item.type=tmp_tv->type;
+		h_stack->stack->item.value=tmp_tv->value;
 	}else{
 		delete_item(tmp_tv->type,tmp_tv->value);
 	}
-	return out->err;
+	return tmp_tv->err;
 }
 
 U_INT sub_operator(struct Header_Stack* stack,...){
@@ -117,7 +123,7 @@ U_INT reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
 U_INT pack_stack(struct Header_Stack* stack,...){
 	struct Header_Stack* tmp=copy_stack(stack);
 	delete_stack(stack);
-	add_STACK(stack,STACK,tmp);
+	add_stack(stack,STACK,tmp);
 	return NORMAL;
 }
 

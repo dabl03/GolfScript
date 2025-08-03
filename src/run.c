@@ -10,10 +10,10 @@
 	#include "header/stack.h"
 	#include "header/run.h"
 	
-	int run(struct Header_Stack* lines, struct Header_Stack* stack, struct Header_Stack* vars){
+	int run(struct Header_Stack* lines, struct Header_Stack* h_stack, struct Header_Stack* vars){
 		U_INT tmp_istr=0;
 		char* tmp_str=NULL;
-		struct Stack_* stc_line=stack->stack;
+		struct Stack_* stc_line=h_stack->stack;
 		bool show_msg;
 		
 		while (stc_line!=NULL && !quit){
@@ -26,13 +26,13 @@
 				//Primero definimos nuestros signos constantes:
 				if(s_line[i]=='{'){
 					tmp_str=get_ie_block(s_line,i,'}',&tmp_istr);
-					add_stack(stack,CODES_BLOCKS,tmp_str);
+					add_stack(h_stack,CODES_BLOCKS,tmp_str);
 					//Terminamos.
 					i=tmp_istr;
 				}else if (IF_INIT_COMENT(s_line[i]))//Llegamos a un comentario.
 					break;
 				else if (s_line[i]==';'){
-					struct type_value* tv_temp=pop_stack(stack);
+					struct type_value* tv_temp=pop_stack(h_stack);
 					if (tv_temp!=NULL) {
 						delete_item(tv_temp->type,tv_temp->value);
 						free(tv_temp);
@@ -49,7 +49,7 @@
 						continue;
 					i++;
 					char* name=get_name_var(s_line,&i,i_end);
-					if (!stack->i){
+					if (!h_stack->stack){
 						//It is placed here to ignore the name of the variable
 						free(name);
 						printf("ERROR: La pila esta vacia.%s",ENDL);
@@ -58,10 +58,10 @@
 					struct Var* vr_now=search_var(name,vars);
 					if(vr_now!=NULL){
 						// We overwrite the variable
-						setValue_tv(vr_now,NULL,&stack->value[stack->i-1]);
+						setValue_tv(vr_now,NULL,&h_stack->stack->item);
 					}else{
 						// We initialize the variable
-						struct type_value* stack_var=&stack->value[stack->i-1];
+						struct type_value* stack_var=&h_stack->stack->item;
 
 						setValue_tv(vr_now,name,stack_var);
 						add_stack(vars,VAR,(void*)vr_now);
@@ -75,33 +75,33 @@
 					struct Header_Stack hstc_line={NULL,NULL};
 					struct Header_Stack* hstc_sub=(struct Header_Stack*)malloc(sizeof(struct Header_Stack));
 					hstc_sub->stack=NULL;
-					hstc_sub->father=stack;
+					hstc_sub->father=h_stack;
 					//Iniciamos la linea.
 					add_stack(&hstc_line,STRING,tmp_str);
 					//Ejecutamos y agregamos al stack el array.
-					run(&hstc_line,sub_stack,vars);
-					add_stack(stack,STACK,(void*)hstc_sub);
+					run(&hstc_line,hstc_sub,vars);
+					add_stack(h_stack,STACK,(void*)hstc_sub);
 					delete_stack(&hstc_line);//Liberamos memoria
 					//Terminamos.
 					i=tmp_istr;
 				}else{
 					//Ahora vemos si existe la variable.
 					char* name=get_name_var(s_line,&i,0);
-					Var* vr_now=search_var(name,vars);
+					struct Var* vr_now=search_var(name,vars);
 					if(vr_now!=NULL){
 						// The variable exists
-						process_data(stack,vars,vr_now);
+						process_data(h_stack,vars,vr_now);
 					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
 						unsigned int len=strlen(name)-1;
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));
 							*v=(int)atoi(name);
-							add_stack(stack,INT,(void*)v);
+							add_stack(h_stack,INT,(void*)v);
 						}else{
 							mpz_t* n=(mpz_t*)malloc(sizeof(mpz_t));
 							mpz_init_set_str(*n,name,0);
-							add_stack(stack,LONGINT,n);
+							add_stack(h_stack,LONGINT,n);
 						}
 					}else if (IF_INIT_STRING(s_line[i])){
 						// It's a string
@@ -110,7 +110,7 @@
 						strncpy(scape_, name + 1, len-2);
             scape_[len-2]='\0';
 
-						add_stack(stack,STRING,scape_);
+						add_stack(h_stack,STRING,scape_);
 					}
 					free(name);
 				}

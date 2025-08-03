@@ -5,6 +5,7 @@
 	#include <stdint.h>//int64_t
 	#include <stdlib.h>//Alloca function
 	#include <stdbool.h>
+	#include <malloc.h>     
 	// Get alloca function
 	#if defined(_MSC_VER) || defined(__MINGW32__)
 		#include <malloc.h>     
@@ -70,6 +71,7 @@
 		FUNCTION, // Función estandar del programa. Nota: No debe ser liberado.
 		VAR, // Variable o estructura Var
 		CODES_BLOCKS, // string que representa un código golfscript
-		STACK
+		STACK,
+		ARRAY
 	};
 #endif
