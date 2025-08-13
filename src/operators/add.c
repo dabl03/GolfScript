@@ -15,7 +15,6 @@
 */
 struct type_value_err* add_int(int num,enum TYPE type_n2,void* num_2){
 	static struct type_value_err out;
-	int* copy_n=NULL;
 	int64_t tmp_i;
 	void* tmp;
 	out.type=type_n2;
@@ -88,11 +87,13 @@ struct type_value_err* add_int(int num,enum TYPE type_n2,void* num_2){
 			out.value=malloc(strlen((char*)tmp)+strlen(num_2)+2);
 			sprintf(out.value,"%s %s",(char*)tmp,(char*)num_2);
 			break;
-		case STACK:///@todo: Modificar el array original para no crear uno nuevo.///////////////////////////////
-			out.value=copy_stack((struct Header_Stack*)num_2);
-			copy_n=(int*)malloc(sizeof(int));
-			*copy_n=num;
-			array_set_item(out.value,true,0,INT,copy_n);
+		case STACK:
+			tmp=alloca(sizeof(struct type_value));
+			((struct type_value*)tmp)->type=INT;
+			((struct type_value*)tmp)->value=malloc(sizeof(int));
+			*(int*)((struct type_value*)tmp)->value=num;
+
+			stack_setItem((struct Header_Stack*)num_2,tmp,0,true);
 			break;
 		default:
 			perror("Error interno.");
@@ -152,7 +153,7 @@ struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right)
 			:
 				sprintf(out.value,"%s%s",(char*)value,str);
 			break;
-		case ARRAY://Revisar.
+		case ARRAY:////////////////////////////////////////////////////////////Revisar./////////////////////////////
 			//Ponemos todo el array en una cadena.
 			for (U_INT i=0;i<((struct Array*)value)->i;i++){
 				now=&((struct Array*)value)->value[i];
@@ -266,12 +267,14 @@ struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			FREE__(tmp);
 			break;
 		case ARRAY:///@todo: Modificar el array original para no crear uno nuevo.///////////////////////////////
-			out.value=copy_stack(value);
-
 			copy_n=(mpz_t*)malloc(sizeof(mpz_t));
 			mpz_init_set(*copy_n,*long_int);
+
+			tmp=alloca(sizeof(struct type_value));
+			((struct type_value*)tmp)->type=INT;
+			((struct type_value*)tmp)->value=copy_n;
 			
-			array_set_item(out.value,true,0,LONGINT,copy_n);
+			stack_setItem((struct Header_Stack*)value,tmp,0,true);
 			break;
 		default:
 			perror("Caracteristica no disponible en la funcion add_longint\n");

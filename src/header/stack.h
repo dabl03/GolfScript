@@ -103,24 +103,6 @@ struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, 
  * @return Nueva pila. (Recordar liberar).
  */
 struct Header_Stack* copy_stack(const struct Header_Stack* stc_io);
-/**
- * @brief Modifica o agrega un item en una posición especifica en la pila.
- * 
- * @param stc_out Pila a modificar
- * @param b_isAppend Indica si se modifica el elemento o se mueve los demas.
- * @param i_indexSet Indice a modificar.
- * @param typ_data Tipo de dato.
- * @param v_data Dato.
- * @return true Hubo un error.
- * @return false 
- */
-bool stack_setItem(
-	struct Header_Stack* stc_out,
-	const bool b_isAppend,
-	const int i_indexSet,
-	const enum TYPE typ_data,
-	void* v_data
-);
 /** Da valor a una variable creando un nuevo valor.
  * 
  * @param[out] vr_now Variable a configurar.
@@ -179,4 +161,15 @@ void add_var(struct Header_Stack* hstc_out, const char* s_name, enum TYPE typ_da
  * Recordar liberar.
  */
 char* to_string_value(const enum TYPE typ_data,void* v_data);
+/**
+ * Modify or add an item in the indicated position
+ * @param[in,out] h_stack   The stack to be modified
+ * @param[in] item               The item. The contents of the value parameter
+ *                                          are not freed from memory nor copied. Do not free
+ *                                          item->value; if necessary, only item
+ * @param[in] index             The index
+ * @param[in] is_append      If the position is added or modified
+ * @return  Error?
+ */
+bool stack_setItem(struct Header_Stack* h_stack, struct type_value* item, const unsigned int index, const bool is_append);
 #endif
