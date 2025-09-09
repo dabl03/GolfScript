@@ -11,7 +11,6 @@
 #include "./header/add.h"
 /**
  * @TODO:Buscar la manera de mejorar la sintaxis.
- * @todo: Arreglar los errores cambiando ARRAy por stack y su uso. Tambien terminar la funcion problematica de stack.c stack_set_item
 */
 struct type_value_err* add_int(int num,enum TYPE type_n2,void* num_2){
 	static struct type_value_err out;
@@ -138,7 +137,7 @@ char* add_codes_block(char* codes,enum TYPE t, void* value){
 }
 
 struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right){
-	static struct type_value out;
+	static struct type_value_err out;
 	struct String tmp_str={0,0,NULL};
 	struct type_value* now=NULL;
 	void* tmp=alloca(sizeof(int));
@@ -153,11 +152,11 @@ struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right)
 			:
 				sprintf(out.value,"%s%s",(char*)value,str);
 			break;
-		case ARRAY:////////////////////////////////////////////////////////////Revisar./////////////////////////////
+		case STACK:
 			//Ponemos todo el array en una cadena.
-			for (U_INT i=0;i<((struct Array*)value)->i;i++){
-				now=&((struct Array*)value)->value[i];
-				str_add_char(&tmp_str,' ');
+			tmp=(void*)((struct Header_Stack*)value)->stack;
+			while (tmp){
+				now=&((struct Stack_*)tmp)->item;
 				switch(now->type){
 					case INT:
 					case FLOAT:
@@ -169,20 +168,19 @@ struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right)
 						tmp=(void*)to_string_value(now->type,now->value);
 						str_add_str(&tmp_str,(char*)tmp);
 						// Para tester.
-						if (t==LONGFLOAT || t==LONGINT)
+						if (now->type==LONGFLOAT || now->type==LONGINT)
+							// La API de gmplib (tmp=string) reselva memoria sin usar la macro malloc en la depuracion,
+							// Asi que liberamos directamente para no generar falsas advertensia.
 							FREE__(tmp);
 						else
 							free(tmp);
 				}
+				tmp=(void*)((struct Stack_*)tmp)->next;
+				if (tmp==((struct Header_Stack*)value)->stack)
+					break;
 			}
-			tmp=alloca(sizeof(int));//Recuerda que ya no es un entero:)
-			//Un seguro por si no hay elementos.
-			if (((struct Array*)value)->i==0){
-				*(int*)tmp=strlen(str)+1;
-				out.value=malloc(*(int*)tmp);
-				strcpy(out.value,str);
+			if (!tmp_str.count)
 				break;
-			}
 			//Hacemos el valor a retornar.
 			*(int*)tmp=strlen(str)+tmp_str.count+1;
 			out.value=malloc(*(int*)tmp);
@@ -211,7 +209,7 @@ struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right)
 }
 
 struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
-	static struct type_value out;
+	static struct type_value_err out;
 	mpz_t* copy_n=NULL;
 	void* tmp;
 	out.type=t;
@@ -266,7 +264,7 @@ struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 
 			FREE__(tmp);
 			break;
-		case ARRAY:///@todo: Modificar el array original para no crear uno nuevo.///////////////////////////////
+		case STACK:///@todo: Modificar el array original para no crear uno nuevo.
 			copy_n=(mpz_t*)malloc(sizeof(mpz_t));
 			mpz_init_set(*copy_n,*long_int);
 
@@ -275,6 +273,7 @@ struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			((struct type_value*)tmp)->value=copy_n;
 			
 			stack_setItem((struct Header_Stack*)value,tmp,0,true);
+			out.type=NONE;
 			break;
 		default:
 			perror("Caracteristica no disponible en la funcion add_longint\n");
@@ -295,7 +294,6 @@ struct type_value_err* add_float(void);
 struct type_value_err* opr_add_stack(struct Header_Stack* h_stack,enum TYPE t, void* value){
 	static struct type_value_err out;
 	void* tmp=NULL;
-	struct Stack_* stack_after=NULL;
 	out.type=NONE;
 	out.value=NULL;
 	switch (t){
@@ -320,13 +318,13 @@ struct type_value_err* opr_add_stack(struct Header_Stack* h_stack,enum TYPE t, v
 			(((struct Header_Stack*)value)->stack)->next=(struct Stack_*)tmp;
 			// Previous
 			h_stack->stack->next->previous=h_stack->stack;
-			((struct Stack_*)tmp)->previous=((struct Stack_*)value)->stack;
+			((struct Stack_*)tmp)->previous=((struct Header_Stack*)value)->stack;
 			// Now stack is value->stack 
 			h_stack->stack=((struct Header_Stack*)value)->stack;
 			((struct Header_Stack*)value)->stack=NULL;
 			break;
 		default:
-			add_array(h_stack,t,value);
+			add_stack(h_stack,t,value);
 	}
 	return &out;
 }

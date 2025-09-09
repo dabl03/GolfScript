@@ -60,11 +60,11 @@ void delete_item(const enum TYPE t_typValue, void* v_data){
 		break;
 		case LONGINT:
 			mpz_clear(*(mpz_t*)v_data);
-			free(v_data);
+			FREE__(v_data);
 			break;
 		case LONGFLOAT:
 			mpf_clear(*(mpf_t*)v_data);
-			free(v_data);
+			FREE__(v_data);
 			break;
 		case INT:
 		case CODES_BLOCKS:

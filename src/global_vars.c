@@ -84,11 +84,6 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 			num_2->type,
 			num_2->value
 		);
-		if (tmp_tv->type==NONE){
-			free(num_2->value);// Header_Stack
-			free(num_2);
-			return 0;
-		}
 		break;
 	default:
 		perror("Caracteristica no disponible en la funcion add_operator\n");
@@ -96,12 +91,19 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 		exit(APP_UNKNOWN_DATA);
 	}
 	delete_item(num_2->type,num_2->value);
+	if (tmp_tv->type==NONE){
+		free(num_2);
+		return 0;
+	}
 	delete_item(num_1->type,num_1->value);
+	free(num_2);
 	if (tmp_tv->err==NORMAL){
 		h_stack->stack->item.type=tmp_tv->type;
 		h_stack->stack->item.value=tmp_tv->value;
 	}else{
 		delete_item(tmp_tv->type,tmp_tv->value);
+		pop_stack(h_stack);
+		free(num_1);
 	}
 	return tmp_tv->err;
 }
