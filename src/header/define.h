@@ -43,7 +43,8 @@
 	#define MAX_INT_DIG 9
 	#define PRINTF_MEMORY_ERROR(x) printf("Error: No se puede asignar memoria en la función \"%s\".\n    Variable no creada: \"%s\".\n",__FUNCTION__,x)
 	#define SIZE_CHAR(x) (sizeof(char)*(x))
-
+	#define TRUE 1
+	#define FALSE 0
 	extern int CLIMIT_INT;//Para ver el limite del entero.
 	extern int CLIMIT_FLOAT;//Para ver el limite del flotante.
 	extern int quit;//Para saber si terminó la app.

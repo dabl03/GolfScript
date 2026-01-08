@@ -13,9 +13,9 @@
 	int run(struct Header_Stack* lines, struct Header_Stack* h_stack, struct Header_Stack* vars){
 		U_INT tmp_istr=0;
 		char* tmp_str=NULL;
-		struct Stack_* stc_line=h_stack->stack;
+		struct Stack_* stc_line=lines->stack;
 		bool show_msg;
-		
+
 		while (stc_line!=NULL && !quit){
 			if(stc_line->item.type!=STRING)continue;
 			const char* s_line=stc_line->item.value;
@@ -25,6 +25,7 @@
 			for(U_INT i=0;i<i_end;i++){
 				//Primero definimos nuestros signos constantes:
 				if(s_line[i]=='{'){
+					printf("Init code block");
 					tmp_str=get_ie_block(s_line,i,'}',&tmp_istr);
 					add_stack(h_stack,CODES_BLOCKS,tmp_str);
 					//Terminamos.
@@ -32,6 +33,7 @@
 				}else if (IF_INIT_COMENT(s_line[i]))//Llegamos a un comentario.
 					break;
 				else if (s_line[i]==';'){
+					printf("Quit stack.");
 					struct type_value* tv_temp=pop_stack(h_stack);
 					if (tv_temp!=NULL) {
 						delete_item(tv_temp->type,tv_temp->value);
@@ -45,6 +47,7 @@
 					}
 				}else if(s_line[i]==':'){
 					// We assign a variable
+					printf("Definir var");
 					if(IF_ENDL(s_line[i+1]))
 						continue;
 					i++;
@@ -69,7 +72,9 @@
 					free(name);
 				}else if(IF_ENDL(s_line[i])){
 					continue;//Por velocidad. Ignoramos los saltos de lineas como el interprete original.
-				}else if(s_line[i]=='['){//Arrays:
+				}else if(s_line[i]=='['){
+					printf("Get Array\n");
+					//Arrays:
 					tmp_str=get_ie_block(s_line,i,']',&tmp_istr);
 					//Nueva linea y nuevo stack.
 					struct Header_Stack hstc_line={NULL,NULL};
@@ -85,14 +90,17 @@
 					//Terminamos.
 					i=tmp_istr;
 				}else{
+					printf("Get var\n");
 					//Ahora vemos si existe la variable.
 					char* name=get_name_var(s_line,&i,0);
 					struct Var* vr_now=search_var(name,vars);
 					if(vr_now!=NULL){
 						// The variable exists
 						process_data(h_stack,vars,vr_now);
+						printf("Exissssss definir\n" );
 					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
+						printf("NonExis definirt or number\n" );
 						unsigned int len=strlen(name)-1;
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));
@@ -105,10 +113,11 @@
 						}
 					}else if (IF_INIT_STRING(s_line[i])){
 						// It's a string
+						printf("String init\n");
 						unsigned int len=strlen(name);
 						char* scape_=(char*)malloc(len);
 						strncpy(scape_, name + 1, len-2);
-            scape_[len-2]='\0';
+						scape_[len-2]='\0';
 
 						add_stack(h_stack,STRING,scape_);
 					}
@@ -121,7 +130,7 @@
 	}
 	
 	char* get_name_var(const char* search,unsigned int* index,unsigned int end){
-		struct String name = {3, 0, (char *)malloc(3)};
+		struct String name = {0,0,NULL};
 		unsigned int i = *index;// It will be used outside of loops
 		end=(end)?end:strlen(search);
 
@@ -133,7 +142,10 @@
 			);
 			// i-1 per non-alphanumeric character
 			str_add_str_end(&name, search+*index, i--);
-		}else if (is_num(search[*index]) || (search[*index]=='-' && is_num(search[*index+1])) ){ // Si es un numero.
+		}else if (
+			is_num(search[*index]) || (
+				search[*index]=='-' && is_num(search[*index+1])
+			)){ // Si es un numero.
 			for (
 				i+=(search[*index]=='-')?1:0;
 				i < end && is_num(search[i]);

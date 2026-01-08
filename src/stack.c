@@ -39,6 +39,7 @@ struct type_value* pop_stack(struct Header_Stack* hstc_modific){
 	// Nota: No static porque apuntará a otro elemento al llamar dos veces.
 	struct type_value* tv_out=(struct type_value*)malloc(sizeof(struct type_value*));
 	struct Stack_* stc_temp=hstc_modific->stack;
+
 	hstc_modific->stack=stc_temp->next;
 	hstc_modific->stack->previous=stc_temp->previous;
 
@@ -90,7 +91,7 @@ void delete_stack(struct Header_Stack* hstc_data){
 		free(stc_for_free);
 	}
 	hstc_data->stack=NULL;
-	//stc_data->father=NULL;//No se si liberar al padre tambien.
+	hstc_data->father=NULL;
 }
 struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, void* value_io){
   // Si pasa null creamos uno nuevo, de lo contrario usamos el que se paso.

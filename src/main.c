@@ -49,9 +49,10 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 	#define main main_c
 #endif
 //Use macro para que el ide no vea error.
-int main(int arc, char** argv){
+int main(int argc, char** argv){
 	struct Header_Stack stack={NULL,NULL},//Nuestra pila.
 	vars={NULL,NULL};//Nuestra variables
+	struct Stack_* stc_now=NULL;
 	int i_return_code=0;
 	init_gvars(&vars);
 	if (argc > 1){//Vemos que parametros se paso.
@@ -68,38 +69,42 @@ int main(int arc, char** argv){
 			}
 			add_stack(&path_files,STRING,opcion);
 		}
-		if (params.i){
+		if (params.stack){
 			config_all(&params);
 			delete_stack(&params);
 		}
-		if (!path_files.i){
+		if (!path_files.stack){
 			i_return_code=interprete(&stack,&vars);
 		}else{
-			FILE* file=fopen((char*)path_files.value[0].value,"r");
-			struct Array lineas={1,0,malloc(sizeof(struct type_value))};
-			long int size_file=0;
-			char* str;
-			//No existe.
-			if (file==NULL){
-				printf("El archivo \"%s\" no existe, revise la ruta.%s",(char*)path_files.value[0].value,ENDL);
-				delete_stack(&path_files);
-				exit(EXIT_FAILURE);
+			stc_now=path_files.stack;
+			struct Header_Stack lineas={NULL,NULL};
+			while (stc_now!=NULL){
+				FILE* file=fopen((char*)stc_now->item.value,"r");
+				long int size_file=0;
+				char* str;
+				//No existe.
+				if (file==NULL){
+					printf("Error: El archivo \"%s\" no existe, revise la ruta.%s", stc_now->item.value, ENDL);
+					delete_stack(&path_files);
+					exit(EXIT_FAILURE);
+				}
+				//Movemos al final del archivo para ver donde termina su contenido.
+				fseek(file, 0L, SEEK_END);
+				size_file=ftell(file);
+				fseek(file, 0L, SEEK_SET);//Regreso al inicio.
+				
+				str=(char*)malloc(size_file+2);
+				//Leemos todo de una.
+				fread(str,sizeof(char),size_file,file);
+				str[size_file]='\0';//Seguridad.
+				fclose(file);
+				//Ejecutamos:
+				add_stack(&lineas,STRING,str);
+				i_return_code+=run(&lineas,&stack,&vars);
+				delete_stack(&lineas);
+
+				stc_now=stc_now->next;
 			}
-			//Movemos al final del archivo para ver donde termina su contenido.
-			fseek(file, 0L, SEEK_END);
-			size_file=ftell(file);
-			fseek(file, 0L, SEEK_SET);//Regreso al inicio.
-			
-			str=(char*)malloc(size_file+2);
-			//Leemos todo de una.
-			fread(str,sizeof(char),size_file,file);
-			str[size_file]='\0';//Seguridad.
-			fclose(file);
-			//Ejecutamos:
-			add_stack(&lineas,STRING,str);
-			i_return_code=run(&lineas,&stack,&vars);
-			//Liberamos todo.
-			delete_stack(&lineas);
 			delete_stack(&path_files);
 		}
 	}else{//Interpretamos.
@@ -109,12 +114,13 @@ int main(int arc, char** argv){
 	delete_stack(&vars);
 	#ifdef DEBUG
 		puts("\n¿Hay fuga de memoria?:");
-  	viewStack();
+	viewStack();
 	#endif
 	return i_return_code;
 }
-void config_all(struct Header_Stack* opciones){
-	for(unsigned int i=0;i<opciones->i;i++){
+void config_all(struct Header_Stack* options){
+	struct Stack_* stc_now=options->stack;
+	while(stc_now!=NULL) {
 		/****
 		 * @todo Hacer opciones de configuracion para configurarlas aqui.
 		 * Me gustaria una que esamble y compile el archivo para que sea mas facil analizarlo.
@@ -184,7 +190,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			run(&lineas, stack, vars);
 			delete_stack(&lineas);
 			//Mostramos la variable n.
-			struct Var* this_var=(struct Var*)vars->value[search_var("n",vars)].value;
+			struct Var* this_var=search_var("n", vars);
 			char* extend=to_string_value(this_var->type,this_var->value);
 			char* output = printf_stack(stack);//Obtenemos la pila.
 			printf("[ %s]%s",output,extend);

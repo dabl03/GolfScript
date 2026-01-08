@@ -4,24 +4,31 @@
 #include "../../header/stack.h"
 #include "../../header/global_vars.h"
 #include "../../header/define.h"
-/**
- * @brief      Adds an integer.
+/***
+ * @Brief      Adds an integer.
  *
- * @param num      The number
- * @param type_n2  The type n 2
- * @param num_2    The number 2
+ * @Param num      The number
+ * @Param type_n2  The type n 2
+ * @Param num_2    The number 2
+ * @Param is_right  It allows you to determine whether to 
+ * place it at the beginning of the array (stack, code block, string)
+ *  or at the end. If true, it goes at the beginning.
  *
- * @return tatic struct type_value_err* -  El resultado, no se requiere liberar la estructura.
+ * @return tatic struct type_value_err* -  Result. 
+ * Note: The result does not require releasing the structure.
  */
-struct type_value_err* add_int(int num,enum TYPE type_n2,void* num_2);
+struct type_value_err* add_int(int num, enum TYPE type_n2, void* num_2, bool is_right);
 /**
  * Agrega algo al bloque de codigo
  * @param codes    Bloque de codigo
  * @param t        Tipo de objeto agregar.
  * @param value    valor
+ * @Param is_right  It allows you to determine whether to 
+ * place it at the beginning of the array (stack, code block, string)
+ *  or at the end. If true, it goes at the beginning.
  * @return Char* - Recordar liberar.
  */
-char* add_codes_block(char* codes,enum TYPE t, void* value);
+char* add_codes_block(char* codes,enum TYPE t, void* value, bool is_right);
 /**
  * Suma un entero grande con algo
  * @param  arr    Array

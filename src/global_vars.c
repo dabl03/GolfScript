@@ -64,7 +64,7 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 	//[num_1 num_2]
 	switch (num_1->type){
 	case INT:
-		tmp_tv=add_int(*(int*)num_1->value,num_2->type,num_2->value); 
+		tmp_tv=add_int(*(int*)num_1->value, num_2->type, num_2->value, TRUE); 
 		break;
 	case LONGINT:
 		tmp_tv=add_longint((mpz_t*)num_1->value,num_2->type,num_2->value);
@@ -73,7 +73,7 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 		//Usamos alloca para no liberar este bloque:D
 		tmp_tv=(struct type_value_err*)alloca(sizeof(struct type_value_err*));
 		tmp_tv->type=CODES_BLOCKS;
-		tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value);
+		tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value, TRUE);
 		break;
 	case STRING:
 		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
