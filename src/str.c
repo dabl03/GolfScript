@@ -275,8 +275,8 @@ void cadd_leftover(struct String* str_,const char c){
 }
 
 char* get_sub_str(const char* str,U_INT init, U_INT end){
-  NEW_STRING(out,20);
   U_INT end_c=(end)?end:strlen(str);
+  NEW_STRING(out,end_c+1);
   char type=str[init++];
   bool is_scape=false;
   out.str[out.count++]='"';

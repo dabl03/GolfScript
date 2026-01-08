@@ -25,7 +25,6 @@
 			for(U_INT i=0;i<i_end;i++){
 				//Primero definimos nuestros signos constantes:
 				if(s_line[i]=='{'){
-					printf("Init code block");
 					tmp_str=get_ie_block(s_line,i,'}',&tmp_istr);
 					add_stack(h_stack,CODES_BLOCKS,tmp_str);
 					//Terminamos.
@@ -33,7 +32,6 @@
 				}else if (IF_INIT_COMENT(s_line[i]))//Llegamos a un comentario.
 					break;
 				else if (s_line[i]==';'){
-					printf("Quit stack.");
 					struct type_value* tv_temp=pop_stack(h_stack);
 					if (tv_temp!=NULL) {
 						delete_item(tv_temp->type,tv_temp->value);
@@ -47,7 +45,6 @@
 					}
 				}else if(s_line[i]==':'){
 					// We assign a variable
-					printf("Definir var");
 					if(IF_ENDL(s_line[i+1]))
 						continue;
 					i++;
@@ -66,6 +63,7 @@
 						// We initialize the variable
 						struct type_value* stack_var=&h_stack->stack->item;
 
+						vr_now=(struct Var*)malloc(sizeof(struct Var));
 						setValue_tv(vr_now,name,stack_var);
 						add_stack(vars,VAR,(void*)vr_now);
 					}
@@ -73,7 +71,6 @@
 				}else if(IF_ENDL(s_line[i])){
 					continue;//Por velocidad. Ignoramos los saltos de lineas como el interprete original.
 				}else if(s_line[i]=='['){
-					printf("Get Array\n");
 					//Arrays:
 					tmp_str=get_ie_block(s_line,i,']',&tmp_istr);
 					//Nueva linea y nuevo stack.
@@ -98,7 +95,6 @@
 						process_data(h_stack,vars,vr_now);
 					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
-						printf("NonExis definirt or number\n" );
 						unsigned int len=strlen(name)-1;
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));
@@ -109,9 +105,8 @@
 							mpz_init_set_str(*n,name,0);
 							add_stack(h_stack,LONGINT,n);
 						}
-					}else if (IF_INIT_STRING(s_line[i])){
+					}else if (IF_INIT_STRING(name[0])){
 						// It's a string
-						printf("String init\n");
 						unsigned int len=strlen(name);
 						char* scape_=(char*)malloc(len);
 						strncpy(scape_, name + 1, len-2);

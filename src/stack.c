@@ -165,13 +165,22 @@ struct Header_Stack* copy_stack(const struct Header_Stack* hstc_io){
 	}
 	return hstc_out;
 }
-void setValue_tv(struct Var* vr_now,const char* s_name,struct type_value* tv_setVar){
+void setValue_tv(struct Var* vr_now, const char* s_name, struct type_value* tv_setVar){
 	// This Var is defined
 	if (s_name==NULL){
 		delete_item(vr_now->type,vr_now->value);
 	}else{
-		unsigned int len=strlen(s_name),i=0;
-		vr_now->name=(char*)malloc(SIZE_CHAR(len+1));
+		if (vr_now==NULL){
+			printf("Error: Se ha pasado NULL a vr_now, cuando deberia tener "
+				"un puntero a variable para modificar su valor.\n "
+				"	En la funcion %s",__FUNCTION__
+			);
+			exit(-1);
+		}
+		unsigned int len=strlen(s_name),
+			i=0
+		;
+		vr_now->name=(char*)malloc(sizeof((char*)*(len+1)));
 		vr_now->i_name=0;
 		if (vr_now->name==NULL){
 			PRINTF_MEMORY_ERROR(s_name);
