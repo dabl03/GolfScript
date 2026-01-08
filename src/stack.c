@@ -41,7 +41,8 @@ struct type_value* pop_stack(struct Header_Stack* hstc_modific){
 	struct Stack_* stc_temp=hstc_modific->stack;
 
 	hstc_modific->stack=stc_temp->next;
-	hstc_modific->stack->previous=stc_temp->previous;
+	if (hstc_modific->stack!=NULL)
+		hstc_modific->stack->previous=stc_temp->previous;
 
 	tv_out->type=stc_temp->item.type;
 	tv_out->value=stc_temp->item.value;

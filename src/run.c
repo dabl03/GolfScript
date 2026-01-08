@@ -90,14 +90,12 @@
 					//Terminamos.
 					i=tmp_istr;
 				}else{
-					printf("Get var\n");
 					//Ahora vemos si existe la variable.
 					char* name=get_name_var(s_line,&i,0);
 					struct Var* vr_now=search_var(name,vars);
 					if(vr_now!=NULL){
 						// The variable exists
 						process_data(h_stack,vars,vr_now);
-						printf("Exissssss definir\n" );
 					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
 						printf("NonExis definirt or number\n" );
@@ -130,9 +128,10 @@
 	}
 	
 	char* get_name_var(const char* search,unsigned int* index,unsigned int end){
-		struct String name = {0,0,NULL};
+		struct String name = {3, 0, (char*)malloc(sizeof(char*)*3)};
 		unsigned int i = *index;// It will be used outside of loops
 		end=(end)?end:strlen(search);
+		name.str[0] = '\0';
 
 		if ( is_abc(search[*index]) ){
 			// If it's an alphabet character, then it's variable name.
