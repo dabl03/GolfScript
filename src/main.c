@@ -194,7 +194,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			struct Var* this_var=search_var("n", vars);
 			char* extend=to_string_value(this_var->type,this_var->value);
 			char* output = printf_stack(stack);//Obtenemos la pila.
-			printf("[ %s]%s",output,extend);
+			printf("[%s ]%s",output,extend);
 			free(extend);
 			free(output);
 		}

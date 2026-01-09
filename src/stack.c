@@ -95,15 +95,15 @@ void delete_stack(struct Header_Stack* hstc_data){
 	hstc_data->father=NULL;
 }
 struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, void* value_io){
-  // Si pasa null creamos uno nuevo, de lo contrario usamos el que se paso.
-  struct type_value* tv_out=(tv_src)?tv_src:malloc(sizeof(struct type_value));
-  tv_out->type=typ_io;
-  char* str;
+	// Si pasa null creamos uno nuevo, de lo contrario usamos el que se paso.
+	struct type_value* tv_out=(tv_src)?tv_src:malloc(sizeof(struct type_value));
+	tv_out->type=typ_io;
+	char* str;
 	switch(typ_io){
 			case VAR:// No se si agregarlo.
 				perror("No se añadio la caracteristica.\n"
-				  "En funcion copy_item->caso VAR.\n"
-			  );
+					"En funcion copy_item->caso VAR.\n"
+				);
 				exit(-4);
 				break;
 		case INT:
@@ -246,65 +246,33 @@ char* printf_stack(const struct Header_Stack* hstc_io){
 	while (stc_now!=NULL){
 		switch(stc_now->item.type){
 			case INT:
-				// Creamos una cadena temporal y guardamos el antero
-				s_generic=(char*)alloca(50);
-				sprintf(s_generic,"%d ",*(int*)stc_now->item.value);
-
-				len=append_strcpy(&s_out,len,s_generic);
-				break;
 			case FLOAT:
-				// Creamos una cadena temporal y guardamos el flotante.
-				s_generic=(char*)alloca(60);
-				sprintf(s_generic,"%f ",*(double*)stc_now->item.value);
-
-				len=append_strcpy(&s_out,len,s_generic);
-				break;
-			case STACK:
-				// Convertimos el array en cadena para despues concatenarlo
-				s_generic=printf_stack((struct Header_Stack*)stc_now->item.value);
-				len=append_sprintf(
-					&s_out,
-					len,
-					4,
-					"[ %s] ",// 4 -> "[ %s] "
-					s_generic
-				);
+				// Creamos una cadena temporal y guardamos el antero
+				s_generic=(char*)malloc(60);
+				if (stc_now->item.type==INT)
+					sprintf(s_generic," %d",*(int*)stc_now->item.value);
+				else
+					sprintf(s_generic," %f ",*(double*)stc_now->item.value);
+				// Append
+				len=append_strcpy(&s_out, len, s_generic);
 				free(s_generic);
-				break;
-			case CODES_BLOCKS:
-				len=append_sprintf(
-					&s_out,
-					len,
-					3,// 3 -> "{} "
-					"{%s} ",
-					(char*)stc_now->item.value
-				);
-				break;
-			case STRING:
-				len=append_sprintf(
-					&s_out,
-					len,
-					3,// 3 -> '"" '
-					"\"%s\" ",
-					(char*)stc_now->item.value
-				);
 				break;
 			case LONGINT:
 				// Obtener la cadena.
-				s_generic=mpz_get_str(NULL,0,*(mpz_t*)stc_now->item.value);
+				s_generic=mpz_get_str(NULL, 0, *(mpz_t*)stc_now->item.value);
 				
 				// 1 por: " "
 				len=append_sprintf(
 					&s_out,
 					len,
 					1,// 1 -> ' '
-					"%s ",
+					" %s",
 					s_generic
 				);
 				FREE__(s_generic);
 				break;
 			case LONGFLOAT:
-			  // Aprovechamos que gmp ofrece funciones para 
+				// Aprovechamos que gmp ofrece funciones para 
 				// Obtener la cadena.
 				s_generic=mpf_get_str(NULL, &mp_exponent, 10, 16, *(mpf_t*)stc_now->item.value);
 				mp_exponent+=(*s_generic=='-')?1:0;//Si es negativo se necesita sumar 1.
@@ -315,7 +283,7 @@ char* printf_stack(const struct Header_Stack* hstc_io){
 
 				// 18: 7->"%.s,%s "+{s_generic 10 character}+1->\0.
 				s_format=(char*)alloca(SIZE_CHAR(18));
-				sprintf(s_format,"%%.%ds,%%s ",(int)mp_exponent);
+				sprintf(s_format," %%.%ds,%%s",(int)mp_exponent);
 				//Out:
 				sprintf(
 					s_out+SIZE_CHAR(len-1),
@@ -326,17 +294,41 @@ char* printf_stack(const struct Header_Stack* hstc_io){
 				len+=len_str_return;
 				FREE__(s_generic);
 				break;
+			case STRING:
+			case CODES_BLOCKS:
+				len=append_sprintf(
+					&s_out,
+					len,
+					3,// 3 -> '"" ' or "{} "
+					(stc_now->item.type==STRING)?
+						" \"%s\"":
+						" {%s}", // CODE_BLOCKS
+					(char*)stc_now->item.value
+				);
+				break;
+			case STACK:
+				// Convertimos el array en cadena para despues concatenarlo
+				s_generic=printf_stack((struct Header_Stack*)stc_now->item.value);
+				len=append_sprintf(
+					&s_out,
+					len,
+					4,
+					" [%s ]",// 4 -> " [ %s]"
+					s_generic
+				);
+				free(s_generic);
+				break;
 			case VAR:
 				s_generic=to_string_value(
 					((struct Var*)stc_now->item.value)->type,
 					((struct Var*)stc_now->item.value)->value
 				);
-				// 4 -> "(=) "
+				// 4 -> " (=)"
 				len_str_return=strlen(((struct Var*)stc_now->item.value)->name)+strlen(s_generic)+4;
 				s_out=(char*)realloc(s_out,SIZE_CHAR(len+len_str_return));
 				sprintf(
 					s_out+SIZE_CHAR(len-1),
-					"(%s=%s) ",
+					" (%s=%s)",
 					((struct Var*)stc_now->item.value)->name,
 					s_generic
 				);

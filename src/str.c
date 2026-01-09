@@ -322,23 +322,30 @@ unsigned int append_sprintf(
 	const char* format,
 	const char* str_add
 ){
-	unsigned int len_str_add=len_out+strlen(str_add)+len_add_format;
-
-	*out=(char*)realloc(*out,SIZE_CHAR(len_str_add));
+	const unsigned int len_str=strlen(str_add)+len_add_format;
+	const unsigned int len_str_add=len_out+strlen(str_add)+len_add_format;
+	char* str_2=*out;
+	*out=(char*)malloc(len_str_add);
 	if (*out==NULL){
 		PRINTF_MEMORY_ERROR("Error: Memoria no suficiente.");
 		return 0;
 	}
+	sprintf(*out, format, str_add);
 	// Agregamos al final de la cadena.
-	sprintf((*out)+SIZE_CHAR(len_out-1),format,str_add);
+	strcpy(*out+len_str, str_2);
+	free(str_2);
 	return len_str_add;
 }
-unsigned int append_strcpy(char** str_out,const unsigned int len,const char* str_io){
+unsigned int append_strcpy(char** str_out, const unsigned int len, const char* str_io){
 	const unsigned int size_io=strlen(str_io);
-	*str_out=(char*)realloc(*str_out,len+size_io);
-	strncpy(*str_out+SIZE_CHAR(len-1),str_io,size_io+1);
-	return len+size_io;
+	const char* str_2=*str_out;// Para invertir el orden.
 
+	*str_out=(char*)malloc( len+size_io );
+	*str_out[0]='\0';
+	strcpy(*str_out, str_io);
+	strcpy(*str_out+SIZE_CHAR(size_io), str_2);
+	free(str_2);
+	return len+size_io;
 }
 char* convert_static_str_to_dynamic(const char* str_io){
 	char* out=(char*)malloc( SIZE_CHAR(strlen(str_io)+1) );
