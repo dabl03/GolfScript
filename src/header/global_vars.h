@@ -5,11 +5,6 @@
 #include "str.h"
 #include "stack.h"
 
-struct type_value_err {
-  enum TYPE type;
-  void* value;
-  unsigned long int err;
-};
 /**
  * @brief Imprimimos el ultimo elemento por pantalla y lo liberamos.
  * 

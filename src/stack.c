@@ -180,7 +180,7 @@ void setValue_tv(struct Var* vr_now, const char* s_name, struct type_value* tv_s
 		unsigned int len=strlen(s_name),
 			i=0
 		;
-		vr_now->name=(char*)malloc(sizeof((char*)*(len+1)));
+		vr_now->name=(char*)malloc(sizeof(char*)*(len+1));
 		vr_now->i_name=0;
 		if (vr_now->name==NULL){
 			PRINTF_MEMORY_ERROR(s_name);

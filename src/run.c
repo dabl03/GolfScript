@@ -145,7 +145,7 @@
 				i < end && is_num(search[i]);
 				i++
 			);
-			str_add_str_end(&name, search+*index, i--);
+			str_add_str_end(&name, search+*index, --i);
 		}else if(IF_INIT_STRING(search[*index])){//Obtenemos la cadena.
 			*index=get_end_str(search+i,end);
 			*index=(*index)?*index:end;

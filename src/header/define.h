@@ -73,6 +73,9 @@
 		VAR, // Variable o estructura Var
 		CODES_BLOCKS, // string que representa un código golfscript
 		STACK,
-		ARRAY
+		ARRAY, // Compatibilidad.
+		
+		// Este debe ser siempre el ultimo elemento.
+		END_ELEMENT
 	};
 #endif

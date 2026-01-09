@@ -4,6 +4,7 @@
 #include "../../header/stack.h"
 #include "../../header/global_vars.h"
 #include "../../header/define.h"
+struct type_value_err* int_add_int(struct type_value* num_1, struct type_value* num_2, bool is_right);
 /***
  * @Brief      Adds an integer.
  *

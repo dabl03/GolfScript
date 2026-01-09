@@ -9,6 +9,7 @@
 #include "header/define.h"
 #include "header/stack.h"
 #include "header/global_vars.h"
+
 const char* VERSION="V0";//0 porque todavia se esta en desarrollo.
 const char* AUTHOR="  Interprete: Daniel Briceño.\n  Sintaxis: Darren Smith.";
 const char* LICENSE_URL="https://raw.githubusercontent.com/dabl03/GolfScript/main/licence";

@@ -6,6 +6,7 @@
 #include "./header/stack.h"
 #include "./header/global_vars.h"
 #include "./operators/header/add.h"
+#include "./header/operators.h"
 
 U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
 	struct type_value* tv_now;
@@ -40,6 +41,7 @@ U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 	return out;
 }
 
+// Crear una funcion que ordene de la siguiente manera,
 U_INT add_operator(struct Header_Stack* h_stack,...){
 	if (h_stack->stack==NULL && (h_stack->stack->next==NULL && (h_stack->father==NULL && h_stack->father->stack->next==NULL)) ){
 		return INSUFFICIENT_ARGUMENTS;
@@ -60,46 +62,14 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 		return add_operator(h_stack);
 	}
 	num_1=&h_stack->stack->item;
-	tmp_tv=NULL;
-	//[num_1 num_2]
-	switch (num_1->type){
-	case INT:
-		tmp_tv=add_int(*(int*)num_1->value, num_2->type, num_2->value, TRUE); 
-		break;
-	case LONGINT:
-		tmp_tv=add_longint((mpz_t*)num_1->value,num_2->type,num_2->value);
-		break;
-	case CODES_BLOCKS:
-		//Usamos alloca para no liberar este bloque:D
-		tmp_tv=(struct type_value_err*)alloca(sizeof(struct type_value_err*));
-		tmp_tv->type=CODES_BLOCKS;
-		tmp_tv->value=add_codes_block(num_1->value,num_2->type,num_2->value, TRUE);
-		break;
-	case STRING:
-		tmp_tv=add_str((char*)num_1->value,num_2->type,num_2->value,true);
-		break;
-	case STACK:
-		tmp_tv=opr_add_stack(
-			(struct Header_Stack*)num_1->value,
-			num_2->type,
-			num_2->value
-		);
-		break;
-	default:
-		perror("Caracteristica no disponible en la funcion add_operator\n");
-		printf("Type num_2{%s}, type num_1{%s}",get_name_type(num_2->type),get_name_type(num_1->type));
-		exit(APP_UNKNOWN_DATA);
-	}
-	delete_item(num_2->type,num_2->value);
-	if (tmp_tv->type==NONE){
-		free(num_2);
-		return 0;
-	}
+	tmp_tv=execute_sum(num_1, num_2);
 	delete_item(num_1->type,num_1->value);
+	delete_item(num_2->type,num_2->value);
 	free(num_2);
 	if (tmp_tv->err==NORMAL){
 		h_stack->stack->item.type=tmp_tv->type;
 		h_stack->stack->item.value=tmp_tv->value;
+		free(tmp_tv);
 	}else{
 		delete_item(tmp_tv->type,tmp_tv->value);
 		pop_stack(h_stack);
@@ -167,6 +137,7 @@ U_INT init_gvars(struct Header_Stack* vars){
 	add_var(vars,"]",FUNCTION,(void*)pack_stack);
 	add_var(vars,"n",STRING,"\n");
 	add_var(vars,"help",FUNCTION,(void*)help);
+	init_operators(false);
 	return NORMAL;
 }
 #endif

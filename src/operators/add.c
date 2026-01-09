@@ -7,31 +7,16 @@
 #include "../header/stack.h"
 #include "../header/global_vars.h"
 #include "../header/define.h"
+#include "../header/operators.h"
 
 #include "./header/add.h"
-/** It performs a springform and sorts according to 
- * `is_right`. If `is_right` is true, it uses `ptr_format_1`;
- * otherwise, it uses `ptr_format_2`.
- * Param ptr_out	Where to save the result.
- * Param ptr_format	Format that will be passed to sprintf.
- * Param is_right	Indicate whether to use the left or right variable (str_1 or str_2)
- * Param str_1, str_2	Strings to be added to ptr_out
- * */
-void sprintf_with_invert(
-	char* ptr_out,
-	const char* ptr_format,
-	bool is_right,
-	const char* str_1, const char* str_2
-){
-	if (is_right)
-		sprintf(ptr_out, ptr_format, str_1, str_2);
-	else
-		sprintf(ptr_out, ptr_format, str_2, str_1);
-}
-/**
- * @TODO:Buscar la manera de mejorar la sintaxis.
- * @TODO: Refatorizar el codigo para eliminar pasos innecesarios.
-*/
+
+// LONGFLOAT
+
+
+// Basic type
+
+// Antiguo.
 struct type_value_err* add_int(int num, enum TYPE type_n2, void* num_2, bool is_right){
 	static struct type_value_err out;
 	int64_t tmp_i;
@@ -39,62 +24,6 @@ struct type_value_err* add_int(int num, enum TYPE type_n2, void* num_2, bool is_
 	out.type=type_n2;
 	out.err=NORMAL;
 	switch(type_n2){
-		case INT:
-			tmp_i=num+*(int*)num_2;
-			//Primero verificamos si hubo un desbordamiento.
-			if (tmp_i<INT_MIN || tmp_i>INT_MAX){
-				out.value=malloc(sizeof(mpz_t));
-				mpz_init_set_si(*(mpz_t*)out.value,num);
-
-				tmp=alloca(sizeof(mpz_t));
-				mpz_init_set_si(*(mpz_t*)tmp,*(int*)num_2);
-
-				mpz_add(*(mpz_t*)out.value,*(mpz_t*)out.value,*(mpz_t*)tmp);
-				mpz_clear(*(mpz_t*)tmp);
-				out.type=LONGINT;
-				break;
-			}
-			out.value=malloc(sizeof(int));
-			*(int*)out.value=num+*(int*)num_2;
-			break;
-		case LONGINT:
-			out.value=malloc(sizeof(mpz_t));
-			mpz_init_set_si(*(mpz_t*)out.value,num);
-			
-			mpz_add(*(mpz_t*)out.value,*(mpz_t*)out.value,*(mpz_t*)num_2);
-			break;
-		case FLOAT:
-			out.value=malloc(sizeof(double));
-			*(double*)out.value=*(double*)num_2+num;
-
-			//Si se desborda el double
-			if (isinf(*(double*)out.value)){
-				FREE__(out.value);
-				//LONGFLOAT.
-				out.type=LONGFLOAT;
-				out.value=malloc(sizeof(mpf_t));
-				mpf_init_set_d(*(mpf_t*)out.value,*(double*)num_2);
-
-				tmp=alloca(sizeof(mpf_t));
-				mpf_init_set_d(*(mpf_t*)tmp,(double)num);
-				
-				mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-				mpf_clear(*(mpf_t*)tmp);
-			}
-			break;
-		case LONGFLOAT:
-			out.value=malloc(sizeof(mpf_t));
-			mpf_init_set(*(mpf_t*)out.value,*(mpf_t*)num_2);
-
-			tmp=alloca(sizeof(mpf_t));
-			mpf_init_set_d(*(mpf_t*)tmp,(double)num);
-
-			mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-			mpf_clear(*(mpf_t*)tmp);
-			break;
-		case STRING:
-			/// out.value=add_str((char*)tmp, INT, (char*)num_2, FALSE)->value; @TODO: Ver si usar.
-			// break;
 		case CODES_BLOCKS:
 			tmp=alloca(30);
 			itoa(num,(char*)tmp, 10);
@@ -252,49 +181,7 @@ struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 	mpz_t* copy_n=NULL;
 	void* tmp;
 	out.type=t;
-	switch(t){
-		case INT:
-		case LONGINT:
-			out.type=LONGINT;
-			
-			out.value=malloc(sizeof(mpz_t));
-			mpz_init(*(mpz_t*)out.value);
-
-			tmp=value;
-			if (t==INT){
-				tmp=alloca(sizeof(mpz_t));
-				mpz_init_set_si(*(mpz_t*)tmp,*(int*)value);
-			  mpz_add(*(mpz_t*)out.value,*long_int,*(mpz_t*)tmp);
-				mpz_clear(*(mpz_t*)tmp);
-				break;
-			}
-			mpz_add(*(mpz_t*)out.value,*long_int,*(mpz_t*)tmp);
-			break;
-		case FLOAT:
-			//Debemos combertir primero a LONGDOUBLE los dos operando para realizar la suma.
-			out.type=LONGFLOAT;
-			
-			out.value=malloc(sizeof(mpf_t));
-			mpf_init(*(mpf_t*)out.value);
-			mpf_set_z(*(mpf_t*)out.value,*long_int);
-
-			tmp=alloca(sizeof(mpf_t));// Segundo operando.
-			mpf_init(*(mpf_t*)tmp);
-			mpf_set_d(*(mpf_t*)tmp, *(double*)value);
-
-			mpf_add(*(mpf_t*)out.value,*(mpf_t*)out.value,*(mpf_t*)tmp);
-			mpf_clear(*(mpf_t*)tmp);
-			break;
-		case LONGFLOAT:break;/** 
-		* @todo: Hacer...
-		*/
-		case STRING:
-			tmp=(void*)mpz_get_str(NULL,10, *long_int);
-
-			out.value=malloc(strlen((char*)value)+strlen((char*)tmp)+2);
-			sprintf((char*)out.value,"%s%s",(char*)tmp,(char*)value);
-			FREE__(tmp);
-			break;
+	/*		break;
 		case CODES_BLOCKS:
 			tmp=(void*)mpz_get_str(NULL,10, *long_int);
 
@@ -318,17 +205,9 @@ struct type_value_err* add_longint(mpz_t* long_int,enum TYPE t, void* value){
 			perror("Caracteristica no disponible en la funcion add_longint\n");
 			printf("Type num_2{ %s }",get_name_type(t));
 			exit(-8);
-	}
+	}*/
 	return &out;
 }
-struct type_value_err* add_longfloat(void);
-	/**
-	 * @todo ...
-	 * */
-struct type_value_err* add_float(void);
-	/**
-	 * @todo ...
-	 * */
 
 struct type_value_err* opr_add_stack(struct Header_Stack* h_stack,enum TYPE t, void* value){
 	static struct type_value_err out;

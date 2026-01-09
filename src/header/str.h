@@ -9,15 +9,16 @@
  * @param max Maximo caracteres a insertar.
  * @param count caracteres actuales.
  * @param str cadena.
+ * @Note: Recordar iniciar todo en NULL o que str debe tener '\0'
 */
 struct String{
-  unsigned int max;
-  unsigned int count;
-  char* str;
+	unsigned int max;
+	unsigned int count;
+	char* str;
 };
 #define INIT_STRING(str___,max_____) str___.str=(char*)malloc(max_____);\
-  str___.max=max_____; \
-  str___.count=0;
+	str___.max=max_____; \
+	str___.count=0;
 #define NEW_STRING(str___,max_____) struct String str___={max_____,0,(char*)malloc(max_____)}
 /**
  * @brief Función que busca un char dentro de una cadena.
@@ -70,7 +71,7 @@ long int parseLongInt(const char* str);
  * @param str_copy Cadena a copiar.
  * @param end Final de la cadena a copiar. Si es 0 se buscará el tamaño.
 */
-void str_add_str_end(struct String* str_d, const char* str_copy, unsigned int end);
+void str_add_str_end(struct String* str_d,  char* str_copy, unsigned int end);
 #define str_add_str(str_d, str_copy) str_add_str_end(str_d,str_copy,0)
 #define str_add_str_init_end(str_d,  str_copy, init,end) str_add_str_end(str_d,str_copy+init,end)
 /**
