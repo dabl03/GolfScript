@@ -15,8 +15,7 @@
 - Terminar los operadores.
 - Establecer un limite a los nombres de variables en longitud de caracteres.
 - Terminar los operadores suma que faltan bloque de codigo y str y array.
-- Corregir el problema que las variables no se asignan bien, el posible problema es str_add_str_end o get_name_var
-- Succede una violacion de segmento al usar mucho ++++++++++++++ con muchos numeros. Verificar.
+- Succede una violacion de segmento al usa mas + de los numeros que hay con muchos numeros. Verificar.
 /**
  * @TODO: Buscar y Arreglar un error que impide
  *  que \xhex muestre los caracteres hexadecimales. 

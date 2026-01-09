@@ -57,16 +57,15 @@ long int parseLongInt(const char* str){
 	return (IS_NEGATIVE)?-output:output;
 }
 
-void str_add_str_end(struct String* str_d,  char* str_copy, unsigned int end){
-	end=(end)?end:strlen(str_copy);
-	if ( str_d->count+end+1>=str_d->max ){
-		str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=end+1));
+void str_add_str_end(struct String* str_d,  char* str_copy, int64_t count){
+	count=(count < 0)? strlen(str_copy) : count;
+	if ( str_d->count+count>=str_d->max ){
+		str_d->str=(char*)realloc(str_d->str,sizeof(char)*(str_d->max+=count+1));
 	}
 	char* chr_now=(char*)str_copy;
-	for (unsigned int i=0; i<end ; i++){
+	for (unsigned int i=0; i<count ; i++){
 		str_d->str[str_d->count++]=*chr_now;
 		chr_now++;
-		printf("%d->%d\n",str_d->count,*chr_now);
 	}
 	str_d->str[str_d->count]='\0';
 }
@@ -323,7 +322,7 @@ unsigned int append_sprintf(
 	const char* str_add
 ){
 	const unsigned int len_str=strlen(str_add)+len_add_format;
-	const unsigned int len_str_add=len_out+strlen(str_add)+len_add_format;
+	const unsigned int len_str_add=len_out+len_str;
 	char* str_2=*out;
 	*out=(char*)malloc(len_str_add);
 	if (*out==NULL){
@@ -338,10 +337,9 @@ unsigned int append_sprintf(
 }
 unsigned int append_strcpy(char** str_out, const unsigned int len, const char* str_io){
 	const unsigned int size_io=strlen(str_io);
-	const char* str_2=*str_out;// Para invertir el orden.
+	char* str_2=*str_out;// Para invertir el orden.
 
 	*str_out=(char*)malloc( len+size_io );
-	*str_out[0]='\0';
 	strcpy(*str_out, str_io);
 	strcpy(*str_out+SIZE_CHAR(size_io), str_2);
 	free(str_2);

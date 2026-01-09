@@ -48,7 +48,7 @@
 					if(IF_ENDL(s_line[i+1]))
 						continue;
 					i++;
-					char* name=get_name_var(s_line,&i,i_end);
+					char* name=get_name_var(s_line, &i, i_end);
 					if (!h_stack->stack){
 						//It is placed here to ignore the name of the variable
 						free(name);
@@ -123,10 +123,9 @@
 	}
 	
 	char* get_name_var(const char* search,unsigned int* index,unsigned int end){
-		struct String name = {3, 0, (char*)malloc(sizeof(char*)*3)};
+		struct String name = {0, 0, NULL};
 		unsigned int i = *index;// It will be used outside of loops
 		end=(end)?end:strlen(search);
-		name.str[0] = '\0';
 
 		if ( is_abc(search[*index]) ){
 			// If it's an alphabet character, then it's variable name.
@@ -135,29 +134,36 @@
 				i++
 			);
 			// i-1 per non-alphanumeric character
-			str_add_str_end(&name, search+*index, i--);
-		}else if (
-			is_num(search[*index]) || (
-				search[*index]=='-' && is_num(search[*index+1])
+			str_add_str_end(
+				&name,
+				search+*index,
+				i-*index
+			);
+		}else if ( is_num(search[*index]) ||
+				(search[*index]=='-' && is_num(search[*index+1])
 			)){ // Si es un numero.
 			for (
 				i+=(search[*index]=='-')?1:0;
 				i < end && is_num(search[i]);
 				i++
 			);
-			str_add_str_end(&name, search+*index, --i);
+			str_add_str_end(
+				&name,
+				search+*index,
+				i-*index
+			);
 		}else if(IF_INIT_STRING(search[*index])){//Obtenemos la cadena.
 			*index=get_end_str(search+i,end);
 			*index=(*index)?*index:end;
-			free(name.str);
 			return get_sub_str(search,i,*index);
 		}else{ // Espacio y otros simbolos.
+			name.str=(char*)malloc(sizeof(char*)*2);
 			name.str[0] = search[*index];
 			name.str[1] = '\0';
 			name.count=2;
 		}
 		*index=i;
-		return (char*)realloc(name.str,name.count+1);
+		return (char*)realloc(name.str,name.count);
 	}
 	
 	char* get_str_token(char* str,U_INT init,U_INT end){
@@ -178,7 +184,7 @@
 					tmp_i=get_end_str(str+i,end);
 					tmp_i=(tmp_i)?tmp_i:end;
 					out.count--;//Porque necesitamos que ignore la entre comilla anterior.
-					str_add_str_end(&out,str+i,tmp_i);
+					str_add_str_end(&out,str+i,i-tmp_i);
 					i=tmp_i;
 				}else if (IF_INIT_COMENT(str[i])){
 					out.count--;

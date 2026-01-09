@@ -69,10 +69,10 @@ long int parseLongInt(const char* str);
  *  
  * @param str_d Estructura con la cadena destino.
  * @param str_copy Cadena a copiar.
- * @param end Final de la cadena a copiar. Si es 0 se buscará el tamaño.
+ * @param end Cantidad de caracteres a copiar. Si es -1 se buscará el tamaño.
 */
-void str_add_str_end(struct String* str_d,  char* str_copy, unsigned int end);
-#define str_add_str(str_d, str_copy) str_add_str_end(str_d,str_copy,0)
+void str_add_str_end(struct String* str_d,  char* str_copy, int64_t count);
+#define str_add_str(str_d, str_copy) str_add_str_end(str_d, str_copy, -1)
 #define str_add_str_init_end(str_d,  str_copy, init,end) str_add_str_end(str_d,str_copy+init,end)
 /**
  * @brief Agrega un char al final de la cadena.
