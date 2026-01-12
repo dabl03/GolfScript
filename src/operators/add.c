@@ -107,13 +107,6 @@ struct type_value_err* add_str(char* str,enum TYPE t, void* value,bool is_right)
 	void* tmp=alloca(sizeof(int));
 	out.type=STRING;
 	switch(t){
-		case CODES_BLOCKS:
-			out.value=add_codes_block((char*)value, STRING, str, FALSE);
-			break;
-		case STRING:
-			out.value=malloc(strlen(str)+strlen((char*)value)+1);
-			sprintf_with_invert(out.value, "%s%s", is_right, str, (char*)value);
-			break;
 		case STACK:
 			//Ponemos todo el arraincludey en una cadena.
 			tmp=(void*)((struct Header_Stack*)value)->stack;

@@ -74,8 +74,14 @@
 		ADD_PTR[STRING][LONGFLOAT]=&str_add_basic_type;
 
 		// STRING add
+		ADD_PTR[STRING][STRING]=&operator_str_add_str;
+		ADD_PTR[STRING][CODES_BLOCKS]=&str_add_codeblocks;
+		ADD_PTR[STRING][STACK]=&str_add_stack;
 		
 		// Basic type add codeblock.
+		
+		// CodeBlock
+		ADD_PTR[CODES_BLOCKS][STRING]=&str_add_codeblocks;
 		
 		// Basic type add array
 		

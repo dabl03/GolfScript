@@ -135,8 +135,8 @@ U_INT init_gvars(struct Header_Stack* vars){
 	add_var(vars,"-",FUNCTION,(void*)sub_operator);
 	add_var(vars,"quit",FUNCTION,(void*)end_app);
 	add_var(vars,"]",FUNCTION,(void*)pack_stack);
-	add_var(vars,"n",STRING,"\n");
 	add_var(vars,"help",FUNCTION,(void*)help);
+	add_var(vars,"n",STRING,"\n");
 	init_operators(false);
 	return NORMAL;
 }

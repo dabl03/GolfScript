@@ -12,10 +12,13 @@
 - En los test necesitamos cambiarlo para que se puedan compilar por separado (su propio main) o puedan compilarlo como biblioteca.
 - NO_MAIN indica que no se va a definir otro main, dandole luz verde al archivo de definir el propio.
 - Tambien hacer los test mas silencioso.
-- Terminar los operadores.
 - Establecer un limite a los nombres de variables en longitud de caracteres.
 - Terminar los operadores suma que faltan bloque de codigo y str y array.
 - Succede una violacion de segmento al usa mas + de los numeros que hay con muchos numeros. Verificar.
+- Solucionar problemas con print
+- Arreglar stack porque no capturo bien un array con todos los elementos.
+- Arreglar str_add_stack
+- Arreglar la funcion base del operador suma que genera errores graves.
 /**
  * @TODO: Buscar y Arreglar un error que impide
  *  que \xhex muestre los caracteres hexadecimales. 

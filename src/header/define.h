@@ -19,7 +19,6 @@
 	#ifdef DEBUG
 		
 	#endif
-	#include "./errors.h"
 
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
 	#define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
@@ -78,4 +77,6 @@
 		// Este debe ser siempre el ultimo elemento.
 		END_ELEMENT
 	};
+	// It should be the last thing to be defined.
+	#include "./errors.h"
 #endif
