@@ -1,5 +1,5 @@
 #ifndef MEMORY_C
-#define MEMORY_C 1
+#define MEMORY_C 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -103,7 +103,7 @@ void test_free(void* ptr, const char *file, int line, const char *func,unsigned 
 }
 // Para probar este archivo...
 // gcc -o memory.exe memory.c "-D MAIN=1"/*
-#ifdef MAIN
+#ifdef  MAIN
   #include "./include/memory.h"
   #define MAIN main
 #endif

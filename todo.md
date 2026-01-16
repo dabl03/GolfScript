@@ -7,11 +7,6 @@
 - Permitir ejecutar otro programas y pasarle un array como parametros.
 - Corregir los errores ortográficos que haya pasado por alto.
 - Agregar una función para que se importe archivos externos.
-- Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [[6]]
-- 
-
-- Terminar los operadores.
-
 ## Operadores faltantes:
   - `.` cualquier Duplicar en pila
   - `\` cualquiera, cualquier Intercambiar los dos elementos principales.
@@ -31,3 +26,15 @@
     Agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
 }
 Para trabajar con flotante usa la varible globa climit_float
+- Agregar un Debug mode que ensena la linea+ la pila en ese momento. 
+
+## Recordatorio:
+- Verificar si father se guarda bien en todos los archivos (debe ser Header_stack).
+- Modificar todos los operadores para que trabajen con la estructura stack.
+- Modificar el archivo test y verificar stack.c
+- Retornar NULL en add stack para solo eliminar el operando 2 y dejar vivo en el otro array el operando 1.
+- Modificar los encabezados y las docs para que cuadren con la estructura Stack_
+- Hacer una función que verifique si las operaciones que requieren dos elementos de la pila lo haga, y tambien hacer las operaciones necesarias (revisar el operador add para tener una idea)
+- .... NO se que mas decir
+
+```

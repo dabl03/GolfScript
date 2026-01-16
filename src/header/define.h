@@ -5,6 +5,7 @@
 	#include <stdint.h>//int64_t
 	#include <stdlib.h>//Alloca function
 	#include <stdbool.h>
+	#include <malloc.h>     
 	// Get alloca function
 	#if defined(_MSC_VER) || defined(__MINGW32__)
 		#include <malloc.h>     
@@ -18,6 +19,7 @@
 	#ifdef DEBUG
 		
 	#endif
+
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
 	#define ABC_MAYUSCULA(c) (c>='A' && c<='Z')
 	#define ERROR_DEFICCION_NO_VALIDA -30
@@ -40,7 +42,8 @@
 	#define MAX_INT_DIG 9
 	#define PRINTF_MEMORY_ERROR(x) printf("Error: No se puede asignar memoria en la función \"%s\".\n    Variable no creada: \"%s\".\n",__FUNCTION__,x)
 	#define SIZE_CHAR(x) (sizeof(char)*(x))
-
+	#define TRUE 1
+	#define FALSE 0
 	extern int CLIMIT_INT;//Para ver el limite del entero.
 	extern int CLIMIT_FLOAT;//Para ver el limite del flotante.
 	extern int quit;//Para saber si terminó la app.
@@ -48,6 +51,7 @@
 	extern const char* AUTHOR;
 	extern const char* LICENSE_URL;
 	extern const char* LICENSE;
+	extern U_INT error_code;
 	/**
 	 * @brief Se usa para identificar los tipos 
 	 * de datos que se va a nanejar | 
@@ -67,6 +71,12 @@
 		FUNCTION, // Función estandar del programa. Nota: No debe ser liberado.
 		VAR, // Variable o estructura Var
 		CODES_BLOCKS, // string que representa un código golfscript
-		ARRAY // Array de datos
+		STACK,
+		ARRAY, // Compatibilidad.
+		
+		// Este debe ser siempre el ultimo elemento.
+		END_ELEMENT
 	};
+	// It should be the last thing to be defined.
+	#include "./errors.h"
 #endif
