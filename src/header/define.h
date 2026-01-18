@@ -58,7 +58,7 @@
 	 * para anotación Húngara usar "typ"
 	*/
 	enum TYPE{
-		NONE,
+		NONE, // Se usara con los errores.
 		INT, // Entero de 32bits
 		LONGINT, // Entero de 64bits
 		FLOAT, // double
@@ -72,7 +72,6 @@
 		VAR, // Variable o estructura Var
 		CODES_BLOCKS, // string que representa un código golfscript
 		STACK,
-		ARRAY, // Compatibilidad.
 		
 		// Este debe ser siempre el ultimo elemento.
 		END_ELEMENT

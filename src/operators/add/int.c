@@ -1,15 +1,9 @@
 #ifndef ADD_INT_C
 #define ADD_INT_C 1
-	#include <string.h>
-	#include <gmp.h>
-	//Agrego esto más para que el IDE sepa cuáles son los prototipos
-	#include "../../header/str.h"
-	#include "../../header/stack.h"
-	#include "../../header/define.h"
-	#include "../../header/operators.h"
+	#include "../add.h"
 
-	struct type_value_err* int_add_int(struct type_value* num_1, struct type_value* num_2, ...){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* int_add_int(type_value* num_1, type_value* num_2, ...){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 		int64_t tmp_num;
 		mpz_t* tmp_mpz;
 
@@ -37,8 +31,8 @@
 		}
 		return out;
 	}
-	struct type_value_err* int_add_long_int(struct type_value* num_1, struct type_value* num_2, ...){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* int_add_long_int(type_value* num_1, type_value* num_2, ...){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 
 		out->type=LONGINT;
 		out->err=NORMAL;
@@ -52,8 +46,8 @@
 		);
 		return out;
 	}
-	struct type_value_err* int_add_float(struct type_value* num_1, struct type_value* num_2, ...){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* int_add_float(type_value* num_1, type_value* num_2, ...){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 		mpf_t tmp;
 
 		out->type=FLOAT;
@@ -76,8 +70,8 @@
 		}
 		return out;
 	}
-	struct type_value_err* int_add_long_float(struct type_value* num_1, struct type_value* num_2, ...){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* int_add_long_float(type_value* num_1, type_value* num_2, ...){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 		mpf_t tmp;
 
 		out->err=NORMAL;

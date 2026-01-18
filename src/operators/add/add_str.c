@@ -1,14 +1,9 @@
 #ifndef ADD_STR_C
 #define ADD_STR_C 1
-	#include <string.h>
-	#include <gmp.h>
-	#include "../../header/str.h"
-	#include "../../header/stack.h"
-	#include "../../header/define.h"
-	#include "../../header/operators.h"
+	#include "../add.h"
 
-	struct type_value_err* str_add_basic_type(struct type_value* num_1, struct type_value* num_2, bool is_right){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* str_add_basic_type(type_value* num_1, type_value* num_2, bool is_right){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 		char* str=(char*)num_1->value,
 			* basic_type=to_string_value(num_2->type, num_2->value)
 		;
@@ -28,11 +23,11 @@
 			free(basic_type);
 		return out;
 	}
-	struct type_value_err* basic_type_add_str(struct type_value* num_1, struct type_value* num_2, bool is_right){
+	type_value_err* basic_type_add_str(type_value* num_1, type_value* num_2, bool is_right){
 		return str_add_basic_type(num_2, num_1, false);
 	}
-	struct type_value_err* operator_str_add_str(struct type_value* num_1, struct type_value* num_2, bool is_right){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* operator_str_add_str(type_value* num_1, type_value* num_2, bool is_right){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 		char* str_1=(char*)num_1->value,
 			* str_2=(char*)num_2->value
 		;
@@ -45,8 +40,8 @@
 		strcpy(out->value+len_str_1, str_2);
 		return out;
 	}
-	struct type_value_err* str_add_codeblocks(struct type_value* num_1, struct type_value* num_2, bool is_right){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
+	type_value_err* str_add_codeblocks(type_value* num_1, type_value* num_2, bool is_right){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
 		out->type=CODES_BLOCKS;
 		out->err=NORMAL;
 		out->value=(char*)malloc(
@@ -61,12 +56,12 @@
 		);
 		return out;
 	}
-	struct type_value_err* str_add_stack(struct type_value* num_1, struct type_value* num_2, bool is_right){
-		struct type_value_err* out=NEW_TYPE_VALUE_ERR();
-		struct type_value_err* tv_tmp=NEW_TYPE_VALUE_ERR();
+	type_value_err* str_add_stack(type_value* num_1, type_value* num_2, bool is_right){
+		type_value_err* out=NEW_TYPE_VALUE_ERR();
+		type_value_err* tv_tmp=NEW_TYPE_VALUE_ERR();
 
 		struct Stack_* stc_now=((struct Header_Stack*)num_2)->stack;
-		struct type_value* now;
+		type_value* now;
 		char* str_tmp;
 		unsigned int len_str_out=1;
 		unsigned int int_tmp=0;
@@ -108,8 +103,8 @@
 				break;
 				case STACK:
 					tv_tmp=str_add_stack(
-						(struct type_value*)out,
-						(struct type_value*)now,
+						(type_value*)out,
+						(type_value*)now,
 						TRUE
 					);
 					free(out->value);
@@ -150,10 +145,7 @@
 			stc_now=stc_now->next;
 		}
 		if (!len_str_out){
-			func_error(__func__,
-				FEATURE_NOT_AVAILABLE,
-				2, num_1, num_2
-			);
+			func_error(__func__, 2, num_1, num_2);
 			free(out->value);
 			out->err=FEATURE_NOT_AVAILABLE;
 			out->type=NONE;

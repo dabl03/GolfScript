@@ -182,8 +182,6 @@ const char* get_name_type(enum TYPE t){
 			return "(CODES BLOCKS)";
 		case STACK:
 			return "(STACK)";
-		case ARRAY:
-			return "(ARRAY)";
 		default:
 			return NULL;
 	}

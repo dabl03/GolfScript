@@ -15,9 +15,10 @@
 		char* tmp_str=NULL;
 		struct Stack_* stc_line=lines->stack;
 		bool show_msg;
+		unsigned int i_line=1, codes=NORMAL;
 
 		while (stc_line!=NULL && !quit){
-			if(stc_line->item.type!=STRING)continue;
+			if(stc_line->item.type!=STRING) continue;
 			const char* s_line=stc_line->item.value;
 			show_msg=true;
 			U_INT i_end=strlen(s_line);
@@ -92,7 +93,9 @@
 					struct Var* vr_now=search_var(name,vars);
 					if(vr_now!=NULL){
 						// The variable exists
-						process_data(h_stack,vars,vr_now);
+						codes=process_data(h_stack, vars, vr_now);
+						if (codes!=NORMAL)
+							show_error(codes, i_line, i);
 					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
 						unsigned int len=strlen(name)-1;
@@ -118,6 +121,7 @@
 				}
 			}
 			stc_line=stc_line->next;
+			i_line++;
 		}
 		return 0;
 	}

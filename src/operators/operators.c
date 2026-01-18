@@ -2,15 +2,9 @@
 #define RUN_C 1
 	#include "../header/str.h"
 	#include "../header/stack.h"
-	#include "../header/global_vars.h"
 	#include "../header/define.h"
 	// ADD
-	// Note: Maintain the order of headings.
-	#include "./add/int.c"
-	#include "./add/long_int.c"
-	#include "./add/float.c"
-	#include "./add/long_float.c"
-	#include "./add/str.c"
+	#include "./add.h"
 	
 	void sprintf_with_invert(
 		char* ptr_out,
@@ -25,14 +19,13 @@
 	}
 	typedef struct type_value_err * (*ADD_FUNC)(struct type_value *, struct type_value *, bool);
 	ADD_FUNC ADD_PTR[END_ELEMENT][END_ELEMENT];
-	// Hacer un array de dos dimenciones que haga arr[INT][FLOAT] y retorne la funcion correspondiente del archivo add.h
-	// Hacer una funcion que obtenga esa funcion del array que debe ser estatico.
-	// Hacer pequenas funciones que sumen con orden (tenga un orden para poder reusarla.)
+	
 	struct type_value_err * execute_sum(struct type_value* num_1, struct type_value* num_2){
 		if (ADD_PTR[num_1->type][num_2->type]==NULL){
-			printf("Error: No se ha inicialiado los punteros necesarios para los operadores.\n"
-				"Porfavor llamar una vez init_operators();.\n");
-			exit(-1);
+			struct type_value_err * err_out=NEW_TYPE_VALUE_ERR();
+			err_out->type=NONE;
+			err_out->err=FEATURE_NOT_AVAILABLE;
+			return err_out;
 		}
 		return ADD_PTR[num_1->type][num_2->type](num_1,num_2,true);
 	}

@@ -5,7 +5,6 @@
 #include "./header/str.h"
 #include "./header/stack.h"
 #include "./header/global_vars.h"
-#include "./operators/header/add.h"
 #include "./header/operators.h"
 
 U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
@@ -43,13 +42,20 @@ U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 
 // Crear una funcion que ordene de la siguiente manera,
 U_INT add_operator(struct Header_Stack* h_stack,...){
-	if (h_stack->stack==NULL && (h_stack->stack->next==NULL && (h_stack->father==NULL && h_stack->father->stack->next==NULL)) ){
+	if (h_stack->stack==NULL ||
+		(h_stack->stack!=NULL && 
+			(h_stack->stack->next==NULL ||
+				(h_stack->father!=NULL && h_stack->father->stack->next==NULL)
+			)
+		)
+	){
 		return INSUFFICIENT_ARGUMENTS;
 	}
 	// num_1=num_1+num_2
 	struct type_value* num_2=pop_stack(h_stack);
 	struct type_value* num_1;
 	struct type_value_err* tmp_tv;
+	unsigned int err_out=NORMAL;
 	// Si no hay suficiente argumentos en esta pila
 	// Agarramos de su padre.
 	// [ 1 [ 1 ]  ] -> [ [ 2 ]  ]
@@ -60,22 +66,25 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 		add_stack(h_stack,num_1->type,num_1->value);
 		add_stack(h_stack,num_2->type,num_2->value);
 		return add_operator(h_stack);
+	}else{
+		num_1=&h_stack->stack->item;
+		tmp_tv=execute_sum(num_1, num_2);
+		delete_item(num_1->type,num_1->value);
+		delete_item(num_2->type,num_2->value);
+		free(num_2);
 	}
-	num_1=&h_stack->stack->item;
-	tmp_tv=execute_sum(num_1, num_2);
-	delete_item(num_1->type,num_1->value);
-	delete_item(num_2->type,num_2->value);
-	free(num_2);
 	if (tmp_tv->err==NORMAL){
 		h_stack->stack->item.type=tmp_tv->type;
 		h_stack->stack->item.value=tmp_tv->value;
-		free(tmp_tv);
 	}else{
+		err_out=tmp_tv->err;
+		num_1->type=NONE;
+		num_1->value=NULL;
 		delete_item(tmp_tv->type,tmp_tv->value);
-		pop_stack(h_stack);
-		free(num_1);
+		free(pop_stack(h_stack));
 	}
-	return tmp_tv->err;
+	free(tmp_tv);
+	return err_out;
 }
 
 U_INT sub_operator(struct Header_Stack* stack,...){

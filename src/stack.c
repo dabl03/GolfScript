@@ -74,6 +74,9 @@ void delete_item(const enum TYPE t_typValue, void* v_data){
 		case FLOAT:
 			free(v_data);
 			break;
+		case NONE:
+			// Nunca liberar NONE. Se dejara para el uso del desarrollador.
+			break;
 		default:
 			perror("Error: Se intenta liberar un tipo de dato no tratado. \nFunción \"delete_item\" ");
 			printf("Type: %s",get_name_type(t_typValue));
@@ -202,7 +205,7 @@ void delete_var(struct Var* vr_var){
 	free(vr_var->name);
 	vr_var->value=NULL;
 }
-void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data){
+unsigned int process_data(struct Header_Stack* hstc_stack, struct Header_Stack* hstc_var, struct Var* vr_data){
 	struct type_value tv_tmp;
 	void* v_generic;
 	//U_INT err=0;// Solo para funciones. // Sin usar
@@ -210,12 +213,11 @@ void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,
 		// Funciones nativas del lenguaje
 		case FUNCTION:
 			/*err=*/
-			((U_INT (*)(
+			return ((U_INT (*)(
 				struct Header_Stack*,
 				struct Header_Stack*,
 				char* extend
 			))vr_data->value) (hstc_stack,hstc_var,"");
-			break;
 		// Funciones definidas por el usuario.
 		case CODES_BLOCKS:
 			v_generic=malloc(sizeof(struct Header_Stack));
@@ -231,6 +233,7 @@ void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,
 			copy_item(&tv_tmp,vr_data->type,vr_data->value);
 			add_stack(hstc_stack,tv_tmp.type,tv_tmp.value);
 	}
+	return NORMAL;
 }
 char* printf_stack(const struct Header_Stack* hstc_io){
 	// Ver si debo hacer una función to_value_string y usarla en vez de esto.

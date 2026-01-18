@@ -14,53 +14,40 @@
 	};
 	const char* BERR_STR_MSG[ERROR_MSG_LIMIT]={
 		// B
-		"Se han pasado insuficientes argumentos",
+		"No hay suficiente elementos en la pila para continuar la operación",
 		"La pila está vacia"
 	};
 	U_INT error_code=NORMAL;
 	/// Agregar prinft con valores por defectos, como linea, archivo, etc... y cada error indicará si quiere usar uno de eso, nota: Preparar un formateador para ello con $1 $2 $3,,,
-	void show_error(const unsigned long int CODES,const unsigned int line){
-		const short R_CODE=CODES>>4;
-		const short G_CODE=(CODES<<2)>>4;
-		const short B_CODE=(CODES<<4)>>4;
-		if (R_CODE){
+	void show_error(const unsigned long int CODES,const unsigned int line, const unsigned int col){
+		const short R_CODE=((CODES>>16) & 0xFF)-1;
+		const short G_CODE=((CODES>>8) & 0xFF)-1;
+		const short B_CODE=(CODES & 0xFF)-1;
+		if (R_CODE>=0){
 			msg_color("Error interno: ",RED_COLOR,BLACK_COLOR);
 			puts(RERR_STR_MSG[R_CODE]);
 		}
-		if (G_CODE){
+		if (G_CODE>=0){
 			msg_color("Error: ",RED_COLOR,BLACK_COLOR);
 			puts(GERR_STR_MSG[G_CODE]);
 		}
-		if (B_CODE){
+		if (B_CODE>=0){
 			msg_color("Advertensia: ",ORANGE_COLOR,BLACK_COLOR);
 			puts(BERR_STR_MSG[B_CODE]);
 		}
+		printf("En la linea: \"%d\", columna: \"%d\".\n", line, col);
 	}
 	void func_error(
 		const char* func,
-		const unsigned int UI_ERR_CODES,
 		const unsigned int count_parameters,
 		struct type_value** parameters, ...
 	){
 		char* param_str=get_str_param(count_parameters, parameters);
-		int err_codes=UI_ERR_CODES;
 		printf(
 			"Error in the function \"%s\"(%s). The mistakes are:\n",
 			func, param_str
 		);
 		free(param_str);
-		// Puts all errors.
-		if (err_codes>=APP_UNKNOWN_DATA){
-			puts(RERR_STR_MSG[err_codes-APP_UNKNOWN_DATA]);
-			err_codes=(err_codes<<2)>>2;
-		}
-		if (err_codes>=NOT_FOUND){
-			puts(RERR_STR_MSG[err_codes-NOT_FOUND]);
-			err_codes=(err_codes<<2)>>2;
-		}
-		if (err_codes){
-			puts(RERR_STR_MSG[err_codes]);
-		}
 	}
 	char* get_str_param(const unsigned int count_parameters, struct type_value** parameters){
 		unsigned int len=1;

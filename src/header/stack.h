@@ -123,8 +123,9 @@ void delete_var(struct Var* vr_var);
  * @param[out] hstc_stack Pila de dato a modificar.
  * @param[in] hstc_var Pila de las variables.
  * @param[in] vr_data    El dato a interpretar.
+ * @return Error codes
  */
-void process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data);
+unsigned int process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data);
 /**
  * @brief Creamos una cadena para mostrar todo
  * el contenido de la pila.

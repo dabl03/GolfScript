@@ -3,7 +3,6 @@
 	#include <string.h>
 	#include <gmp.h>
 	//Agrego esto más para que el IDE sepa cuáles son los prototipos
-	#include "./str.h"
 	#include "./stack.h"
 	#include "./global_vars.h"
 	#include "./define.h"
@@ -32,7 +31,7 @@
 	struct type_value_err * execute_sum(struct type_value* num_1, struct type_value* num_2);
 	/**
 	 * Inicializa el puntero a los operadores.
-	 * Nota: Si se quiere usar execute_sum se debe llamar por 1 vez en el programa..
+	 * Nota: Si se quiere usar execute_* se debe llamar por 1 vez en el programa..
 	 * @param bool Indica si se quiere reinicilizar los operadores.
 	 */
 	void init_operators(bool);

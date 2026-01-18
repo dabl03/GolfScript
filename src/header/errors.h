@@ -38,15 +38,19 @@
 	/**
 	 * Show the error made in the function
 	 * @param func Name of the function.
-		const UI_ERR_CODES error codes.
-		const count_parameters Number of type_values present.
-		struct type_value** parameters List of parameters to convert to string
+	 * @param count_parameters Number of type_values present.
+	 * @param parameters List of parameters to convert to string
 		Note: call get_str_param(count_parameters,parameters)
 	 */
 	void func_error(
 		const char* func,
-		const unsigned int UI_ERR_CODES,
 		const unsigned int count_parameters,
 		struct type_value** parameters, ...
 	);
+	/**
+	 * It displays the error that has occurred.
+	 * @param CODES  The error code.
+	 * @param line, col   Where the error occurred
+	*/
+	void show_error(const unsigned long int CODES,const unsigned int line, const unsigned int col);
 #endif

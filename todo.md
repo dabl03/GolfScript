@@ -1,13 +1,10 @@
 ## Falta por hacer:
 - Terminar los archivos para testear.
-- Hacer una estructura string o modificar la ya existente para que solo tenga char* y U_INT para hacer el programa mas eficiente.
 - Agregar decimales.
-- Usar la estructura stack para la pila, en lugar de Array. Para aumentar la velocidad de operaciones.
 - Para depurar agregar un mensaje de velocidad por operaciones.
-- Permitir ejecutar otro programas y pasarle un array como parametros.
+- Permitir ejecutar otro programas y pasarle un stack como parametros.
 - Corregir los errores ortográficos que haya pasado por alto.
 - Agregar una función para que se importe archivos externos.
-<<<<<<< change-array-to-stack
 - Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [6]
 - Cambiar los archivos de test para que cada cosa tenga su funcion test.
 - En los test necesitamos cambiarlo para que se puedan compilar por separado (su propio main) o puedan compilarlo como biblioteca.
@@ -56,11 +53,7 @@ Para trabajar con flotante usa la varible globa climit_float
 
 ## Recordatorio:
 - Verificar si father se guarda bien en todos los archivos (debe ser Header_stack).
-- Modificar todos los operadores para que trabajen con la estructura stack.
 - Modificar el archivo test y verificar stack.c
-- Retornar NULL en add stack para solo eliminar el operando 2 y dejar vivo en el otro array el operando 1.
-- Modificar los encabezados y las docs para que cuadren con la estructura Stack_
 - Hacer una función que verifique si las operaciones que requieren dos elementos de la pila lo haga, y tambien hacer las operaciones necesarias (revisar el operador add para tener una idea)
-- .... NO se que mas decir
 
 ```
