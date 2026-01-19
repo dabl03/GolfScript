@@ -6,11 +6,13 @@
 	// R -- Errores internos de la APPs
 	#define APP_UNKNOWN_DATA 0x010000
 	#define FEATURE_NOT_AVAILABLE 0x020000
+	#define INSUFFICIENT_MEMORY 0x030000
 	// G -- Errores de sintaxis
 	#define NOT_FOUND 0x00100
 	// B -- Advertencias
 	#define INSUFFICIENT_ARGUMENTS 0x000001
 	#define EMPTY_STACK 0x000002
+	#define INDEX_NOT_FOUND 0x000003
 	// El sufijo "A_" es para referirse a mensaje interno de la APP
 	//TODO: USAR HEXADECIMAL con formato rgb
 	//El tipo 1-F(F mas grave) tiene subtipos... //Descartado por ahora..

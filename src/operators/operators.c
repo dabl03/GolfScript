@@ -77,7 +77,16 @@
 		ADD_PTR[CODES_BLOCKS][STRING]=&str_add_codeblocks;
 		
 		// Basic type add array
+		ADD_PTR[INT][STACK]=&basic_type_add_stack;
+		ADD_PTR[LONGINT][STACK]=&basic_type_add_stack;
+		ADD_PTR[FLOAT][STACK]=&basic_type_add_stack;
+		ADD_PTR[LONGFLOAT][STACK]=&basic_type_add_stack;
 		
+		// STRING add basic type
+		ADD_PTR[STACK][INT]=&stack_add_basic_type;
+		ADD_PTR[STACK][LONGINT]=&stack_add_basic_type;
+		ADD_PTR[STACK][FLOAT]=&stack_add_basic_type;
+		ADD_PTR[STACK][LONGFLOAT]=&stack_add_basic_type;
 		/*
 			INT, // Entero de 32bits
 			LONGINT, // Entero de 64bits

@@ -451,46 +451,38 @@ char* to_string_value(const enum TYPE typ_data, void* v_data){
 	return s_out;
 }
 bool stack_setItem(struct Header_Stack* h_stack, struct type_value* item, const unsigned int index, const bool is_append){
-	struct Stack_* stc_chosen=h_stack->stack->previous;
+	struct Stack_* stc_chosen=NULL;
 	struct Stack_* stc_new_item;
-	if (h_stack->stack && h_stack->stack->next){ // There is more than one element in the stack
-		for (unsigned int i=0;;i++){
-			stc_chosen=stc_chosen->next;
-			if (i==index){
-				break;
-			}else if (stc_chosen==h_stack->stack && i){ // There is no index
-				stc_chosen=NULL;
-				break;
-			}
-		}
-	}else if (index==0){
-		if (h_stack->stack==NULL){ // <We don't complicate our lives.
-			add_stack(h_stack,item->type,item->value);
-			return false;
-		}
-		stc_chosen=h_stack->stack;
-	}
-	// The item was not found or the stack is empty.
-	if (!stc_chosen){
+	unsigned int i=0;
+	if (index==0){
+		add_stack(h_stack,item->type, item->value);
+		return false;
+	}else if (!h_stack->stack)// There is no element to modify
 		return true;
+	else{
+		stc_chosen=h_stack->stack;
+		for (; i!=index; i++){
+			stc_new_item=stc_chosen;
+			if (!stc_chosen)// There is no index
+				return true;
+			stc_chosen=stc_chosen->next;
+		}
+		if (!stc_chosen){// The search was successful, but now it points to null
+			stc_chosen=stc_new_item;
+		}
 	}
 	if (is_append){
 		stc_new_item=(struct Stack_*)malloc(sizeof(struct Stack_));
 		stc_new_item->item.type=item->type;
 		stc_new_item->item.value=item->value;
 		// Stc_new_item
-		stc_new_item->next=stc_chosen;
-		stc_new_item->previous=stc_chosen->previous;
-		// stc_chosen
-		stc_chosen->previous=stc_new_item;
-		// stc_chosen->previous
-		if (stc_new_item->previous){
+		stc_new_item->next=stc_chosen->next;
+		stc_new_item->previous=stc_chosen;
+		stc_chosen->next=stc_new_item;
+
+		if (stc_new_item->next){
 			// If there is only one element, nothing is done with the previous element.
-			stc_new_item->previous->next=stc_new_item;
-		}else{
-			// We connect the two elements
-			stc_chosen->next=stc_new_item;
-			stc_new_item->previous=stc_chosen;
+			stc_new_item->next->previous=stc_new_item;
 		}
 	}else{
 		delete_item(stc_chosen->item.type, stc_chosen->item.value);
@@ -498,5 +490,12 @@ bool stack_setItem(struct Header_Stack* h_stack, struct type_value* item, const 
 		stc_chosen->item.value=item->value;
 	}
 	return false;
+}
+unsigned int len_stack(const struct Header_Stack* h_stack){
+	unsigned int out=0;
+
+	for (struct Stack_* stc_now=h_stack->stack; stc_now!=NULL; stc_now=stc_now->next)
+		out++;
+	return out;
 }
 #endif

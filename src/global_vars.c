@@ -69,8 +69,8 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 	}else{
 		num_1=&h_stack->stack->item;
 		tmp_tv=execute_sum(num_1, num_2);
-		delete_item(num_1->type,num_1->value);
-		delete_item(num_2->type,num_2->value);
+		delete_item(num_1->type, num_1->value);
+		delete_item(num_2->type, num_2->value);
 		free(num_2);
 	}
 	if (tmp_tv->err==NORMAL){
@@ -80,7 +80,7 @@ U_INT add_operator(struct Header_Stack* h_stack,...){
 		err_out=tmp_tv->err;
 		num_1->type=NONE;
 		num_1->value=NULL;
-		delete_item(tmp_tv->type,tmp_tv->value);
+		delete_item(tmp_tv->type, tmp_tv->value);
 		free(pop_stack(h_stack));
 	}
 	free(tmp_tv);

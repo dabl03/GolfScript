@@ -169,8 +169,14 @@ char* to_string_value(const enum TYPE typ_data,void* v_data);
  *                                          are not freed from memory nor copied. Do not free
  *                                          item->value; if necessary, only item
  * @param[in] index             The index
- * @param[in] is_append      If the position is added or modified
+ * @param[in] is_append      If the position is added or modified. Note: The count starts from 0
  * @return  Error?
  */
 bool stack_setItem(struct Header_Stack* h_stack, struct type_value* item, const unsigned int index, const bool is_append);
+/**
+ * Gets the stack length.
+ * @param h_stack The stack to be measured
+ * @return length
+*/
+unsigned int len_stack(const struct Header_Stack* h_stack);
 #endif

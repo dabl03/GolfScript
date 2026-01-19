@@ -36,4 +36,7 @@
 	type_value_err* str_add_stack(type_value* num_1, type_value* num_2, bool is_right);
 	// Code blocks.
 	type_value_err* codeblocks_add_str(type_value* num_1, type_value* num_2, bool is_right);
+	// Stack
+	type_value_err* basic_type_add_stack(type_value* num_1, type_value* tv_stack, bool is_right);
+	type_value_err* stack_add_basic_type(type_value* tv_stack, type_value* num_1, ...);
 #endif

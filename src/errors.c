@@ -6,7 +6,8 @@
 	const char* RERR_STR_MSG[ERROR_MSG_LIMIT]={
 		// R
 		"Datos no tratados",
-		"Caracteristica no disponible"
+		"Caracteristica no disponible",
+		"No hay suficiente memoria disponible para la operación"
 	};
 	const char* GERR_STR_MSG[ERROR_MSG_LIMIT]={
 		// G
@@ -15,7 +16,8 @@
 	const char* BERR_STR_MSG[ERROR_MSG_LIMIT]={
 		// B
 		"No hay suficiente elementos en la pila para continuar la operación",
-		"La pila está vacia"
+		"La pila está vacia",
+		"Indice no encontrado"
 	};
 	U_INT error_code=NORMAL;
 	/// Agregar prinft con valores por defectos, como linea, archivo, etc... y cada error indicará si quiere usar uno de eso, nota: Preparar un formateador para ello con $1 $2 $3,,,
