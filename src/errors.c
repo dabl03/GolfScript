@@ -1,5 +1,6 @@
 #ifndef ERROR_C
 #define ERROR_C 1
+	#include <time.h>
 	#include "./header/define.h"
 	#include "./header/stack.h"
 	#include "./header/str.h"
@@ -17,7 +18,8 @@
 		// B
 		"No hay suficiente elementos en la pila para continuar la operación",
 		"La pila está vacia",
-		"Indice no encontrado"
+		"Indice no encontrado",
+		"No es posible la conversion."
 	};
 	U_INT error_code=NORMAL;
 	/// Agregar prinft con valores por defectos, como linea, archivo, etc... y cada error indicará si quiere usar uno de eso, nota: Preparar un formateador para ello con $1 $2 $3,,,
@@ -60,9 +62,9 @@
 			*out=(char*)malloc(1);
 			*out='\0';
 		while (parameters[i]!=NULL){
-			type=get_name_type(parameters[i]->type);
-			value=to_string_value(parameters[i]->type, parameters[i]->value);
-			len_tmp=strlen(type)+strlen(value)+len+15+((!value)?6:0);
+			type=(char*)get_name_type(parameters[i]->type);
+			value=tv_to_string(parameters[i], &len_tmp);
+			len_tmp+=strlen(type)+len+15+((!value)?6:0);
 			out=(char*)realloc(out, len_tmp);
 			// TYPE=4 + ' '=1 + VALUE=5 + ""=2 + ' , '=3 + == 15 + (NONE)=6 == 21
 			sprintf(out+(len-1), "TYPE=(%s)  VALUE=\"%s\" , ", 
@@ -77,5 +79,16 @@
 				break;
 		}
 		return out;
+	}
+	clock_t init_time;
+	void init_get_time(){
+		 init_time = clock();
+	}
+	char* end_time(){
+		static char buffer[20];
+		double time;
+		time = (double)(clock() - init_time) / CLOCKS_PER_SEC;
+		sprintf(buffer, "%f Second", time);
+		return buffer;
 	}
 #endif

@@ -33,9 +33,10 @@ void config_all(struct Header_Stack* opciones);
 /** Pide al usuario una cadena con terminando si hay salto de linea o fin del buffer.
  * | Si consigue una comilla doble o simple, seguirá pidiendo hasta su termino.
  * @param  type_string El tipo de cadena.
+ * @param[io] len Si no es NULL, tendra el tamano de la cadena.
  * @return             Cadena dinamica, tiene que liberar.
 */
-char* get_input_str(char type_string);
+char* get_input_str(char type_string, uint* len);
 /** Pide por consola hasta llegar a "cEnd".
  * | Si hay anidamiento seguirá pidiendo hasta que termine
  *
@@ -45,6 +46,14 @@ char* get_input_str(char type_string);
  * @return La entrada del usuario. Recordar liberar
  */
 char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub);
+/**
+ * Obtiene el prompt del usuario y retorna una pila con el.
+ * @Param lineas Una pila con un puntero a las lineas.
+ * @Param CPROMPT El simbolo que indica al usuario que se recibe un prompt.
+ * @Param CSUB_PROMPT El simbolo que indica si esta dentro de un bloque. ([], {})
+ * @return lineas si no es igual a null, de serlo retorna un nuevo Header_Stack*
+*/
+struct Header_Stack* input_line(struct Header_Stack* lineas, const char* CPROMPT, const char* CSUB_PROMPT);
 //Por si se quiere testear.
 #ifdef __MAIN__
 	#define main main_c
@@ -85,7 +94,7 @@ int main(int argc, char** argv){
 				char* str;
 				//No existe.
 				if (file==NULL){
-					printf("Error: El archivo \"%s\" no existe, revise la ruta.%s", stc_now->item.value, ENDL);
+					printf("Error: El archivo \"%s\" no existe, revise la ruta.%s", (char*)stc_now->item.value, ENDL);
 					delete_stack(&path_files);
 					exit(EXIT_FAILURE);
 				}
@@ -113,10 +122,6 @@ int main(int argc, char** argv){
 	}
 	delete_stack(&stack);
 	delete_stack(&vars);
-	#ifdef DEBUG
-		puts("\n¿Hay fuga de memoria?:");
-	viewStack();
-	#endif
 	return i_return_code;
 }
 void config_all(struct Header_Stack* options){
@@ -130,30 +135,82 @@ void config_all(struct Header_Stack* options){
 		 * --v o --version
 		 * --license
 		*/
+		stc_now=stc_now->next;
 	}
 }
 int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
-	int sub = 0;	//para cambiar de >> a .. cuando hay una condición.
-	char *tmp_out=NULL;//Puntero de uso temporal.
-	U_INT tmp_len=0;
+	char time_command[45]; // "El comando ha tardado ." ->37 + end_time (0.000183-> 8)
+	char* cprompt=NULL;
+	char* csub_prompt=NULL;
 	struct Header_Stack lineas={NULL,NULL};
-	struct String c_linea={0,0,NULL};
-	char c='\0';
-	printf("Golfscript Interactive Mode%s",ENDL);
+	struct Var* vr_extend  =search_var("n", vars),
+		* vr_prompt    =search_var("prompt", vars),
+		* vr_sub_prompt=search_var("sub_prompt", vars);
+	
 	while (!quit){
+		cprompt=(vr_prompt->item.type!=STRING)?// No escapar cadena.
+			tv_to_string(&vr_prompt->item, NULL):
+			(char*)vr_prompt->item.value;
+		csub_prompt=(vr_sub_prompt->item.type!=STRING)?
+			tv_to_string(&vr_sub_prompt->item, NULL):
+			(char*)vr_sub_prompt->item.value;
+		input_line(&lineas, cprompt, csub_prompt);
+		if (vr_prompt->item.type!=STRING)
+			free(cprompt);
+		if (vr_sub_prompt->item.type!=STRING)
+			free(csub_prompt);
+		#if defined(DEBUG)
+			init_get_time();
+		#endif
+		run(&lineas, stack, vars);
+		delete_stack(&lineas);
+		#if defined(DEBUG)
+			sprintf(time_command,"El comando ha tardado %s.",end_time());
+			init_get_time();
+		#endif
+		//Mostramos la variable n.
+		char* output=to_string(STACK, stack, NULL);//Obtenemos la pila.
+		printf("%s", (output[0]=='\0')?"[ ]":output);
+		char* extend=(vr_extend->item.type==STRING)?
+			get_str_escp((char*)vr_extend->item.value):
+			tv_to_string(&vr_extend->item, NULL)
+		;
+		free(extend);
+		free(output);
+		#if defined(DEBUG)
+			printf(
+				"%s\nPara mostrar la pila se ha tardado %s.\n",
+				time_command,
+				end_time()
+			);
+		#endif
+	}
+	return 0;
+}
+struct Header_Stack* input_line(struct Header_Stack* lineas, const char* CPROMPT, const char* CSUB_PROMPT){
+	if(lineas==NULL){
+		lineas=(struct Header_Stack*)malloc(sizeof(struct Header_Stack));
+		lineas->stack=NULL;
+		lineas->father=NULL;
+	}
+	struct String c_linea={80,0,(char*)malloc(80)};
+	uint sub=0;
+	uint tmp_len=0;
+	char c='\0';
+	char *tmp_out=NULL;//Puntero de uso temporal.
+	do{
 		if (sub)
-			for (unsigned int i=0; i < sub; i++)
-				putchar(' ');
-		printf("> ");
+			printf("%0*s%s", sub, " ", CSUB_PROMPT);
+		else
+			printf(CPROMPT);
 		while(true){
 			c=getchar();
 			cadd_leftover(&c_linea,c);
-			if (IF_ENDL(c))//Terminamos de pedir por teclado, o el usuario precionó la tecla ctrl+c
+			if (IF_ENDL(c))// No hay mas, o se preciono Ctlr+c
 				break;
-			if (IF_INIT_STRING(c)){
+			else if (IF_INIT_STRING(c)){
 				//" and '
-				tmp_out=get_input_str(c);
-				tmp_len=strlen(tmp_out);
+				tmp_out=get_input_str(c, &tmp_len);
 				// If breakline.
 				char is_new_line_tmp=tmp_out[tmp_len-1]=='\n';
 				c_linea.str[--c_linea.count]='\0';
@@ -173,8 +230,8 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 				if (c_linea.str[c_linea.count-1]=='\n')
 					break;
 				continue;
-			}else if(c=='['){///@TODO: Usarlo input_block.
-				tmp_out=input_block('[',']',"-- ",sub);
+			}else if(c=='['){
+				tmp_out=input_block('[',']',CSUB_PROMPT,sub);
 				c_linea.str[--c_linea.count]='\0';
 				str_add_str(&c_linea,tmp_out);
 				free(tmp_out);
@@ -184,30 +241,16 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			}
 		}
 		c_linea.str[c_linea.count]='\0';
-		add_stack(&lineas,STRING,c_linea.str);
-		INIT_STRING(c_linea,80);
-
-		if (sub == 0){ // Podemos interpretar linea a linea.
-			run(&lineas, stack, vars);
-			delete_stack(&lineas);
-			//Mostramos la variable n.
-			struct Var* this_var=search_var("n", vars);
-			char* extend=to_string_value(this_var->type,this_var->value);
-			char* output = printf_stack(stack);//Obtenemos la pila.
-			printf("[%s ]%s",output,extend);
-			free(extend);
-			free(output);
-		}
-	}
-	free(c_linea.str);
-	return 0;
+		add_stack(lineas,STRING,c_linea.str);
+	}while(sub);
+	return lineas;
 }
-char* get_input_str(char type_string){
+char* get_input_str(char type_string, uint* len){
 	struct String str_={20,1,(char*)malloc(20)};
 	unsigned char input=0;
 	bool is_scape=false;//Para saber si escapamos la cadena.
 	str_.str[0]=type_string;
-	while(true){
+	while (1){
 		input=getchar();
 		cadd_leftover(&str_,input);
 		if (str_.str[str_.count-1]==type_string AND !is_scape){//Si es termino y no es un escape.
@@ -221,6 +264,7 @@ char* get_input_str(char type_string){
 		is_scape=(str_.str[str_.count-1]=='\\' && !is_scape);
 	}
 	cadd_leftover(&str_,'\0');
+	if (len!=NULL)*len=str_.count;
 	return (char*)realloc(str_.str,str_.count);
 }
 char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub){
@@ -241,9 +285,8 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 			break;
 		// Get string of console.
 		}else if (IF_INIT_STRING(c)){
-			char* str_=get_input_str(c);
-			U_INT len_=strlen(str_);
-
+			U_INT len_;
+			char* str_=get_input_str(c,&len_);
 			//Hubo un salto de linea a escribir la cadena.
 			if (str_[len_-1]=='\n'){
 				is_nline=true;

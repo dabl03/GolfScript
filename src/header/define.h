@@ -13,11 +13,12 @@
 		#include <alloca.h>     // alloca
 	#endif
 	#define FREE__(x) free(x)
+	#define MALLOC__(x) malloc(x)
 	#if defined(DEBUG) || defined(TEST_)
+		#undef DEBUG
+		#define DEBUG 1 // Para evitar hacer #if defined(DEBUG) || defined(TEST_)
+		// Y hacer #if defined(DEBUG)
 		#include "../../test/include/memory.h"
-	#endif
-	#ifdef DEBUG
-		
 	#endif
 
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
@@ -51,11 +52,13 @@
 	extern const char* AUTHOR;
 	extern const char* LICENSE_URL;
 	extern const char* LICENSE;
+	extern char* SYSTEM_DECIMAL_POINT;
 	extern U_INT error_code;
 	/**
 	 * @brief Se usa para identificar los tipos 
 	 * de datos que se va a nanejar | 
 	 * para anotación Húngara usar "typ"
+	 * NOTA: No cambiar el orden.
 	*/
 	enum TYPE{
 		NONE, // Se usara con los errores.
@@ -64,9 +67,7 @@
 		FLOAT, // double
 		LONGFLOAT, // Big float of gmp
 		STRING, // string
-		PCHAR,// Elominar y cambiar por None
-		CHAR, // char* // Eliminar.
-		VALUE_TYPE,
+		VALUE_TYPE, // @todo: Ver si es util o eliminarlo.
 
 		FUNCTION, // Función estandar del programa. Nota: No debe ser liberado.
 		VAR, // Variable o estructura Var
@@ -75,6 +76,23 @@
 		
 		// Este debe ser siempre el ultimo elemento.
 		END_ELEMENT
+	};
+	enum OPERATORS{
+		OPT_ADD, // +
+		//TODO
+		OPT_SUB, // -
+		OPT_MULTIPLICATION, // *
+		OPT_DIVISION,
+		OPT_POW,
+		OPT_CONVERT_TO_STRING, // iTODO! `
+		OPT_NOT, // !
+		OPT_MOV_ELEMENT, // @
+		OPT_CHANGE_ELEMENT, /* \ */
+		OPT_COPY_STACK, // .
+		// TODO ~
+		OPT_GENERATE_OR_COMPRUEBE_STACK, // ,
+		OPT_SET_FLOAT,
+		OPT_END_ELEMENT
 	};
 	// It should be the last thing to be defined.
 	#include "./errors.h"

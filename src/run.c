@@ -27,7 +27,7 @@
 				//Primero definimos nuestros signos constantes:
 				if(s_line[i]=='{'){
 					tmp_str=get_ie_block(s_line,i,'}',&tmp_istr);
-					add_stack(h_stack,CODES_BLOCKS,tmp_str);
+					add_stack(h_stack, CODES_BLOCKS, tmp_str);
 					//Terminamos.
 					i=tmp_istr;
 				}else if (IF_INIT_COMENT(s_line[i]))//Llegamos a un comentario.
@@ -46,8 +46,10 @@
 					}
 				}else if(s_line[i]==':'){
 					// We assign a variable
-					if(IF_ENDL(s_line[i+1]))
+					if(IF_ENDL(s_line[i+1])){
+						
 						continue;
+					}
 					i++;
 					char* name=get_name_var(s_line, &i, i_end);
 					if (!h_stack->stack){
@@ -99,6 +101,7 @@
 					}else if(is_num(name[0]) || (name[0]=='-' && is_num(name[1])) ){
 						// Variable not defined. We check if it is a number.
 						unsigned int len=strlen(name)-1;
+
 						if (len<=CLIMIT_INT){
 							int* v=(int*)malloc(sizeof(int));
 							*v=(int)atoi(name);
@@ -115,7 +118,8 @@
 						strncpy(scape_, name + 1, len-2);
 						scape_[len-2]='\0';
 
-						add_stack(h_stack,STRING,scape_);
+						add_stack(h_stack, STRING, get_str_escp(scape_));
+						free(scape_);
 					}
 					free(name);
 				}
@@ -140,7 +144,7 @@
 			// i-1 per non-alphanumeric character
 			str_add_str_end(
 				&name,
-				search+*index,
+				(const char*)(search+*index),
 				i-*index
 			);
 		}else if ( is_num(search[*index]) ||
@@ -171,7 +175,8 @@
 	}
 	
 	char* get_str_token(char* str,U_INT init,U_INT end){
-		NEW_STRING(out,20);
+		struct String out;
+		init_str(&out,20);
 		bool space=false;
 		end=(end)?end:strlen(str);
 		U_INT tmp_i=0;
@@ -202,7 +207,8 @@
 	}
 	
 	char* get_ie_block(const char* input,const U_INT init, const char end, U_INT* out_end){
-		NEW_STRING(out,20);
+		struct String out;
+		init_str(&out,20);
 		char cinit=input[init];
 		U_INT i=init+1,
 		sub=1;

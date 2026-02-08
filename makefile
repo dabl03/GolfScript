@@ -3,7 +3,7 @@
 CXX=g++
 GCC=gcc
 CXXFLAG:=-std=c++20 -Wall
-LINGC=-lgmp
+LINGC=-lgmp -lm
 CFLAG:=-Wall
 APP=./gsp
 APPTEST:=./test/$(APP)_test

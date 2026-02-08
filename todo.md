@@ -1,7 +1,8 @@
 ## Falta por hacer:
+- Hacer que long int y long float se muestre con notacion cientifica.
+- Da fuga de memoria asignada en copy_str, add_var(vars,"n",    STRING,   (void*)copy_str("\n"));
 - Terminar los archivos para testear.
 - Agregar decimales.
-- Para depurar agregar un mensaje de velocidad por operaciones.
 - Permitir ejecutar otro programas y pasarle un stack como parametros.
 - Corregir los errores ortográficos que haya pasado por alto.
 - Agregar una función para que se importe archivos externos.
@@ -13,15 +14,15 @@
 - Establecer un limite a los nombres de variables en longitud de caracteres.
 - Terminar los operadores suma que faltan bloque de codigo y str y array.
 - Succede una violacion de segmento al usa mas + de los numeros que hay con muchos numeros. Verificar.
-- Solucionar problemas con print
 - Arreglar stack porque no capturo bien un array con todos los elementos.
 - Arreglar str_add_stack
 - Arreglar la funcion base del operador suma que genera errores graves.
-/**
- * @TODO: Buscar y Arreglar un error que impide
- *  que \xhex muestre los caracteres hexadecimales. 
-*/
-char* get_str_escp(char* old_str){
+- Solucionar: 3"aaa" no se colocan en la pila.
+- Solucionar, parece que hay un problema cuando hay mas de un elemento "string" en la entrada del usuario..
+- Ver bug "]", succede cuando no hay 
+- Ver si crear un tipo operador en init_gvars
+- Completar opt_setFloat
+
 =======
 - Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [[6]]
 - 
@@ -54,6 +55,6 @@ Para trabajar con flotante usa la varible globa climit_float
 ## Recordatorio:
 - Verificar si father se guarda bien en todos los archivos (debe ser Header_stack).
 - Modificar el archivo test y verificar stack.c
-- Hacer una función que verifique si las operaciones que requieren dos elementos de la pila lo haga, y tambien hacer las operaciones necesarias (revisar el operador add para tener una idea)
-
+- Ver si enlazar la lista del principio al fin y usar indices negativos.
+- Si es asi para los bucles hacer: stc_now!=h_stack->stack->previous
 ```

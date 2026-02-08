@@ -10,29 +10,35 @@
 U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
 	struct type_value* tv_now;
 	char* out;
-	if (stack->stack)
+	if (stack->stack==NULL)
 		return EMPTY_STACK;
 	tv_now=pop_stack(stack);
 	// Si es una cadena la escapamos.
 	out=(tv_now->type==STRING)?
-		get_str_escp(tv_now->value):
-		to_string_value(tv_now->type,tv_now->value);
+		(char*)tv_now->value:
+		tv_to_string(tv_now, NULL);
 	if (out==NULL){
 		delete_item(tv_now->type,tv_now->value);
 		free(tv_now);
 		return APP_UNKNOWN_DATA;
 	}
 	printf("%s%s",out,extend);
-	delete_item(tv_now->type,tv_now->value);
+	if (tv_now->type!=STRING)
+		free(out);// Ya se ha liberado.
+	delete_item(tv_now->type, tv_now->value);
+
 	free(tv_now);
-	free(out);
 	return NORMAL;
 }
 
 U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 	struct Var* vr_line_breack=search_var("n",vars);
 	unsigned short out;
-	char* extend=to_string_value(vr_line_breack->type,vr_line_breack->value);
+	char* extend=to_string(
+		vr_line_breack->item.type,
+		vr_line_breack->item.value,
+		NULL
+	);
 
 	out=prinft_1_(stack,NULL,(extend!=NULL)?extend:"");
 	if (extend!=NULL)
@@ -40,53 +46,81 @@ U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 	return out;
 }
 
-// Crear una funcion que ordene de la siguiente manera,
-U_INT add_operator(struct Header_Stack* h_stack,...){
-	if (h_stack->stack==NULL ||
-		(h_stack->stack!=NULL && 
-			(h_stack->stack->next==NULL ||
-				(h_stack->father!=NULL && h_stack->father->stack->next==NULL)
-			)
-		)
-	){
-		return INSUFFICIENT_ARGUMENTS;
-	}
-	// num_1=num_1+num_2
-	struct type_value* num_2=pop_stack(h_stack);
-	struct type_value* num_1;
-	struct type_value_err* tmp_tv;
-	unsigned int err_out=NORMAL;
-	// Si no hay suficiente argumentos en esta pila
-	// Agarramos de su padre.
-	// [ 1 [ 1 ]  ] -> [ [ 2 ]  ]
+struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* codes){
+	static struct type_value* out[2];
+	// io -> [ num_1 num_2 ]
+	// out -> [0]=num_1, [1]->num_2
+	// Si no hay suficiente argumentos en la sub pila.
+	// [ num_1 [ num_2 ]  ] o [ num_1 num_2 [ ] ]
+	// [] -> *codes=INSUFFICIENT_ARGUMENTS
 	if (h_stack->stack==NULL){
-		struct type_value* this_stack=pop_stack(h_stack->father);
-		num_1=pop_stack(h_stack->father);
-		add_stack(h_stack->father,STACK,this_stack->value);
-		add_stack(h_stack,num_1->type,num_1->value);
-		add_stack(h_stack,num_2->type,num_2->value);
-		return add_operator(h_stack);
+		if (h_stack->father==NULL && h_stack->father->stack==NULL){
+			*codes=INSUFFICIENT_ARGUMENTS;
+			return NULL;
+		}
+		out[1]=&h_stack->father->stack->item;
+		out[0]=&h_stack->father->stack->next->item;
 	}else{
-		num_1=&h_stack->stack->item;
-		tmp_tv=execute_sum(num_1, num_2);
-		delete_item(num_1->type, num_1->value);
-		delete_item(num_2->type, num_2->value);
-		free(num_2);
+		out[1]=&h_stack->stack->item;
+		if (h_stack->stack->next!=NULL)
+			out[0]=&h_stack->stack->next->item;
+		else if (h_stack->father==NULL && h_stack->father->stack==NULL){
+			*codes=INSUFFICIENT_ARGUMENTS;
+			return NULL;
+		}else
+			out[0]=&h_stack->father->stack->item;
 	}
-	if (tmp_tv->err==NORMAL){
-		h_stack->stack->item.type=tmp_tv->type;
-		h_stack->stack->item.value=tmp_tv->value;
-	}else{
-		err_out=tmp_tv->err;
-		num_1->type=NONE;
-		num_1->value=NULL;
-		delete_item(tmp_tv->type, tmp_tv->value);
-		free(pop_stack(h_stack));
-	}
-	free(tmp_tv);
-	return err_out;
+	return out;
 }
 
+// Crear una funcion que ordene de la siguiente manera,
+U_INT add_operator(struct Header_Stack* h_stack, ...){
+	unsigned int codes=NORMAL;
+	struct type_value** tv_param=opt_get_param(h_stack,&codes);
+	if (codes!=NORMAL){
+		return codes;
+	}
+	struct type_value_err * result=opt_execute(tv_param[0], tv_param[1], OPT_ADD);
+	struct type_value* for_delete;
+	if (result->err==NORMAL){
+		delete_item(tv_param[0]->type, tv_param[0]->value);
+		tv_param[0]->type=result->type;
+		tv_param[0]->value=result->value;
+		free(result);
+		// Eliminamos el elemento sobrante.
+		for_delete=pop_stack(h_stack);
+		if (result==NULL){
+			for_delete=pop_stack(h_stack->father);
+		}
+		delete_item(tv_param[1]->type, tv_param[1]->value);
+	}
+	free(for_delete);
+	return result->err;
+}
+uint opt_setFloat(struct Header_Stack* h_stack, ...){
+	unsigned int codes=NORMAL;
+	struct type_value** tv_param=opt_get_param(h_stack,&codes);
+	struct type_value_err * result;
+	if (codes!=NORMAL){
+		return codes;
+	}
+	char num=(tv_param[0]->type<tv_param[1]->type);
+
+	if (tv_param[1]->type==FLOAT || tv_param[1]->type==LONGFLOAT){
+		return CONVERTION_NOT_FOUND;
+	}else if (tv_param[num]->type<FLOAT){ // INT, LONGINT
+		result=opt_execute(tv_param[0], tv_param[1], OPT_SET_FLOAT);
+	}else{// Stack, CodeBlocks, String
+		// @TODO: Verificar si hay suficientes elementos en lo de arriba para ejecutar opt_setFloat.
+	}
+	if (result->err==NORMAL){
+
+	}else{
+		codes=result->err;
+		free(result);
+	}
+	return codes;
+}
 U_INT sub_operator(struct Header_Stack* stack,...){
 	return FEATURE_NOT_AVAILABLE;
 }
@@ -101,10 +135,16 @@ U_INT reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	return init_gvars(vars);
 }
 
-U_INT pack_stack(struct Header_Stack* stack,...){
-	struct Header_Stack* tmp=copy_stack(stack);
-	delete_stack(stack);
-	add_stack(stack,STACK,tmp);
+U_INT pack_stack(struct Header_Stack* h_stack,...){
+	if (h_stack->stack==NULL)
+		return EMPTY_STACK;
+	struct Header_Stack* tmp=(struct Header_Stack*)malloc(
+		sizeof(struct Header_Stack)
+	);
+	tmp->stack=h_stack->stack;
+	tmp->father=h_stack;
+	h_stack->stack=NULL;
+	add_stack(h_stack, STACK, tmp);
 	return NORMAL;
 }
 
@@ -125,7 +165,7 @@ U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 		"Muestra este menu de ayuda - Agrega una cadena en la pila con un operador y te muestra su descripción."
 	};
 	struct Var* vr_breack_line=search_var("n",vars);
-	char* extend=to_string_value(vr_breack_line->type,vr_breack_line->value);
+	char* extend=to_string(vr_breack_line->item.type, vr_breack_line->item.value, NULL);
 
 	printf("%s%s %s%s  Version: %s",LICENSE,extend,AUTHOR,extend,VERSION);
 	for (U_INT i=0;i<sizeof(key_fun);i++){
@@ -137,16 +177,18 @@ U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 }
 
 U_INT init_gvars(struct Header_Stack* vars){
-	add_var(vars,"reset",FUNCTION,(void*)reset);
-	add_var(vars,"print",FUNCTION,(void*)prinft_1_);
-	add_var(vars,"puts",FUNCTION,(void*)puts_operator);
-	add_var(vars,"+",FUNCTION,(void*)add_operator);
-	add_var(vars,"-",FUNCTION,(void*)sub_operator);
-	add_var(vars,"quit",FUNCTION,(void*)end_app);
-	add_var(vars,"]",FUNCTION,(void*)pack_stack);
-	add_var(vars,"help",FUNCTION,(void*)help);
-	add_var(vars,"n",STRING,"\n");
-	init_operators(false);
+	add_var(vars,"reset",FUNCTION, (void*)reset        );
+	add_var(vars,"print",FUNCTION, (void*)prinft_1_    );
+	add_var(vars,"puts", FUNCTION, (void*)puts_operator);
+	add_var(vars,"+",    FUNCTION, (void*)add_operator );
+	add_var(vars,"-",    FUNCTION, (void*)sub_operator );
+	add_var(vars,"quit", FUNCTION, (void*)end_app      );
+	add_var(vars,"]",    FUNCTION, (void*)pack_stack   );
+	add_var(vars,"help", FUNCTION, (void*)help         );
+	add_var(vars,"n",    STRING,   (void*)copy_str("\n"));
+	add_var(vars,"float",FUNCTION, (void*)opt_setFloat );
+	add_var(vars,"prompt",STRING,  (void*)copy_str("?> "));
+	add_var(vars,"sub_prompt",STRING,(void*)copy_str("... "));
 	return NORMAL;
 }
 #endif

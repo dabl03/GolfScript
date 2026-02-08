@@ -4,6 +4,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "define.h"
+
+/**
+ * @brief Dato genérico | 
+ * para la anotación Húngara usar tv.
+ * 
+ * @param type El tipo que este
+ * dato tendrá.
+ * @param value El dato a almacenar.
+*/
+struct type_value{
+	enum TYPE type;
+	void*     value;
+};
 /**
  * @brief Estructura de las variables
  * @brief | Para la anotación Húngara,
@@ -18,21 +31,8 @@
 */
 struct Var{
 	char*        name;
-	enum TYPE    type;
-	void*        value;
+	struct type_value item;
 	unsigned int i_name; // Se usará para comparación.
-};
-/**
- * @brief Dato genérico | 
- * para la anotación Húngara usar tv.
- * 
- * @param type El tipo que este
- * dato tendrá.
- * @param value El dato a almacenar.
-*/
-struct type_value{
-	enum TYPE type;
-	void*     value;
 };
 /**
  * @brief La pila donde se guardará todo. 
@@ -101,6 +101,7 @@ struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, 
  * 
  * @param[in]  stc_io Pila a copiar.
  * @return Nueva pila. (Recordar liberar).
+ * Nota: Retorna NULL si la pila esta vacia.
  */
 struct Header_Stack* copy_stack(const struct Header_Stack* stc_io);
 /** Da valor a una variable creando un nuevo valor.
@@ -127,14 +128,6 @@ void delete_var(struct Var* vr_var);
  */
 unsigned int process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data);
 /**
- * @brief Creamos una cadena para mostrar todo
- * el contenido de la pila.
- * @param hstc_io pila a mostrar.
- * @return char* output Recuerda liberar memoria.
-*/
-char* printf_stack(const struct Header_Stack* hstc_io);
-
-/**
  * @brief Busca la variable deacuerdo al nombre y 
  * retorna su posición en el array.
  *
@@ -153,15 +146,6 @@ struct Var* search_var(const char* s_name, struct Header_Stack* hstc_var);
  * Recordar liberar.
  */
 void add_var(struct Header_Stack* hstc_out, const char* s_name, enum TYPE typ_data, void* v_data);
-/**
- * @brief Retorna equivalente cadena del elemento pasado.
- * 
- * @param[in]   typ_data Tipo del dato
- * @param[out]  v_data   El dato.
- * @return Equivalente string del dato pasado |
- * Recordar liberar.
- */
-char* to_string_value(const enum TYPE typ_data,void* v_data);
 /**
  * Modify or add an item in the indicated position
  * @param[in,out] h_stack   The stack to be modified

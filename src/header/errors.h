@@ -13,6 +13,8 @@
 	#define INSUFFICIENT_ARGUMENTS 0x000001
 	#define EMPTY_STACK 0x000002
 	#define INDEX_NOT_FOUND 0x000003
+	#define CONVERTION_NOT_FOUND 0x000004
+	#define INVALID_ASSIGNMENT 0x000005
 	// El sufijo "A_" es para referirse a mensaje interno de la APP
 	//TODO: USAR HEXADECIMAL con formato rgb
 	//El tipo 1-F(F mas grave) tiene subtipos... //Descartado por ahora..
@@ -54,5 +56,11 @@
 	 * @param CODES  The error code.
 	 * @param line, col   Where the error occurred
 	*/
-	void show_error(const unsigned long int CODES,const unsigned int line, const unsigned int col);
+	void show_error(
+		const unsigned long int CODES,
+		const unsigned int line,
+		const unsigned int col
+	);
+	void init_get_time();
+	char* end_time();
 #endif

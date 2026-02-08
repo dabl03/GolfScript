@@ -16,10 +16,6 @@ struct String{
 	unsigned int count;
 	char* str;
 };
-#define INIT_STRING(str___,max_____) str___.str=(char*)malloc(max_____);\
-	str___.max=max_____; \
-	str___.count=0;
-#define NEW_STRING(str___,max_____) struct String str___={max_____,0,(char*)malloc(max_____)}
 /**
  * @brief Función que busca un char dentro de una cadena.
  * 
@@ -71,7 +67,7 @@ long int parseLongInt(const char* str);
  * @param str_copy Cadena a copiar.
  * @param end Cantidad de caracteres a copiar. Si es -1 se buscará el tamaño.
 */
-void str_add_str_end(struct String* str_d,  char* str_copy, int64_t count);
+void str_add_str_end(struct String* str_d,  const char* str_copy, int64_t count);
 #define str_add_str(str_d, str_copy) str_add_str_end(str_d, str_copy, -1)
 #define str_add_str_init_end(str_d,  str_copy, init,end) str_add_str_end(str_d,str_copy+init,end)
 /**
@@ -100,18 +96,18 @@ char scape_char(const char c);
  * @return   Retorna el caracter normal(\n->n, \a->a, etc...), sino es un caracter especial retorna -1.
  */
 char nscape_char(char c);
-/**
- * Funcion para identificar los tipos de datos.
- * @param  t Tipo
- * @return   Retorna una cadena no dinamica. No requiere liberar
- */
-const char* get_name_type(enum TYPE t);
+
+/// Retorna True si chr es un caracter
+///          invisible.
+bool is_invisible_char(unsigned char chr);
 /**Tratar la cadena para mostrar todos los caracteres especiales sin escapar al momento de hacer printf.
  * @param[char*] old_str { Cadena a escapar }
  * @return  nueva cadena reservando memoria dinamica. Recueda usar free.
 */
 char* get_str_nescp(char* old_str);
-/**Tratar la cadena para escapar todos los caracteres especiales.
+/**
+ * Tratar la cadena para escapar todos los caracteres especiales.
+ * Nota: Hecha para escapar la entrada del usuario.
  * @param[char*] old_str { Cadena a escapar }
  * @return  nueva cadena reservando memoria dinamica. Recueda usar free.
 */
@@ -143,29 +139,43 @@ char* get_sub_str(const char* str,U_INT init, U_INT end);
 */
 char* itoa(int value, char* result, int base);
 /**
- * We take advantage of the fact that we know the end of the string
- * so we don't have to copy and add the string
- * with the desired format.
- * @param out char*. String to append the string to.
- * @param len_out int. Size of the original string (Note: The \0 is counted).
- * @param len_add_format int. Extra size to add the substring to.
- * @param format char*. Format to use in sprintf.
- * @param str_add char*. String to add.
- * @return unsigned int The final size of the new string.
-*/
-unsigned int append_sprintf(char** out,const unsigned int len_out,const unsigned int len_add_format,const char* format,const char* str_add);
-/**
- * We take advantage of knowing the end of the string
- * to add the substring at the end.
- * @param str_out char*. Where to save the substring.
- * @param len int. Size of the original string.
- * @param str_io char*. String to add
- * @return unsigned int The final size of the new string.
-*/
-unsigned int append_strcpy(char** str_out,const unsigned int len,const char* str_io);
+ * Funcion para identificar los tipos de datos.
+ * @param  t Tipo
+ * @return   Retorna una cadena no dinamica. No requiere liberar
+ */
+const char* get_name_type(enum TYPE t);
 /**Copies a string and returns one stored in dynamic memory.
  * @param str_io String to copy
  * @return Copy the string saved with malloc.
 */
-char* convert_static_str_to_dynamic(const char* str_io);
+
+char* copy_str(const char* str_io);
+
+/**
+ * Functions to convert the type to a string. Each type is
+ * indicated in the function prefix, and will be used by
+ * the program in the array CONVERT_TO_STRING_FNC[TYPE].
+ * 
+ * @param tv_element The element stored in a type_value
+ *  structure. NOTE: For speed, it is not checked whether
+ *  the type is the same as the one the function
+ *  corresponds to.
+ * @param[in] out_len Where to store the string length.
+ *  If NULL is passed, nothing is done with the parameter.
+ * @return The string that represents the type.
+ *  Note: It should be free, but if you are debugging or testing,
+ *  you should use FREE__() in long_int_to_string
+*/
+char* int_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* long_float_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* float_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* long_int_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* block_codes_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* str_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* stack_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* var_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* FUNCTION_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* NONE_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* tv_to_string(const struct type_value* tv_element, unsigned int* out_len);
+char* to_string(const enum TYPE type, const void* value, unsigned int* out_len);
 #endif

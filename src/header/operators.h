@@ -28,10 +28,9 @@
 		void* value;
 		unsigned long int err;
 	};
-	struct type_value_err * execute_sum(struct type_value* num_1, struct type_value* num_2);
+	struct type_value_err * opt_execute(struct type_value* num_1, struct type_value* num_2, enum OPERATORS opt);
 	/**
 	 * Inicializa el puntero a los operadores.
-	 * Nota: Si se quiere usar execute_* se debe llamar por 1 vez en el programa..
 	 * @param bool Indica si se quiere reinicilizar los operadores.
 	 */
 	void init_operators(bool);

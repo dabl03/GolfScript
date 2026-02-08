@@ -4,14 +4,15 @@
 
 	type_value_err* str_add_basic_type(type_value* num_1, type_value* num_2, bool is_right){
 		type_value_err* out=NEW_TYPE_VALUE_ERR();
+		unsigned int len;
 		char* str=(char*)num_1->value,
-			* basic_type=to_string_value(num_2->type, num_2->value)
+			* basic_type=tv_to_string(num_2, &len)
 		;
 
 		out->type=STRING;
 		out->err=NORMAL;
 
-		out->value=malloc(strlen(str)+strlen(basic_type)+1);
+		out->value=malloc(len+strlen(basic_type)+1);
 		sprintf_with_invert(out->value, "%s%s", is_right, str, basic_type);
 		// Para testear.
 		#if defined(DEBUG) || defined(TEST_)
@@ -115,10 +116,9 @@
 					len_str_out=strlen(out->value);// @todo: Ver si debe ser +1
 					break; 
 				default:
-					str_tmp=to_string_value(now->type, now->value);
+					str_tmp=tv_to_string(now, &int_tmp);
 					if (!str_tmp)// is it null?
 						continue;
-					int_tmp=strlen(str_tmp);
 
 					out->value=realloc(out->value, len_str_out+int_tmp);
 					sprintf(out->value+(len_str_out-1), "%s", str_tmp);

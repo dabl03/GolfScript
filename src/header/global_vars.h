@@ -6,71 +6,57 @@
 #include "stack.h"
 
 /**
- * @brief Imprimimos el ultimo elemento por pantalla y lo liberamos.
+ * Las siguientes funciones son utilizadas dentro del programa para
+ * Hacer tareas especificas del lenguajes. Cada unas de ellas comparte
+ * Las misma estructura:
+ * @param stack   Puntero a la pila donde se va a trabajar,
+ * @param vars    Las variables decrarada dentro del programa.
+ * @param extend  El valor de la variable "n".
+ * @return        Codigo de error. Mirar: errors.h
  * 
- * @param stack Importante. De aquí sacaremos el ultimo elemento.
- * @param vars No se usará. solo está para adorno.
- * @param extend Algumento opcional. Solo para agregar una extension a la salida.
- * Pienso hacer una variable que determine esto dentro del interprete:)
- * 
- * @return unsigned int 
- */
+ * Nota: No todas las funciones usaran los tres parametros, pero
+ * Cuando el usuario las llame, por el diseño igual se pasarán.
+*/
+/// @brief Imprimimos el ultimo elemento por pantalla y lo liberamos.
 U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend);
-/**
- * @brief Lo mismo que printf_1_ pero con salto de linea de extensión.
- * 
- * @param stack Importante. De donde se pasará el ultimo elemento.
- * @param vars Para colocarle el salto de linea declarado en la variable n.
- * @return unsigned int
- */
+
+/// @brief Lo mismo que printf_1_ pero con salto de linea de extensión.
 U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars);
 /**
- * @brief El operador suma del interprete. Aqui analizaremos y realizamos la operaciones deacuerdo a su tipo.
- * 
- * @param stack Importante. Aquí es donde sacaremos los operando. Y liberamos el ultimo.
- * @param ... No necesitamos los demas parámetros que serán pasados igualmente.
- * @return unsigned int
- */
-U_INT add_operator(struct Header_Stack* stack,...);
-/**
- * @brief      Operador de resta.
- * @param      stack      The stack es donde se saca los numeros
- * @param[in]  ... No necesitamos mas parametros
- *
- * @return     is_error?
- */
-U_INT sub_operator(struct Header_Stack* stack,...);
-/***
- * Terminamos la app.
+ * Obtiene dos parametros de la pila y los retorna.
+ * Nota: No se liberan.
+ * Ejemplo: io -> [ num_1 num_2 ], [ num_1 [num_2] ] y [ num_1 num_2 [] ]
+	    out -> [0]=num_1, [1]->num_2
+	    io-> []
+	    out-> *codes=INSUFFICIENT_ARGUMENTS
+ * @Param h_stack Donde sacar los datos.
+ * @Param codes Puntero donde se almacena INSUFFICIENT_ARGUMENTS
+ *   en caso de no conseguir dos parametros.
+ * @Return struct type_value[2] No se debe liberar.
 */
+struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* codes);
+
+/// @brief El operador suma del interprete.
+/// Aqui analizaremos y realizamos la operaciones
+/// deacuerdo a su tipo.
+U_INT add_operator(struct Header_Stack* stack,...);
+/// @brief Operador de resta.
+U_INT sub_operator(struct Header_Stack* stack,...);
+/// @brief Terminar el programa.
 U_INT end_app(void);
-/**
- * @brief Funcion para reiniciar las variables globales. Nota: No aqui liberamos la memoria.
- * 
- * @param stack Copatibilidad. No es necesario pasarlo solo que el programa lo pasará de todos modos.
- * @param vars Sumamente importante. Esto es lo que vamos a liberar y volver a rellenar.
- * @param ... siempre se pasarán tres argumento y el tercero no nos importa.
- * @return unsigned int 
- */
-U_INT reset(struct Header_Stack* stack,struct Header_Stack* vars,...);
-/**
- * Copia el stack en un array la libera he ingresa ese array en la pila.
- * @param  stack stack of user
- * @return       unsigned int error
- */
+/// @brief Funcion para reiniciar las variables globales.
+/// Nota: No aqui liberamos la memoria.
+U_INT reset(struct Header_Stack* stack,struct Header_Stack* vars, ...);
+/// @brief Empaqueta la pila dentro de un contenedor (otra pila).
 U_INT pack_stack(struct Header_Stack* stack,...);
-/**
- * @brief      Muestra una descripción de las funciones predecterminadas.
- * @param[in]  stack -------------------@todo agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
- * @param[in]  vars -- Para obtener el salto de linea.
- * @param[in]  ...
- * @return     0-Por copatibilidad.
- */
+/// @brief      Muestra una descripción de las funciones predecterminadas.
+/// @todo agregar la caracteristica de ver los operadores ver la parte de help para tener mas informacion.
+/// @param[in]  vars -- Para obtener el salto de linea.
 U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...);
-/**
- * @brief Aqui iniciamos las variables globales. Tambien puede ser usada para reiniciar las variables globales.
- * 
- * @param vars Donde ingresar las variables globales.
- */
+/// @brief Aqui iniciamos las variables globales.
+/// Nota: No es directamente llamada por el usuario, pero si por reset.
+///
+/// Tambien puede ser usada para reiniciar las variables globales.
+/// @param vars Donde ingresar las variables globales.
 U_INT init_gvars(struct Header_Stack* vars);
 #endif
