@@ -155,6 +155,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			tv_to_string(&vr_sub_prompt->item, NULL):
 			(char*)vr_sub_prompt->item.value;
 		input_line(&lineas, cprompt, csub_prompt);
+
 		if (vr_prompt->item.type!=STRING)
 			free(cprompt);
 		if (vr_sub_prompt->item.type!=STRING)

@@ -177,18 +177,18 @@ U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 }
 
 U_INT init_gvars(struct Header_Stack* vars){
-	add_var(vars,"reset",FUNCTION, (void*)reset        );
-	add_var(vars,"print",FUNCTION, (void*)prinft_1_    );
-	add_var(vars,"puts", FUNCTION, (void*)puts_operator);
-	add_var(vars,"+",    FUNCTION, (void*)add_operator );
-	add_var(vars,"-",    FUNCTION, (void*)sub_operator );
-	add_var(vars,"quit", FUNCTION, (void*)end_app      );
-	add_var(vars,"]",    FUNCTION, (void*)pack_stack   );
-	add_var(vars,"help", FUNCTION, (void*)help         );
-	add_var(vars,"n",    STRING,   (void*)copy_str("\n"));
-	add_var(vars,"float",FUNCTION, (void*)opt_setFloat );
-	add_var(vars,"prompt",STRING,  (void*)copy_str("?> "));
-	add_var(vars,"sub_prompt",STRING,(void*)copy_str("... "));
+	add_var(vars,"reset",FUNCTION,  (void*)reset        );
+	add_var(vars,"print",FUNCTION,  (void*)prinft_1_    );
+	add_var(vars,"puts", FUNCTION,  (void*)puts_operator);
+	add_var(vars,"+",    FUNCTION,  (void*)add_operator );
+	add_var(vars,"-",    FUNCTION,  (void*)sub_operator );
+	add_var(vars,"quit", FUNCTION,  (void*)end_app      );
+	add_var(vars,"]",    FUNCTION,  (void*)pack_stack   );
+	add_var(vars,"help", FUNCTION,  (void*)help         );
+	add_var(vars,"n",    STRING,    (void*)"\n"         );
+	add_var(vars,"float",FUNCTION,  (void*)opt_setFloat );
+	add_var(vars,"prompt",STRING,   (void*)"?> "        );
+	add_var(vars,"sub_prompt",STRING,(void*)"... "     );
 	return NORMAL;
 }
 #endif

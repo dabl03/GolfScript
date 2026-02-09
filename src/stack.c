@@ -192,7 +192,7 @@ void setValue_tv(struct Var* vr_now, const char* s_name, struct type_value* tv_s
 	vr_now->item.value=tmp.value;
 }
 void delete_var(struct Var* vr_var){
-	delete_item(vr_var->item.type,vr_var->item.value);
+	delete_item(vr_var->item.type, vr_var->item.value);
 	free(vr_var->name);
 	vr_var->item.value=NULL;
 }

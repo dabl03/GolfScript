@@ -1,6 +1,5 @@
 ## Falta por hacer:
 - Hacer que long int y long float se muestre con notacion cientifica.
-- Da fuga de memoria asignada en copy_str, add_var(vars,"n",    STRING,   (void*)copy_str("\n"));
 - Terminar los archivos para testear.
 - Agregar decimales.
 - Permitir ejecutar otro programas y pasarle un stack como parametros.

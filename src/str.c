@@ -331,7 +331,7 @@ bool is_invisible_char(unsigned char chr){
 }
 char* copy_str(const char* str_io){
 	char* out=(char*)malloc( SIZE_CHAR(strlen(str_io)+1) );
-	strcpy(out,str_io);
+	strcpy(out, str_io);
 	return out;
 }
 #pragma GCC diagnostic push

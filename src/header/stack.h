@@ -142,7 +142,7 @@ struct Var* search_var(const char* s_name, struct Header_Stack* hstc_var);
  * @param[out] hstc_out Pila a modificar.
  * @param[in] s_name   Nombre de la variable.
  * @param[in] typ_data Tipo de variable.
- * @param[in] v_data   Valor de la variable | 
+ * @param[in] v_data   Valor de la variable. Nota: Se copia el valor de la variable.
  * Recordar liberar.
  */
 void add_var(struct Header_Stack* hstc_out, const char* s_name, enum TYPE typ_data, void* v_data);

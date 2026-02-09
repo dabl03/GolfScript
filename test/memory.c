@@ -23,12 +23,12 @@ void viewStack(){
 		printf(
 			"======================================================\n"
 			"Dirección %p:\n"
-			"    Canitadad asignada: %ld .\n"
+			"    Cantidad asignada: %ld .\n"
 			"    Se asigno en la linea: %d .\n"
 			"    Se asigno en la función: \"%s\".\n"
 			"    Se asigno en el archivo: \"%s\".\n"
 			"======================================================\n"
-			"",now->memory,now->size,now->line,now->func,now->file
+			"",now->memory, now->size, now->line, now->func, now->file
 		);
 		now=now->next;
 	}
@@ -116,11 +116,12 @@ void test_free(void* ptr, const char *file, int line, const char *func,unsigned 
 }
 // Para probar este archivo...
 // gcc -o memory.exe memory.c "-D MAIN=1"/*
-#ifdef  MAIN
+#ifndef  MAIN
 	#include "./include/memory.h"
-	#define MAIN main
+	#define memory_main main
+	#define MAIN 1
 #endif
-int MAIN(void){
+int memory_main(void){
 	void* a=malloc(sizeof(char)),
 			* b=malloc(sizeof(char*)),
 			* c=malloc(sizeof(int));

@@ -7,7 +7,7 @@
 /build/log/*.log
 /build/log/test/*.log
 /build/obj/test/*.o
-/build/obj/*.o
+/build/obj/
 # }
 logs.txt
 logs_obj.txt
