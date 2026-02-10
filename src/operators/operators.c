@@ -18,8 +18,13 @@
 		else
 			sprintf(ptr_out, ptr_format, str_2, str_1);
 	}
-	type_value_err * (*OPT_FUNC[OPT_END_ELEMENT][END_ELEMENT][END_ELEMENT])(struct type_value *, struct type_value *, bool)={NULL};
-	
+	type_value_err * (*OPT_FUNC[OPT_END_ELEMENT][END_ELEMENT][END_ELEMENT])(struct type_value *, struct type_value *, bool);
+	static void __attribute__((constructor)) init_globals() {
+		for (uint x=0; x<OPT_END_ELEMENT; x++)
+			for (uint y=0; y<END_ELEMENT; y++)
+				for (uint z=0; z<END_ELEMENT; z++)
+					OPT_FUNC[x][y][z]=(type_value_err*(*)(struct type_value *, struct type_value *, bool))NULL;// In case any one is missing, it will give an error when accessing the missing one.
+	}
 	struct type_value_err * opt_execute(
 		struct type_value* num_1,
 		struct type_value* num_2,
@@ -96,7 +101,9 @@
 		OPT_FUNC[OPT_ADD][STACK][LONGFLOAT]=stack_add_basic_type;
 	}
 	void init_set_float(){
-		OPT_FUNC[OPT_SET_FLOAT][0][0]        =set_float_int_and_int;
+		OPT_FUNC[OPT_SET_FLOAT][NONE][INT]   =set_float_int;
+		OPT_FUNC[OPT_SET_FLOAT][NONE][LONGINT]=set_float_long_int;
+		
 		OPT_FUNC[OPT_SET_FLOAT][INT][INT]    =set_float_int_and_int;
 		OPT_FUNC[OPT_SET_FLOAT][INT][LONGINT]=set_float_int_and_long_int;
 		OPT_FUNC[OPT_SET_FLOAT][LONGINT][INT]=set_float_long_int_and_int;
@@ -111,9 +118,8 @@
 	}
 	void init_operators(bool reset){
 		// Por si se quiere reiniciar los punteros a los operadores.
-		if (!reset && OPT_FUNC[OPT_ADD][INT][INT]!=int_add_int)
-			return;
 		init_add();
+		printf("Init set float");
 		init_set_float();
 	}
 #endif

@@ -47,7 +47,7 @@ U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 }
 
 struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* codes){
-	static struct type_value* out[2];
+	static struct type_value* out[2]={NULL, NULL};
 	// io -> [ num_1 num_2 ]
 	// out -> [0]=num_1, [1]->num_2
 	// Si no hay suficiente argumentos en la sub pila.
@@ -66,7 +66,6 @@ struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* co
 			out[0]=&h_stack->stack->next->item;
 		else if (h_stack->father==NULL && h_stack->father->stack==NULL){
 			*codes=INSUFFICIENT_ARGUMENTS;
-			return NULL;
 		}else
 			out[0]=&h_stack->father->stack->item;
 	}
@@ -83,6 +82,7 @@ U_INT add_operator(struct Header_Stack* h_stack, ...){
 	struct type_value_err * result=opt_execute(tv_param[0], tv_param[1], OPT_ADD);
 	struct type_value* for_delete;
 	if (result->err==NORMAL){
+		puts("2========================");
 		delete_item(tv_param[0]->type, tv_param[0]->value);
 		tv_param[0]->type=result->type;
 		tv_param[0]->value=result->value;
@@ -92,7 +92,9 @@ U_INT add_operator(struct Header_Stack* h_stack, ...){
 		if (result==NULL){
 			for_delete=pop_stack(h_stack->father);
 		}
+		puts("4========================");
 		delete_item(tv_param[1]->type, tv_param[1]->value);
+		puts("5========================");
 	}
 	free(for_delete);
 	return result->err;
@@ -100,16 +102,17 @@ U_INT add_operator(struct Header_Stack* h_stack, ...){
 uint opt_setFloat(struct Header_Stack* h_stack, ...){
 	unsigned int codes=NORMAL;
 	struct type_value** tv_param=opt_get_param(h_stack,&codes);
+	const struct type_value default_num_2={.type=NONE, NULL};
 	struct type_value_err * result;
-	if (codes!=NORMAL){
+	if (tv_param==NULL)
 		return codes;
-	}
-	char num=(tv_param[0]->type<tv_param[1]->type);
+	struct type_value* num_2=(tv_param[0]!=NULL)?tv_param[0]:&default_num_2;
 
-	if (tv_param[1]->type==FLOAT || tv_param[1]->type==LONGFLOAT){
-		return CONVERTION_NOT_FOUND;
-	}else if (tv_param[num]->type<FLOAT){ // INT, LONGINT
+	if (tv_param[1]->type<FLOAT && tv_param[0]->type<FLOAT){ // INT, LONGINT
+		puts("Basic type");
 		result=opt_execute(tv_param[0], tv_param[1], OPT_SET_FLOAT);
+	}else if ((tv_param[1]->type==FLOAT || tv_param[1]->type==LONGFLOAT) && (tv_param[0]->type<=LONGFLOAT)){
+		return CONVERTION_NOT_FOUND;
 	}else{// Stack, CodeBlocks, String
 		// @TODO: Verificar si hay suficientes elementos en lo de arriba para ejecutar opt_setFloat.
 	}

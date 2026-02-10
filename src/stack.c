@@ -69,8 +69,10 @@ void delete_item(const enum TYPE t_typValue, void* v_data){
 			// Nunca liberar NONE. Se dejara para el uso del desarrollador.
 			break;
 		default:
-			perror("Error: Se intenta liberar un tipo de dato no tratado. \nFunción \"delete_item\" ");
-			printf("Type: %s",get_name_type(t_typValue));
+			perror("Error: Se intenta liberar un tipo de dato no tratado.\n"
+				"  - Función \"delete_item\".\n"
+			);
+			printf("  - (char*)Type: %s. (int) Type: %d\n", get_name_type(t_typValue), t_typValue);
 			exit(-130);
 	}
 }

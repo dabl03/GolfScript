@@ -31,8 +31,9 @@ FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 ALL_DEPENDENCIES=$(INCLUDE)/define.h
 # If windows then BIN_EXT=.exe
 BIN_EXT=
+NORMAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $<.log)" && exit 1)
+ESPECIAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $@.log)" && exit 1)
 DELETE_FUNC=DELETE
-SHOW_LOG=cat -n
 
 # Mostrar los logs.
 VIEW_LOG_C=./tools/view_log.c
@@ -57,6 +58,9 @@ ifeq ($(OS_SYSTEM),Windows)
 	BIN_EXT=.exe
 	MAKE=Mingw32-make
 	DELETE_FUNC=DELETE_WINDOWS
+	GET_ERROR_FUN=GET_ERROR_WINDOWS
+	NORMAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $<.log)" & exit /b 1)
+	ESPECIAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $@.log)" & exit /b 1)
 endif
 
 define DELETE_WINDOWS
@@ -93,6 +97,7 @@ O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 STACK_TEST=stack.exe
 include ./test/makefile.mk
 endif
+
 $(VIEW_LOG): $(VIEW_LOG_C)
 	@echo Compilando herramienta de logs...
 	@$(GCC) -g -o $(VIEW_LOG) $(VIEW_LOG_C)  2>$(VIEW_LOG_LOGS).log
@@ -103,42 +108,37 @@ $(DELETE_V_LOG): $(DELETE_V_LOG_C)
 
 $(APP): $(O_FILES) $(O_OPERATOR) $(MAIN_O)
 	@echo Uniendo los archivos compilados en "$(APP)"...
-	-@$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) $(O_OPERATOR) -o $(APP) $(LINGC) 2> $(LOG_APP)/app.exe.log
-	$(DELETE_V_LOG) $(LOG_APP)/app.exe.log
-	$(VIEW_LOG) $(LOG_APP)/app.exe.log
+	@$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) $(O_OPERATOR) -o $(APP) $(LINGC) 2> $(LOG_APP)/$(notdir $@.log) $(ESPECIAL_SHOW_LOG)
+	@$(call $(GET_ERROR_FUN),app.exe.log)
+	@$(DELETE_V_LOG) $(LOG_APP)/app.exe.log
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
-	-@$(GCC) -c $(CFLAG) $< -o $@ 2>$(LOG_APP)/main.c.log
-	$(DELETE_V_LOG) $(LOG_APP)/main.c.log
-	$(VIEW_LOG) $(LOG_APP)/main.c.log
+	@$(GCC) -c $(CFLAG) $< -o $@ 2> $(LOG_APP)/$(notdir $@.log) $(ESPECIAL_SHOW_LOG)
+	@$(DELETE_V_LOG) $(LOG_APP)/main.c.log
 
 $(BIN_O)/%.o:	$(SRC)/%.c $(ALL_DEPENDENCIES)
 	@echo Compilando el archivo objeto de $<...
-	-@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log)
-	$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
-	$(VIEW_LOG) $(LOG_APP)/$(notdir $<.log)
+	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log) $(NORMAL_SHOW_LOG)
+	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
 
 $(BIN_O)/%.o:	$(SRC_OPERATOR)/%.c $(ALL_DEPENDENCIES)
 	@echo Compilando el operador: $<...
-	-@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log)
-	$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
-	$(VIEW_LOG) $(LOG_APP)/$(notdir $<.log)
+	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log) $(NORMAL_SHOW_LOG)
+	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
 
 $(BIN_O)/%.o:	$(SRC_OPERATOR)/**/%.c $(ALL_DEPENDENCIES)
 	@echo Compilando el operador: $<...
-	-@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log)
-	$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
-	$(VIEW_LOG) $(LOG_APP)/$(notdir $<.log)
+	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log) $(NORMAL_SHOW_LOG)
+	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
 
 $(BIN_O)/memory.o:./test/memory.c
-	-@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) -DMAIN=1 2> $(LOG_APP)/memory.log
-	$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
-	$(VIEW_LOG) $(LOG_APP)/$(notdir $<.log)
+	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) -DMAIN=1 2> $(LOG_APP)/memory.log $(NORMAL_SHOW_LOG)
+	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
 
 clean:
 	@echo "Eliminando archivos..."
-	@$(call $(DELETE_FUNC))
+	$(call $(DELETE_FUNC))
 
 gdb:
 	@echo Abriendo GDB

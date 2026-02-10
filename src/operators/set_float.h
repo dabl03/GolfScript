@@ -22,6 +22,9 @@
 	 * 	O simplemente para poder reusar una existente.
 	 * @Return type_value_err* El resultado con indicador de error.
 	*/
+	type_value_err* set_float_int(type_value* num_1, type_value* num_2, ...);
+	type_value_err* set_float_long_int(type_value* num_1, type_value* num_2, ...);
+
 	type_value_err* set_float_int_and_int(type_value* num_1, type_value* num_2, ...);
 
 	type_value_err* set_float_int_and_long_int(type_value* num_1, type_value* num_2, bool is_right);

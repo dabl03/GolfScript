@@ -34,8 +34,19 @@ void viewStack(){
 	}
 }
 void* test_malloc(size_t size, const char *file, int line, const char *func, unsigned char is_normal){
-	if (is_normal)// Para cuando se usen constructores globales.
+	if (is_normal){// Para cuando se usen constructores globales.
+		/*Para detectar incoherencia y fuga de memoria.*
+		printf(
+			"Dirección asignada:\n"
+			"    Cantidad asignada: %ld .\n"
+			"    Se asigno en la linea: %d .\n"
+			"    Se asigno en la función: \"%s\".\n"
+			"    Se asigno en el archivo: \"%s\".\n"
+			"", size, line, func, file
+		);
+		/**/
 		return malloc(size);
+	}
 	struct Stack* stack=(struct Stack*)malloc(sizeof(struct Stack));
 	stack->memory=malloc(size);
 	stack->size=size;
@@ -70,10 +81,10 @@ void test_free(void* ptr, const char *file, int line, const char *func,unsigned 
 	if (ptr==NULL){
 		printf(
 			"Advertensia:\n"
-			"  ptr=Se intenta liberar un valor nulo en:"
-			"  Archivo: \"%s\".\n"
-			"  Función: \"%s\".\n"
-			"  Linea: %d .\n"
+			"  ptr=Se intenta liberar un valor nulo en:\n"
+			"    - Archivo: \"%s\".\n"
+			"    - Función: \"%s\".\n"
+			"    - Linea: %d .\n"
 			"", file, func, line
 		);
 		return;
@@ -106,10 +117,10 @@ void test_free(void* ptr, const char *file, int line, const char *func,unsigned 
 	}
 	printf(
 		"Error:\n"
-		"  ptr=%p no se ha asignado ubicado en:"
-		"  Archivo: \"%s\".\n"
-		"  Función: \"%s\".\n"
-		"  Linea: %d .\n"
+		"  ptr=%p no se ha asignado, se intenta liberar en:\n"
+		"    - Archivo: \"%s\".\n"
+		"    - Función: \"%s\".\n"
+		"    - Linea: %d .\n"
 		"", ptr, file, func, line
 	);
 	free(ptr);
