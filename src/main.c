@@ -45,7 +45,7 @@ char* get_input_str(char type_string, uint* len);
  * @param[in] base_sub     Identación base.
  * @return La entrada del usuario. Recordar liberar
  */
-char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub);
+char* input_block(const char cInit,const char cEnd,const char* out_nesting,const uint base_sub);
 /**
  * Obtiene el prompt del usuario y retorna una pila con el.
  * @Param lineas Una pila con un puntero a las lineas.
@@ -176,6 +176,7 @@ int interprete(struct Header_Stack* stack,struct Header_Stack* vars){
 			get_str_escp((char*)vr_extend->item.value):
 			tv_to_string(&vr_extend->item, NULL)
 		;
+		printf("%s", extend);
 		free(extend);
 		free(output);
 		#if defined(DEBUG)
@@ -268,8 +269,8 @@ char* get_input_str(char type_string, uint* len){
 	if (len!=NULL)*len=str_.count;
 	return (char*)realloc(str_.str,str_.count);
 }
-char* input_block(const char cInit,const char cEnd,const char* out_nesting,const U_INT base_sub){
-	U_INT sub=1;
+char* input_block(const char cInit,const char cEnd,const char* out_nesting,const uint base_sub){
+	uint sub=1;
 	struct String out={20,1,(char*)malloc(20)};
 	char c;//c this input
 	bool is_nline=false;//is_nline(is new line?), es para no tomar el '\0' antes de que el usuario si quiera escriba(He conseguido este error).
@@ -286,7 +287,7 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 			break;
 		// Get string of console.
 		}else if (IF_INIT_STRING(c)){
-			U_INT len_;
+			uint len_;
 			char* str_=get_input_str(c,&len_);
 			//Hubo un salto de linea a escribir la cadena.
 			if (str_[len_-1]=='\n'){
@@ -306,7 +307,7 @@ char* input_block(const char cInit,const char cEnd,const char* out_nesting,const
 
 		// Nueva linea. ¡Identamos!.
 		if (is_nline){
-			for (U_INT i=0;i<base_sub+sub;i++){//Identamos.
+			for (uint i=0;i<base_sub+sub;i++){//Identamos.
 				printf("  ");
 			}
 			printf(out_nesting);

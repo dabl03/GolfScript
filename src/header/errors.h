@@ -7,6 +7,7 @@
 	#define APP_UNKNOWN_DATA 0x010000
 	#define FEATURE_NOT_AVAILABLE 0x020000
 	#define INSUFFICIENT_MEMORY 0x030000
+	#define ITEM_COPYING_FAILED 0x040000
 	// G -- Errores de sintaxis
 	#define NOT_FOUND 0x00100
 	// B -- Advertencias
@@ -38,7 +39,7 @@
 	 * @param  parameters       List of parameters to convert to string
 	 * @return                  String with the list of parameters separated by commas.
 	 */
-	char* get_str_param(const unsigned int count_parameters, struct type_value** parameters);
+	char* get_str_param(const uint count_parameters, struct type_value** parameters);
 	/**
 	 * Show the error made in the function
 	 * @param func Name of the function.
@@ -48,7 +49,7 @@
 	 */
 	void func_error(
 		const char* func,
-		const unsigned int count_parameters,
+		const uint count_parameters,
 		struct type_value** parameters, ...
 	);
 	/**
@@ -58,8 +59,8 @@
 	*/
 	void show_error(
 		const unsigned long int CODES,
-		const unsigned int line,
-		const unsigned int col
+		const uint line,
+		const uint col
 	);
 	void init_get_time();
 	char* end_time();

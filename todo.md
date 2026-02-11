@@ -1,5 +1,6 @@
 ## Falta por hacer:
 - CREAR ARCHIVOS PARA TESTEAR...
+- Cambiar la salida stdou para los test y retormarlo para mostrar los resultados si se quiere.
 - Hacer que long int y long float se muestre con notacion cientifica.
 - Terminar los archivos para testear.
 - Agregar decimales.
@@ -25,15 +26,13 @@
 
 =======
 - Arreglar el operador + para que tenga esta capacidad: [ 1 2 3 [+ + +]] -> [[6]]
-- 
+- Hay un problema cuando 3.
 
 - Terminar los operadores.
 
 >>>>>>> main
 
 ## Operadores faltantes:
-  - `.` cualquier Duplicar en pila
-  - `\` cualquiera, cualquier Intercambiar los dos elementos principales.
   - `@` Mueve el stack[-3] elemento de la pila como si lo estuviera appeneando. a_stack_3=stack[-3] Ahora stack[-3]=stack[-2] y stack[-2]=stack[-1] y stack[-1]=a_stack_3;
   - `!` cualquier Negación: empuja 1 si el argumento es 0 o cadena vacía / matriz / bloque, 0 en caso contrario.
   - ` combierte a adena, o escapa la cadena. (Ejemplo: 1 `  es lo mismo que "1", [1 2 3 4] ` "[1 2 3 4]", "hola" ` "\"hola\"").
@@ -53,8 +52,5 @@ Para trabajar con flotante usa la varible globa climit_float
 - Agregar un Debug mode que ensena la linea+ la pila en ese momento. 
 
 ## Recordatorio:
-- Verificar si father se guarda bien en todos los archivos (debe ser Header_stack).
 - Modificar el archivo test y verificar stack.c
-- Ver si enlazar la lista del principio al fin y usar indices negativos.
-- Si es asi para los bucles hacer: stc_now!=h_stack->stack->previous
 ```

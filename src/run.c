@@ -11,7 +11,7 @@
 	#include "header/run.h"
 	
 	int run(struct Header_Stack* lines, struct Header_Stack* h_stack, struct Header_Stack* vars){
-		U_INT tmp_istr=0;
+		uint tmp_istr=0;
 		char* tmp_str=NULL;
 		struct Stack_* stc_line=lines->stack;
 		bool show_msg;
@@ -21,9 +21,9 @@
 			if(stc_line->item.type!=STRING) continue;
 			const char* s_line=stc_line->item.value;
 			show_msg=true;
-			U_INT i_end=strlen(s_line);
+			uint i_end=strlen(s_line);
 
-			for(U_INT i=0;i<i_end;i++){
+			for(uint i=0;i<i_end;i++){
 				//Primero definimos nuestros signos constantes:
 				if(s_line[i]=='{'){
 					tmp_str=get_ie_block(s_line,i,'}',&tmp_istr);
@@ -174,13 +174,13 @@
 		return (char*)realloc(name.str,name.count);
 	}
 	
-	char* get_str_token(char* str,U_INT init,U_INT end){
+	char* get_str_token(char* str,uint init,uint end){
 		struct String out;
 		init_str(&out,20);
 		bool space=false;
 		end=(end)?end:strlen(str);
-		U_INT tmp_i=0;
-		for(U_INT i=init;i<end;i++){
+		uint tmp_i=0;
+		for(uint i=init;i<end;i++){
 			if (str[i]=='\n' || str[i]==' ')
 				space=true;
 			else{
@@ -206,13 +206,13 @@
 		return (char*)realloc(out.str,out.count);
 	}
 	
-	char* get_ie_block(const char* input,const U_INT init, const char end, U_INT* out_end){
+	char* get_ie_block(const char* input,const uint init, const char end, uint* out_end){
 		struct String out;
 		init_str(&out,20);
 		char cinit=input[init];
-		U_INT i=init+1,
+		uint i=init+1,
 		sub=1;
-		U_INT tmp_i=0,
+		uint tmp_i=0,
 		iend=strlen(input);
 		char* tmp_str=NULL;
 		for (;i<iend;i++){

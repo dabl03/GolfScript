@@ -7,7 +7,7 @@
 #include "./header/global_vars.h"
 #include "./header/operators.h"
 
-U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
+uint prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* extend){
 	struct type_value* tv_now;
 	char* out;
 	if (stack->stack==NULL)
@@ -31,7 +31,7 @@ U_INT prinft_1_(struct Header_Stack* stack, struct Header_Stack* vars,char* exte
 	return NORMAL;
 }
 
-U_INT puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
+uint puts_operator(struct Header_Stack* stack,struct Header_Stack* vars){
 	struct Var* vr_line_breack=search_var("n",vars);
 	unsigned short out;
 	char* extend=to_string(
@@ -54,7 +54,7 @@ struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* co
 	// [ num_1 [ num_2 ]  ] o [ num_1 num_2 [ ] ]
 	// [] -> *codes=INSUFFICIENT_ARGUMENTS
 	if (h_stack->stack==NULL){
-		if (h_stack->father==NULL && h_stack->father->stack==NULL){
+		if (h_stack->father==NULL || h_stack->father->stack==NULL){
 			*codes=INSUFFICIENT_ARGUMENTS;
 			return NULL;
 		}
@@ -64,7 +64,7 @@ struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* co
 		out[1]=&h_stack->stack->item;
 		if (h_stack->stack->next!=NULL)
 			out[0]=&h_stack->stack->next->item;
-		else if (h_stack->father==NULL && h_stack->father->stack==NULL){
+		else if (h_stack->father==NULL || h_stack->father->stack==NULL){
 			*codes=INSUFFICIENT_ARGUMENTS;
 		}else
 			out[0]=&h_stack->father->stack->item;
@@ -73,7 +73,7 @@ struct type_value** opt_get_param(struct Header_Stack* h_stack, unsigned int* co
 }
 
 // Crear una funcion que ordene de la siguiente manera,
-U_INT add_operator(struct Header_Stack* h_stack, ...){
+uint add_operator(struct Header_Stack* h_stack, ...){
 	unsigned int codes=NORMAL;
 	struct type_value** tv_param=opt_get_param(h_stack,&codes);
 	if (codes!=NORMAL){
@@ -124,21 +124,52 @@ uint opt_setFloat(struct Header_Stack* h_stack, ...){
 	}
 	return codes;
 }
-U_INT sub_operator(struct Header_Stack* stack,...){
+uint sub_operator(struct Header_Stack* stack,...){
 	return FEATURE_NOT_AVAILABLE;
 }
 
-U_INT end_app(void){
+uint end_app(void){
 	quit=1;
 	return error_code;
 }
 
-U_INT reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
+uint reset(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	delete_stack(vars);
 	return init_gvars(vars);
 }
 
-U_INT pack_stack(struct Header_Stack* h_stack,...){
+uint copy_item_opt(struct Header_Stack* h_stack,...){
+	unsigned int codes=0;
+	struct type_value** item=opt_get_param(h_stack, &codes);
+	struct type_value* for_copy=(item[1]==NULL)?item[0]:item[1];
+	struct type_value* copy;
+	if (for_copy==NULL)
+		return codes;
+	copy=copy_item(NULL, for_copy->type, for_copy->value);
+	if (copy!=NULL){
+		add_stack(h_stack, copy->type, copy->value);
+		free(copy);
+		return NORMAL;
+	}
+	return ITEM_COPYING_FAILED;
+}
+uint change_last_element(struct Header_Stack* h_stack,...){
+	unsigned int codes=0;
+	struct type_value** item=opt_get_param(h_stack, &codes);
+	struct type_value tmp;
+	if (codes!=NORMAL)
+		return codes;
+	tmp.type=item[0]->type;
+	tmp.value=item[0]->value;
+	
+	item[0]->type=item[1]->type;
+	item[0]->value=item[1]->value;
+
+	item[1]->type=tmp.type;
+	item[1]->value=tmp.value;
+	return NORMAL;
+}
+uint pack_stack(struct Header_Stack* h_stack,...){
 	if (h_stack->stack==NULL)
 		return EMPTY_STACK;
 	struct Header_Stack* tmp=(struct Header_Stack*)malloc(
@@ -151,7 +182,7 @@ U_INT pack_stack(struct Header_Stack* h_stack,...){
 	return NORMAL;
 }
 
-U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
+uint help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	char* key_fun[]={
 			"reset",
 			"print",
@@ -171,7 +202,7 @@ U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	char* extend=to_string(vr_breack_line->item.type, vr_breack_line->item.value, NULL);
 
 	printf("%s%s %s%s  Version: %s",LICENSE,extend,AUTHOR,extend,VERSION);
-	for (U_INT i=0;i<sizeof(key_fun);i++){
+	for (uint i=0;i<sizeof(key_fun);i++){
 		printf("%s%s -- %s%s",extend,key_fun[i],value_fun[i],extend);
 	}
 	if (extend!=NULL)
@@ -179,7 +210,7 @@ U_INT help(struct Header_Stack* stack,struct Header_Stack* vars,...){
 	return NORMAL;
 }
 
-U_INT init_gvars(struct Header_Stack* vars){
+uint init_gvars(struct Header_Stack* vars){
 	add_var(vars,"reset",FUNCTION,  (void*)reset        );
 	add_var(vars,"print",FUNCTION,  (void*)prinft_1_    );
 	add_var(vars,"puts", FUNCTION,  (void*)puts_operator);
@@ -189,6 +220,8 @@ U_INT init_gvars(struct Header_Stack* vars){
 	add_var(vars,"]",    FUNCTION,  (void*)pack_stack   );
 	add_var(vars,"help", FUNCTION,  (void*)help         );
 	add_var(vars,"n",    STRING,    (void*)"\n"         );
+	add_var(vars,".",    FUNCTION,  (void*)copy_item_opt);
+	add_var(vars,"\\",   FUNCTION,  (void*)change_last_element);
 	add_var(vars,"float",FUNCTION,  (void*)opt_setFloat );
 	add_var(vars,"prompt",STRING,   (void*)"?> "        );
 	add_var(vars,"sub_prompt",STRING,(void*)"... "     );

@@ -13,132 +13,134 @@ OS_SYSTEM:=$(if $(shell uname),$(shell uname),Windows)
 SRC=./src
 SRC_OPERATOR=$(SRC)/operators
 INCLUDE=$(SRC)/header
-BIN_O=./build/obj
-LOG_APP=./build/log
+BASE=./build
+BIN_O=$(BASE)/obj
+BIN_OPT=$(BIN_O)/operator
+LOG_APP=$(BASE)/log
+AUTO_DIRS=$(BASE) $(BIN_O) $(BIN_O)/operator $(BIN_O)/test $(LOG_APP) $(LOG_APP)/operator $(LOG_APP)/test
+
 MAKE=make
 #Main:
 MAIN_O=$(BIN_O)/main.o
 MAIN_SRC=$(SRC)/main.c
 #*.c
 C_FILES:= $(filter-out $(SRC)/main.c,$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
-C_OPERATOR:=$(SRC_OPERATOR)/operators.c $(foreach dir,$(SRC_OPERATOR),$(wildcard $(dir)/**/*.c))
+C_OPERATOR:=$(SRC_OPERATOR)/operators.c
+MAIN_OPT=$(BIN_OPT)/operators.o
+C_OPERATORS:=$(wildcard $(SRC_OPERATOR)/**/*.c)
 #*.o
-O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
-O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
+O_OPERATOR:=$(foreach file,$(C_OPERATORS),$(BIN_OPT)/$(notdir $(file:.c=.o)))
+O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o))) $(MAIN_OPT) $(O_OPERATOR)
+
 #*.h
 FILE_H:=$(foreach file,$(C_FILES),$(INCLUDE)/$(notdir $(file:.c=.h)))
 # If anything is modified, all files will be affected.
 ALL_DEPENDENCIES=$(INCLUDE)/define.h
 # If windows then BIN_EXT=.exe
 BIN_EXT=
-NORMAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $<.log)" && exit 1)
-ESPECIAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $@.log)" && exit 1)
+SET_LOG=$(LOG_APP)/$(patsubst %.o,%,$(patsubst %.c,%,$(notdir $@))).log
+SET_LOG_OPT=$(LOG_APP)/operator/$(patsubst %.o,%,$(patsubst %.c,%,$(notdir $@))).log
+SHOW_LOG=|| ("$(VIEW_LOG)" "$(SET_LOG)" && exit 1)
+SHOW_LOG_OPT=|| ("$(VIEW_LOG)" "$(SET_LOG_OPT)" && exit 1)
 DELETE_FUNC=DELETE
 
 # Mostrar los logs.
 VIEW_LOG_C=./tools/view_log.c
 VIEW_LOG=$(BIN_O)/view_log
-VIEW_LOG_LOGS=$(LOG_APP)/view_log.log
 
 DELETE_V_LOG_C=./tools/delete_void_logs.c
 DELETE_V_LOG=$(BIN_O)/delete_void_logs
-DELETE_V_LOG_LOGS=$(LOG_APP)/delete_void_logs.log
+
+CLEAR_BUILD_C=./tools/clear_build.c
+CLEAR_BUILD=$(BIN_O)/clear_build
 
 ifeq ($(DEBUG),1)
 	CXXFLAG:=-D DEBUG $(CXXFLAG) -g
 	CFLAG:=-D DEBUG $(CFLAG) -g
 	O_FILES:=$(O_FILES) $(BIN_O)/memory.o
-	FILE_H:=$(FILE_H) ./test/include/memory.h
+	FILE_H:=$(FILE_H) ./test/header/memory.h
 endif
 
 ifeq ($(OS_SYSTEM),Windows)
 	APP:=$(APP).exe
-	VIEW_LOG=$(BIN_O)/view_log.exe
-	DELETE_V_LOG=$(BIN_O)/delete_void_logs.exe
 	BIN_EXT=.exe
 	MAKE=Mingw32-make
-	DELETE_FUNC=DELETE_WINDOWS
-	GET_ERROR_FUN=GET_ERROR_WINDOWS
-	NORMAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $<.log)" & exit /b 1)
-	ESPECIAL_SHOW_LOG=|| ($(VIEW_LOG) "$(LOG_APP)/$(notdir $@.log)" & exit /b 1)
+
+	VIEW_LOG:=$(VIEW_LOG).exe
+	DELETE_V_LOG:=$(DELETE_V_LOG).exe
+	CLEAR_BUILD:=$(CLEAR_BUILD).exe
+	SET_LOG=$(LOG_APP)/$(patsubst %$(BIN_EXT),%,$(patsubst %.o,%,$(patsubst %.c,%,$(notdir $@)))).log
+	SHOW_LOG=|| ("$(VIEW_LOG)" "$(SET_LOG)" && exit /b 1)
+	# Es necesario para mkdir de windows:
+	AUTO_DIRS:=$(subst $e/,\,$(AUTO_DIRS))
+	WIN_START=@start 
 endif
 
-define DELETE_WINDOWS
-del /s *.o
-del /s $(BIN_O)/$(VIEW_LOG)
-del /s $(BIN_O)/$(DELETE_V_LOG)
-del /s *.log
-del /s *_test.exe
-del /s *.exe
-endef
-
-define DELETE
-rm -f -d $(BIN_O)/*.o
-rm -f -d $(BIN_O)/$(VIEW_LOG)
-rm -f -d $(BIN_O)/$(DELETE_V_LOG)
-rm -f -d $(BIN_O)/test/*.o
-rm -f -d $(LOG_APP)/*.log
-rm -f -d $(LOG_APP)/test/*.log
-rm -f -d ./*_test
-rm -f -d ./test/*_test
-rm -f -d "$(APP)"
-endef
-
 ifneq ($(TEST),1)
-all: $(VIEW_LOG) $(DELETE_V_LOG) $(APP)
+all: $(BIN_O) $(LOG_APP) $(VIEW_LOG) $(DELETE_V_LOG) $(CLEAR_BUILD) $(APP)
 else
-all: $(VIEW_LOG) $(APPTEST) $(STACK_TEST)
+all: $(BIN_O) $(LOG_APP) $(VIEW_LOG) $(DELETE_V_LOG) $(CLEAR_BUILD) $(APPTEST) $(STACK_TEST)
 CXXFLAG:=$(CXXFLAG) -g "-D TEST_=1" "-D __MAIN__=1" -static-libgcc -static-libstdc++ -ggdb
 CFLAG:=$(CFLAG) -g "-D TEST_=1" "-D __MAIN__=1" -static-libgcc -static-libstdc++ -ggdb
 BIN_O:=$(BIN_O)/test
 LOG_APP:=$(LOG_APP)/test
 O_FILES :=$(foreach file,$(C_FILES),$(BIN_O)/$(notdir $(file:.c=.o)))
-O_OPERATOR:=$(foreach file,$(C_OPERATOR),$(BIN_O)/$(notdir $(file:.c=.o)))
 STACK_TEST=stack.exe
 include ./test/makefile.mk
 endif
 
+$(BIN_O):
+	-@mkdir $(AUTO_DIRS)
+
+$(LOG_APP):
+	-@mkdir $(AUTO_DIRS)
+
 $(VIEW_LOG): $(VIEW_LOG_C)
 	@echo Compilando herramienta de logs...
-	@$(GCC) -g -o $(VIEW_LOG) $(VIEW_LOG_C)  2>$(VIEW_LOG_LOGS).log
+	@$(GCC) -g -o $(VIEW_LOG) $(VIEW_LOG_C) 2>$(SET_LOG)
 
-$(DELETE_V_LOG): $(DELETE_V_LOG_C)
+$(DELETE_V_LOG): $(DELETE_V_LOG_C) $(VIEW_LOG_C)
 	@echo Compilando herramienta para limpiar logs...
-	@$(GCC) -g -o $(DELETE_V_LOG) $(DELETE_V_LOG_C)  2>$(DELETE_V_LOG_LOGS).log
+	@$(GCC) -g -o $(DELETE_V_LOG) $(DELETE_V_LOG_C) 2>$(SET_LOG)
 
-$(APP): $(O_FILES) $(O_OPERATOR) $(MAIN_O)
+$(CLEAR_BUILD): $(CLEAR_BUILD_C) $(VIEW_LOG_C)
+	@echo Compilando herramienta para limpiar logs...
+	@$(GCC) -g -o $(CLEAR_BUILD) $(CLEAR_BUILD_C) 2>$(SET_LOG)
+
+$(APP): $(O_FILES) $(MAIN_O)
 	@echo Uniendo los archivos compilados en "$(APP)"...
-	@$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) $(O_OPERATOR) -o $(APP) $(LINGC) 2> $(LOG_APP)/$(notdir $@.log) $(ESPECIAL_SHOW_LOG)
-	@$(call $(GET_ERROR_FUN),app.exe.log)
-	@$(DELETE_V_LOG) $(LOG_APP)/app.exe.log
+	@$(GCC) $(CFLAG) $(MAIN_O) $(O_FILES) -o $(APP) $(LINGC) 2>$(SET_LOG) $(SHOW_LOG)
+	@$(DELETE_V_LOG) $(SET_LOG)
 
 $(MAIN_O): $(MAIN_SRC) $(FILE_H)
 	@echo "Compilando el archivo objeto de main."
-	@$(GCC) -c $(CFLAG) $< -o $@ 2> $(LOG_APP)/$(notdir $@.log) $(ESPECIAL_SHOW_LOG)
-	@$(DELETE_V_LOG) $(LOG_APP)/main.c.log
+	@$(GCC) -c $(CFLAG) $< -o $@ 2>$(SET_LOG) $(SHOW_LOG)
+	@$(DELETE_V_LOG) $(SET_LOG)
 
 $(BIN_O)/%.o:	$(SRC)/%.c $(ALL_DEPENDENCIES)
 	@echo Compilando el archivo objeto de $<...
-	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log) $(NORMAL_SHOW_LOG)
-	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
+	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2>$(SET_LOG) $(SHOW_LOG)
+	@$(DELETE_V_LOG) $(SET_LOG)
 
-$(BIN_O)/%.o:	$(SRC_OPERATOR)/%.c $(ALL_DEPENDENCIES)
-	@echo Compilando el operador: $<...
-	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log) $(NORMAL_SHOW_LOG)
-	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
+$(MAIN_OPT): $(C_OPERATOR) $(ALL_DEPENDENCIES)
+	@echo Compilando el operador principal: $<...
+	@$(GCC) -c $(CFLAG) $(C_OPERATOR) -o $(MAIN_OPT) $(LINGC) 2>$(SET_LOG_OPT) $(SHOW_LOG_OPT)
+	@$(DELETE_V_LOG) $(SET_LOG_OPT)
 
-$(BIN_O)/%.o:	$(SRC_OPERATOR)/**/%.c $(ALL_DEPENDENCIES)
-	@echo Compilando el operador: $<...
-	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) 2> $(LOG_APP)/$(notdir $<.log) $(NORMAL_SHOW_LOG)
-	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
+
+# Solo funciona en linux
+include ./src/operators/makefile.mk
+
 
 $(BIN_O)/memory.o:./test/memory.c
-	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) -DMAIN=1 2> $(LOG_APP)/memory.log $(NORMAL_SHOW_LOG)
-	@$(DELETE_V_LOG) $(LOG_APP)/$(notdir $<.log)
+	@$(GCC) -c $(CFLAG) $< -o $@ $(LINGC) -DMAIN=1 2>$(SET_LOG) $(SHOW_LOG)
+	@$(DELETE_V_LOG) $(SET_LOG)
 
-clean:
+clean: $(CLEAR_BUILD)
 	@echo "Eliminando archivos..."
-	$(call $(DELETE_FUNC))
+	$(WIN_START)$(CLEAR_BUILD) "$(LOG_APP)" "$(LOG_APP)/test"
+	$(WIN_START)$(CLEAR_BUILD) "$(BIN_O)" "$(BIN_O)/test" "$(BIN_OPT)"
+	$(WIN_START)$(CLEAR_BUILD) "$(APP)"
 
 gdb:
 	@echo Abriendo GDB
@@ -147,4 +149,3 @@ gdb:
 run:
 	@echo Ejecutando $(APP)
 	@$(APP)
-

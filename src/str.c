@@ -35,11 +35,11 @@ unsigned short is_num(unsigned const char c){
 	return (c>='0' && c<='9');
 }
 
-U_INT get_end_str(const char* str, U_INT i_end){
+uint get_end_str(const char* str, uint i_end){
 	bool is_scape=false;
 	unsigned const char CHAR_END=str[0]; //< Is " or ' and no with "\"
 	i_end=(!i_end)?strlen(str):i_end;
-	for( U_INT i=0; i<i_end; i++ ){
+	for( uint i=0; i<i_end; i++ ){
 		if (str[i]==CHAR_END AND !is_scape)
 			return i;
 		is_scape=(str[i]=='\\' && !is_scape);
@@ -199,7 +199,7 @@ const char* get_name_type(enum TYPE t){
 }
 /// Muestra los caracteres invisibles.
 char* get_str_nescp(char* old_str){
-	U_INT len=strlen(old_str),
+	uint len=strlen(old_str),
 	i_nstr=0;
 	char* new_str=(char*)malloc(len);//Tamaño base.
 	char chr;
@@ -230,7 +230,7 @@ char* get_str_nescp(char* old_str){
 /// Transforma las secuencia de escape en el caracter
 ///              correspondiente
 char* get_str_escp(char* old_str){
-	U_INT len=strlen(old_str),
+	uint len=strlen(old_str),
 	i_nstr=0;
 	char* new_str=(char*)malloc(len);//Tamaño base.
 	char chr=0;
@@ -252,7 +252,7 @@ char* get_str_escp(char* old_str){
 					tmp[0]=*(++c);
 					tmp[1]=*(++c);
 					tmp[2]='\0';
-					U_INT otro=(int) strtol(tmp, NULL, 16);
+					uint otro=(int) strtol(tmp, NULL, 16);
 					//Si el entero sobrepasa los limites entonces hacemos mas hexadecimales.
 					if (otro>CHAR_MAX){
 						new_str[i_nstr++]=CHAR_MAX;
@@ -281,8 +281,8 @@ void cadd_leftover(struct String* str_,const char c){
 	str_->str[str_->count]='\0';
 }
 
-char* get_sub_str(const char* str,U_INT init, U_INT end){
-	U_INT end_c=(end)?end:strlen(str);
+char* get_sub_str(const char* str,uint init, uint end){
+	uint end_c=(end)?end:strlen(str);
 	struct String out;
 	init_str(&out, end_c+1);
 	char type=str[init++];

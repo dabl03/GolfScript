@@ -4,7 +4,7 @@
 	
 	type_value_err* basic_type_add_stack(type_value* num_1, type_value* tv_stack, bool is_right){
 		type_value_err* out=NEW_TYPE_VALUE_ERR();
-		unsigned int i;
+		uint i;
 		out->type=STACK;
 		out->err=NORMAL;
 		out->value=tv_stack->value;

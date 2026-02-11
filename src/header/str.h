@@ -12,8 +12,8 @@
  * @Note: Recordar iniciar todo en NULL o que str debe tener '\0'
 */
 struct String{
-	unsigned int max;
-	unsigned int count;
+	uint max;
+	uint count;
 	char* str;
 };
 /**
@@ -43,9 +43,9 @@ unsigned short is_num(unsigned const char c);
  * @param i_end limite de la cadena.
  ** Si se coloca 0 se buscará hasta el final de la cadena.
  *
- * @return unsigned int end si retorna 0 entonces no se consiguió el final.
+ * @return uint end si retorna 0 entonces no se consiguió el final.
  */
-unsigned int get_end_str(const char* str, U_INT i_end);
+uint get_end_str(const char* str, uint i_end);
 /**
  * @brief Funcion que transforma de string a entero.
  * 
@@ -83,7 +83,7 @@ void str_add_char(struct String* str_d,const char c);
  * @param str 
  * @param buffer 
  */
-void init_str(struct String* str,unsigned int buffer);
+void init_str(struct String* str,uint buffer);
 /**
  * Escapa un caracter.
  * @param  c Caracter normal(no especial)
@@ -128,7 +128,7 @@ void cadd_leftover(struct String* str_,const char c);
  * @param  end  Final de la cadena. Si se ingresa 0 se determina el tamaño dentro de la funcion.
  * @return      Cadena dinamica, recuerda liberar.
  */
-char* get_sub_str(const char* str,U_INT init, U_INT end);
+char* get_sub_str(const char* str,uint init, uint end);
 /**
  * C++ version 0.4 char* style "itoa":
  * Written by Lukás Chmela
@@ -166,16 +166,16 @@ char* copy_str(const char* str_io);
  *  Note: It should be free, but if you are debugging or testing,
  *  you should use FREE__() in long_int_to_string
 */
-char* int_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* long_float_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* float_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* long_int_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* block_codes_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* str_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* stack_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* var_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* FUNCTION_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* NONE_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* tv_to_string(const struct type_value* tv_element, unsigned int* out_len);
-char* to_string(const enum TYPE type, const void* value, unsigned int* out_len);
+char* int_to_string(const struct type_value* tv_element, uint* out_len);
+char* long_float_to_string(const struct type_value* tv_element, uint* out_len);
+char* float_to_string(const struct type_value* tv_element, uint* out_len);
+char* long_int_to_string(const struct type_value* tv_element, uint* out_len);
+char* block_codes_to_string(const struct type_value* tv_element, uint* out_len);
+char* str_to_string(const struct type_value* tv_element, uint* out_len);
+char* stack_to_string(const struct type_value* tv_element, uint* out_len);
+char* var_to_string(const struct type_value* tv_element, uint* out_len);
+char* FUNCTION_to_string(const struct type_value* tv_element, uint* out_len);
+char* NONE_to_string(const struct type_value* tv_element, uint* out_len);
+char* tv_to_string(const struct type_value* tv_element, uint* out_len);
+char* to_string(const enum TYPE type, const void* value, uint* out_len);
 #endif

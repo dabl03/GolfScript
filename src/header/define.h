@@ -18,7 +18,7 @@
 		#undef DEBUG
 		#define DEBUG 1 // Para evitar hacer #if defined(DEBUG) || defined(TEST_)
 		// Y hacer #if defined(DEBUG)
-		#include "../../test/include/memory.h"
+		#include "../../test/header/memory.h"
 	#endif
 
 	#define ABC_MINUSCULA(c) (c>='a' && c<='z')
@@ -36,8 +36,13 @@
 		//Desde el makefile se definirá si es linux.
 		#define ENDL "\n"
 	#endif
+	#ifndef uint
+		#define uint unsigned int
+	#endif
+	#ifndef ushort
+		#define ushort unsigned short
+	#endif
 	#define IF_ENDL(c) (c=='\n' || c=='\0')
-	#define U_INT unsigned int
 	#define AND &&
 	#define NOT !
 	#define MAX_INT_DIG 9
@@ -53,7 +58,7 @@
 	extern const char* LICENSE_URL;
 	extern const char* LICENSE;
 	extern char* SYSTEM_DECIMAL_POINT;
-	extern U_INT error_code;
+	extern uint error_code;
 	/**
 	 * @brief Se usa para identificar los tipos 
 	 * de datos que se va a nanejar | 

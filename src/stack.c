@@ -92,7 +92,7 @@ void delete_stack(struct Header_Stack* hstc_data){
 }
 struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, void* value_io){
 	// Si pasa null creamos uno nuevo, de lo contrario usamos el que se paso.
-	struct type_value* tv_out=(tv_src)?tv_src:malloc(sizeof(struct type_value));
+	struct type_value* tv_out=(tv_src!=NULL)?tv_src:(struct type_value*)malloc(sizeof(struct type_value));
 	tv_out->type=typ_io;
 	char* str;
 	switch(typ_io){
@@ -132,14 +132,8 @@ struct type_value* copy_item(struct type_value* tv_src, const enum TYPE typ_io, 
 			tv_out->value=value_io;
 			break;
 		default:
-			tv_out->value=value_io;
-			// Si no está tratado, no se copiará.
-			#if defined(DEBUG) || defined(TEST_)
-				printf(
-					"Advertensia: No se puede copiar dato.\n  Function=copy_item\n  tipo=%s.\n",
-					get_name_type(typ_io)
-				);
-			#endif
+			free(tv_out);
+			return NULL;
 	}
 	return tv_out;
 }
@@ -201,12 +195,12 @@ void delete_var(struct Var* vr_var){
 unsigned int process_data(struct Header_Stack* hstc_stack, struct Header_Stack* hstc_var, struct Var* vr_data){
 	struct type_value tv_tmp;
 	void* v_generic;
-	//U_INT err=0;// Solo para funciones. // Sin usar
+	//uint err=0;// Solo para funciones. // Sin usar
 	switch (vr_data->item.type){
 		// Funciones nativas del lenguaje
 		case FUNCTION:
 			/*err=*/
-			return ((U_INT (*)(
+			return ((uint (*)(
 				struct Header_Stack*,
 				struct Header_Stack*,
 				char* extend

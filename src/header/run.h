@@ -23,7 +23,7 @@
 	 * @param end Fin de la cadena.
 	 * @return char* malloc/calloc/readlloc
 	 */
-	char* get_name_var(const char* search,unsigned int* i,unsigned int end);
+	char* get_name_var(const char* search, uint* i, uint end);
 	/**Elimina los excesivos espacio dejando solo uno para separar cada palabra.
 	 * Tambien combertimos los saltos de lineas en espacio y se hace lo mismo que el anterior.
 	 * Nota: Tomamos en cuenta las cadenas ignorando todo lo que este adentro.
@@ -32,7 +32,7 @@
 	 * @param end Fin de la cadena. si es 0 se busca el final.
 	 * @return     Cadena tratada para prevenir los excesos de espacio y los saltos de linea. Retorna cadena dinamica, liberar.
 	 */
-	char* get_str_token(char* str, U_INT init, U_INT end);
+	char* get_str_token(char* str, uint init, uint end);
 /**
  * get init end block. Obtiene un bloque buscando en la cadena, desde init hasta conseguirn end block.
  * Nota: El inicio del bloque se obtiene deacuerdo a init: char inicio=input[init];.
@@ -43,5 +43,5 @@
  * @param  out_end Aqui almacenaremos el indice final para que fuera de la funcion se sepa.
  * @return         retorna el bloque buscado sin el inicio y el final. Recordar liberar cadena.
 */
-char* get_ie_block(const char* input, const U_INT init, const char end, U_INT* out_end);
+char* get_ie_block(const char* input, const uint init, const char end, uint* out_end);
 #endif

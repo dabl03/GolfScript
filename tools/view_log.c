@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #ifdef _WIN32
 	#include <windows.h>
 	#define stat _stat
+	#define S_IFDIR _S_IFDIR
+	#define S_IFREG _S_IFREG
 #else
 	#include <sys/stat.h>
 #endif
@@ -26,16 +29,13 @@
 // Codigo modificado de:
 // - https://github.com/Nicolastolinii/List-Directories/blob/main/listar.c
 /// @todo: Probar en windows.
-typedef struct extension_type{
-    char extension[7];
-} extension_type;
 typedef struct StackPath{
 	struct StackPath* next;
 	char* path;
 } StackPath;
-extension_type extensiones[] = {
-    {.extension = "log"},
-    {.extension = "c.log"}
+char* extensions[]={
+	"log",
+	(char*)NULL // Indica el final.
 };
 void Push(StackPath** stack, char* path){
 	StackPath* new_stack=(StackPath*)malloc(sizeof(StackPath));
@@ -90,33 +90,49 @@ unsigned char strcmp_uncase_sensible(const char* str1, const char* str2){
 	}
 	return *chr_2=='\0';
 }
-StackPath* lista_directorio(char *nombre);
+StackPath* lista_directorio(char *nombre, char** extensiones);
 char* get_file(char* path);
 // Si otro archivo con main quiere importar este.
 // entonces no permitimos que main exista.
 #ifndef MAIN
 	#define view_log main
 #endif
+bool is_directory(const char* path){
+	#if _WIN32
+	return GetFileAttributesA(path) & FILE_ATTRIBUTE_DIRECTORY;
+	#else
+	struct stat s;
+	if (stat(path, &s)==0)
+		return s.st_mode&S_IFDIR;
+	#endif
+	return false;
+}
+bool is_file(const char* path){
+	#if _WIN32
+	return GetFileAttributesA(path) & FILE_ATTRIBUTE_ARCHIVE;
+	#else
+	struct stat s;
+	if (stat(path, &s)==0)
+		return s.st_mode&S_IFREG;
+	#endif
+	return false;
+}
 int view_log(int argc, char const *argv[]){
 	char** directory=(char**)malloc(sizeof(char**)*(argc+3));
 	char** files=(char**)malloc(sizeof(char**)*(argc+3));
-	struct stat s;
 	StackPath* all_file;
 	char* out_file;
 	uint i=0;
 	uint i_f=0;
 	uint len_path;
 	for(uint x=1; x<argc; x++){
-		if (stat(argv[x], &s)==0){
-			if (s.st_mode&S_IFDIR){
-				directory[i++]=(char*)argv[x];
-			}else if(s.st_mode&S_IFREG){
-				files[i_f++]=(char*)argv[x];
-			}
-		}
+		if (is_directory(argv[x]))
+			directory[i++]=(char*)argv[x];
+		else if(is_file(argv[x]))
+			files[i_f++]=(char*)argv[x];
 	}
 	for(uint x=0; x<i; x++){
-		all_file=lista_directorio(directory[x]);
+		all_file=lista_directorio(directory[x], extensions);
 		if (all_file==NULL)
 			continue;
 		uint y=0;
@@ -167,8 +183,8 @@ char* get_file(char* path){
 	fclose(file);
 	return out;
 }
-#define LISTAR_DIRECTORY(path, out) \
-	StackPath* sub_path=lista_directorio(path); \
+#define LISTAR_DIRECTORY(path, out, extens) \
+	StackPath* sub_path=lista_directorio(path, extens); \
 	while (sub_path!=NULL) \
 		Push(&out, Pop(&sub_path)); \
 	free(path);
@@ -178,8 +194,8 @@ char* get_file(char* path){
 	int extension_found = 0; \
 	if (ptr_ext != NULL){ \
 		ptr_ext += 1; \
-		for (size_t i = 0; i < sizeof(extensiones) / sizeof(extension_type); i++){ \
-			if (strcmp_uncase_sensible(extensiones[i].extension, ptr_ext) == 1){ \
+		for (size_t i = 0; extensiones[i]!=NULL; i++){ \
+			if (strcmp_uncase_sensible(extensiones[i], ptr_ext) == 1){ \
 				Push(&out, path); \
 				extension_found = 1; \
 				break; \
@@ -188,7 +204,7 @@ char* get_file(char* path){
 	} \
 	if (!extension_found)\
 		free(path); /* No nos interesa mostrar este archivo.*/
-StackPath* lista_directorio(char *nombre){
+StackPath* lista_directorio(char *nombre, char** extensiones){
 	StackPath* stack_out=NULL;
 #ifdef _WIN32
 	char search_path[MAX_PATH];
@@ -198,7 +214,7 @@ StackPath* lista_directorio(char *nombre){
 	HANDLE hFind = FindFirstFile(search_path, &findFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE){
-		fprintf(stderr, "No se puede abrir el directorio %s.\n", nombre);
+		fprintf(stderr, "No se puede abrir el archivo o directorio %s.\n", nombre);
 		return NULL;
 	}
 
@@ -207,12 +223,12 @@ StackPath* lista_directorio(char *nombre){
 			continue;
 
 		size_t size_path = strlen(nombre)+strlen(findFileData.cFileName) + 2;
-		char *path = (char *)calloc(size_path + 1, sizeof(char));
+		char *path = (char *)malloc(sizeof(char)*(size_path + 1));
 		sprintf(path, "%s\\%s", nombre, findFileData.cFileName);
 
 		char* ptr=strchr(findFileData.cFileName,'.');
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
-			LISTAR_DIRECTORY(path, stack_out);
+			LISTAR_DIRECTORY(path, stack_out, extensiones);
 		}else{
 			GET_LOG_FILE(path, stack_out, ptr);
 		}
@@ -238,7 +254,7 @@ StackPath* lista_directorio(char *nombre){
 		sprintf(path,"%s/%s", nombre, directorio->d_name);
 		char* ptr=strchr(directorio->d_name,'.');
 		if (directorio->d_type == DT_DIR){
-			LISTAR_DIRECTORY(path, stack_out);
+			LISTAR_DIRECTORY(path, stack_out, extensiones);
 		}else{
 			GET_LOG_FILE(path, stack_out, ptr);
 		}

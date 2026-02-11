@@ -3,6 +3,7 @@
 #include "header/stack.h"
 #include "header/str.h"
 #include "include/memory.h"
+#include "../src/header/define.h"
 ///@todo: Modificar el archivo tester para que los test sean individuales por cada funcion.
 //// Estudiar estrategias para testear una app C/C++
 
@@ -27,6 +28,7 @@ void toStringValue_test(enum TYPE typData,void* vData){
   );
   free(sOut);
 }
+bool
 void toStringValue_test_all(){
   void* v_tmp;
   struct Header_Stack hstc={NULL,NULL};

@@ -3,12 +3,7 @@
 *.log
 *.o
 *.exe
-# Ver si eliminar {
-/build/log/*.log
-/build/log/test/*.log
-/build/obj/test/*.o
-/build/obj/
-# }
+/build/
 logs.txt
 logs_obj.txt
 gsp.exe

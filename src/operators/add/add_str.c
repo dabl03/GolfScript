@@ -4,7 +4,7 @@
 
 	type_value_err* str_add_basic_type(type_value* num_1, type_value* num_2, bool is_right){
 		type_value_err* out=NEW_TYPE_VALUE_ERR();
-		unsigned int len;
+		uint len;
 		char* str=(char*)num_1->value,
 			* basic_type=tv_to_string(num_2, &len)
 		;

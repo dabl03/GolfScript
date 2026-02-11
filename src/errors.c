@@ -8,7 +8,8 @@
 		// R
 		"Datos no tratados",
 		"Caracteristica no disponible",
-		"No hay suficiente memoria disponible para la operación"
+		"No hay suficiente memoria disponible para la operación",
+		"Fallo a copiar elemento de la pila"
 	};
 	const char* GERR_STR_MSG[ERROR_MSG_LIMIT]={
 		// G
@@ -21,7 +22,7 @@
 		"Indice no encontrado",
 		"No es posible la conversion."
 	};
-	U_INT error_code=NORMAL;
+	uint error_code=NORMAL;
 	/// Agregar prinft con valores por defectos, como linea, archivo, etc... y cada error indicará si quiere usar uno de eso, nota: Preparar un formateador para ello con $1 $2 $3,,,
 	void show_error(const unsigned long int CODES,const unsigned int line, const unsigned int col){
 		const short R_CODE=((CODES>>16) & 0xFF)-1;

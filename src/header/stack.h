@@ -32,7 +32,7 @@ struct type_value{
 struct Var{
 	char*        name;
 	struct type_value item;
-	unsigned int i_name; // Se usará para comparación.
+	uint i_name; // Se usará para comparación.
 };
 /**
  * @brief La pila donde se guardará todo. 
@@ -126,7 +126,7 @@ void delete_var(struct Var* vr_var);
  * @param[in] vr_data    El dato a interpretar.
  * @return Error codes
  */
-unsigned int process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data);
+uint process_data(struct Header_Stack* hstc_stack,struct Header_Stack* hstc_var,struct Var* vr_data);
 /**
  * @brief Busca la variable deacuerdo al nombre y 
  * retorna su posición en el array.
@@ -156,11 +156,11 @@ void add_var(struct Header_Stack* hstc_out, const char* s_name, enum TYPE typ_da
  * @param[in] is_append      If the position is added or modified. Note: The count starts from 0
  * @return  Error?
  */
-bool stack_setItem(struct Header_Stack* h_stack, struct type_value* item, const unsigned int index, const bool is_append);
+bool stack_setItem(struct Header_Stack* h_stack, struct type_value* item, const uint index, const bool is_append);
 /**
  * Gets the stack length.
  * @param h_stack The stack to be measured
  * @return length
 */
-unsigned int len_stack(const struct Header_Stack* h_stack);
+uint len_stack(const struct Header_Stack* h_stack);
 #endif
