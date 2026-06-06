@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+
 #ifdef _WIN32
 	#include <windows.h>
 	#define stat _stat
@@ -25,7 +26,7 @@
 #else
 	#include "../test/memory.c"
 #endif
-#include "../test/include/memory.h"
+#include "../test/header/memory.h"
 // Codigo modificado de:
 // - https://github.com/Nicolastolinii/List-Directories/blob/main/listar.c
 /// @todo: Probar en windows.
